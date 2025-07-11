@@ -56,7 +56,12 @@ class KeydropAutomation:
     
     # Seletores CSS para elementos do Keydrop
     SELECTORS = {
-        'participate_button': 'button[class*="participate"], button[class*="join"], .lottery-participate-btn, .btn-participate',
+        # Página de listagem de sorteios
+        'giveaway_card': '[data-testid="div-active-giveaways-list-single-card"]',
+        'join_link': '[data-testid="btn-single-card-giveaway-join"]',
+        # Página do sorteio específico
+        'join_button': '[data-testid="btn-giveaway-join-the-giveaway"]',
+        # Outros seletores utilitários
         'amateur_lottery': '.lottery-card[data-type="amateur"], .amateur-lottery, [data-lottery-type="amateur"]',
         'lottery_title': '.lottery-title, .lottery-name, h3, h4',
         'already_participated': '.already-participated, .participated, [class*="disabled"]',
@@ -117,8 +122,12 @@ class KeydropAutomation:
                 tab_info.status = 'participating'
                 tab_info.last_activity = datetime.now()
                 
-                # Aguardar carregamento da página
-                await page.wait_for_load_state('domcontentloaded', timeout=15000)
+                # Garantir que estamos na página de sorteios
+                await page.goto(
+                    self.URLS['keydrop_lotteries'],
+                    wait_until='domcontentloaded',
+                    timeout=30000
+                )
                 
                 # Verificar se requer login
                 if await self._check_login_required(page):
@@ -213,21 +222,17 @@ class KeydropAutomation:
             # Aguardar um momento para carregamento
             await asyncio.sleep(random.uniform(1, 3))
             
-            # Procurar botões de participação
-            participate_buttons = await page.query_selector_all(self.SELECTORS['participate_button'])
-            
-            for button in participate_buttons:
+            # Procurar cards de sorteio disponíveis
+            cards = await page.query_selector_all(self.SELECTORS['giveaway_card'])
+
+            for card in cards:
                 try:
-                    # Verificar se o botão está visível e clicável
-                    if await button.is_visible() and await button.is_enabled():
-                        # Tentar obter informações do sorteio
-                        lottery_info = await self._extract_lottery_info(page, button)
-                        lotteries.append({
-                            'button': button,
-                            'info': lottery_info
-                        })
+                    link = await card.query_selector(self.SELECTORS['join_link'])
+                    if link and await link.is_enabled():
+                        lottery_info = await self._extract_lottery_info(card)
+                        lotteries.append({'card': card, 'link': link, 'info': lottery_info})
                 except Exception as e:
-                    logger.debug(f"Erro ao processar botão de sorteio: {e}")
+                    logger.debug(f"Erro ao processar card de sorteio: {e}")
                     continue
             
             logger.info(f"Encontrados {len(lotteries)} sorteios disponíveis")
@@ -237,13 +242,12 @@ class KeydropAutomation:
             logger.error(f"Erro ao procurar sorteios: {e}")
             return []
     
-    async def _extract_lottery_info(self, page, button) -> Dict[str, Any]:
+    async def _extract_lottery_info(self, card) -> Dict[str, Any]:
         """
         Extrai informações de um sorteio
         
         Args:
-            page: Página do Playwright
-            button: Elemento do botão
+            card: Elemento do card de sorteio
             
         Returns:
             Informações do sorteio
@@ -255,19 +259,16 @@ class KeydropAutomation:
         }
         
         try:
-            # Tentar encontrar o container do sorteio
-            parent = await button.query_selector('xpath=..//..')
-            if parent:
-                # Procurar título
-                title_element = await parent.query_selector(self.SELECTORS['lottery_title'])
-                if title_element:
-                    info['title'] = await title_element.inner_text()
-                
-                # Verificar se é sorteio AMATEUR
-                amateur_element = await parent.query_selector(self.SELECTORS['amateur_lottery'])
-                if amateur_element or 'amateur' in info['title'].lower():
-                    info['type'] = 'amateur'
-                    info['is_amateur'] = True
+            # Procurar título dentro do card
+            title_element = await card.query_selector(self.SELECTORS['lottery_title'])
+            if title_element:
+                info['title'] = await title_element.inner_text()
+
+            # Verificar se é sorteio AMATEUR
+            amateur_element = await card.query_selector(self.SELECTORS['amateur_lottery'])
+            if amateur_element or 'amateur' in info['title'].lower():
+                info['type'] = 'amateur'
+                info['is_amateur'] = True
         
         except Exception as e:
             logger.debug(f"Erro ao extrair informações do sorteio: {e}")
@@ -288,12 +289,32 @@ class KeydropAutomation:
             Resultado da tentativa
         """
         try:
-            button = lottery['button']
+            link = lottery['link']
             lottery_info = lottery['info']
             
+            # Abrir página do sorteio
+            await link.click()
+            await page.wait_for_load_state('domcontentloaded', timeout=15000)
+
+            # Procurar botão final de participação
+            join_button = await page.wait_for_selector(self.SELECTORS['join_button'], timeout=10000)
+
+            if not join_button:
+                await page.go_back()
+                return ParticipationAttempt(
+                    tab_id=tab_id,
+                    attempt_number=attempt_number,
+                    timestamp=datetime.now(),
+                    result=ParticipationResult.BUTTON_NOT_FOUND,
+                    error_message='Botão de participação não encontrado',
+                    lottery_type=lottery_info['type'],
+                    lottery_title=lottery_info['title']
+                )
+
             # Verificar se já participou
-            button_text = await button.inner_text()
-            if any(word in button_text.lower() for word in ['participando', 'participated', 'já participou']):
+            button_text = await join_button.inner_text()
+            if any(word in button_text.lower() for word in ['já aderiu', 'já participou', 'participando']):
+                await page.go_back()
                 return ParticipationAttempt(
                     tab_id=tab_id,
                     attempt_number=attempt_number,
@@ -302,24 +323,27 @@ class KeydropAutomation:
                     lottery_type=lottery_info['type'],
                     lottery_title=lottery_info['title']
                 )
-            
+
             # Mover o mouse para o botão (simular comportamento humano)
-            await button.hover()
+            await join_button.hover()
             await asyncio.sleep(random.uniform(0.5, 1.5))
-            
+
             # Clicar no botão
-            await button.click()
-            
+            await join_button.click()
+
             # Aguardar resultado da participação
             await asyncio.sleep(random.uniform(2, 4))
-            
+
             # Verificar se a participação foi bem-sucedida
-            success = await self._verify_participation_success(page, button)
-            
+            success = await self._verify_participation_success(page, join_button)
+
             result = ParticipationResult.SUCCESS if success else ParticipationResult.FAILED
-            
+
             logger.info(f"Participação na guia {tab_id}: {result.value}")
-            
+
+            # Voltar para a página de sorteios
+            await page.go_back()
+
             return ParticipationAttempt(
                 tab_id=tab_id,
                 attempt_number=attempt_number,
@@ -356,7 +380,10 @@ class KeydropAutomation:
             
             # Verificar mudança no texto do botão
             new_button_text = await button.inner_text()
-            success_keywords = ['participando', 'participated', 'sucesso', 'success']
+            success_keywords = [
+                'participando', 'participated', 'sucesso', 'success',
+                'j\xc3\xa1 aderiu', 'j\xc3\xa1 participou'
+            ]
             
             if any(keyword in new_button_text.lower() for keyword in success_keywords):
                 return True
