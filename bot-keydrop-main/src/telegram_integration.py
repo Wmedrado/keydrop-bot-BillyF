@@ -730,32 +730,6 @@ class TelegramBot:
         except Exception as e:
             print(f"❌ Erro ao carregar config Telegram: {e}")
     
-    def stop(self):
-        """Para o bot do Telegram"""
-        self.running = False
-        if self.thread:
-            self.thread.join(timeout=5)
-        print("🤖 Bot do Telegram parado")
-    
-    def start(self):
-        """Inicia o bot do Telegram"""
-        if self.running:
-            return
-        
-        self.running = True
-        self.thread = threading.Thread(target=self._run, daemon=True)
-        self.thread.start()
-        print("🤖 Bot do Telegram iniciado")
-    
-    def _run(self):
-        """Loop principal do bot"""
-        while self.running:
-            try:
-                self.get_updates()
-                time.sleep(1)
-            except Exception as e:
-                print(f"❌ Erro no loop do Telegram: {e}")
-                time.sleep(5)
 
 # Instância global do bot
 telegram_bot = None
