@@ -1,0 +1,14 @@
+{
+  "name": "keydrop-bot-frontend",
+  "version": "2.1.0",
+  "description": "Frontend moderno para o Keydrop Bot Professional",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 3000",
+    "dev": "python -m http.server 3000",
+    "build": "echo 'Build não necessário para HTML/CSS/JS puro'"
+  },
+  "keywords": ["keydrop", "bot", "automation", "chrome"],
+  "author": "William Medrado (wmedrado) github",
+  "license": "MIT"
+}

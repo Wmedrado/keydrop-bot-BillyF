@@ -1,0 +1,539 @@
+/* Sistema de Tabs - Keydrop Bot Professional */
+
+/* Navegação das tabs */
+.tab-navigation {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: center;
+    padding: 0 2rem;
+    box-shadow: var(--shadow-small);
+}
+
+.tab-button {
+    background: none;
+    border: none;
+    padding: 1rem 2rem;
+    color: var(--text-secondary);
+    font-size: var(--font-size-normal);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 3px solid transparent;
+    position: relative;
+}
+
+.tab-button:hover {
+    color: var(--text-primary);
+    background: rgba(52, 152, 219, 0.1);
+}
+
+.tab-button.active {
+    color: var(--secondary-color);
+    border-bottom-color: var(--secondary-color);
+    background: rgba(52, 152, 219, 0.1);
+}
+
+.tab-icon {
+    font-size: var(--font-size-medium);
+}
+
+/* Conteúdo das tabs */
+.main-content {
+    flex: 1;
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.tab-content {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Grid de conteúdo */
+.content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* Seções de configuração */
+.config-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    box-shadow: var(--shadow-small);
+}
+
+.section-title {
+    font-size: var(--font-size-large);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.section-icon {
+    font-size: var(--font-size-xl);
+}
+
+/* Estatísticas */
+.stats-grid {
+    display: grid;
+    gap: 2rem;
+}
+
+.stats-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    box-shadow: var(--shadow-small);
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+/* Status das guias */
+.tabs-container {
+    margin-top: 1.5rem;
+}
+
+.tabs-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.tabs-count {
+    font-weight: 600;
+    color: var(--secondary-color);
+}
+
+.refresh-tabs-btn {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-small);
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    font-size: var(--font-size-normal);
+}
+
+.refresh-tabs-btn:hover {
+    background: var(--bg-secondary);
+    border-color: var(--secondary-color);
+}
+
+.tabs-list {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+}
+
+.tab-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: var(--transition-fast);
+}
+
+.tab-item:hover {
+    background: var(--bg-tertiary);
+}
+
+.tab-item:last-child {
+    border-bottom: none;
+}
+
+.tab-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.tab-id {
+    font-weight: 600;
+    color: var(--secondary-color);
+}
+
+.tab-url {
+    font-size: var(--font-size-small);
+    color: var(--text-muted);
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tab-status {
+    font-size: var(--font-size-small);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tab-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.tab-control-btn {
+    padding: 0.25rem 0.5rem;
+    border: none;
+    border-radius: var(--border-radius-small);
+    cursor: pointer;
+    font-size: var(--font-size-small);
+    transition: var(--transition-fast);
+}
+
+.tab-control-btn.restart {
+    background: var(--warning-color);
+    color: white;
+}
+
+.tab-control-btn.close {
+    background: var(--error-color);
+    color: white;
+}
+
+/* Estatísticas do bot */
+.bot-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: var(--bg-tertiary);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+}
+
+.stat-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.stat-value {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.stat-value.success {
+    color: var(--success-color);
+}
+
+.stat-value.error {
+    color: var(--error-color);
+}
+
+.stat-value.warning {
+    color: var(--warning-color);
+}
+
+/* Relatórios */
+.reports-grid {
+    display: grid;
+    gap: 2rem;
+}
+
+.reports-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    box-shadow: var(--shadow-small);
+}
+
+/* Histórico de participações */
+.participation-history {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    margin-top: 1.5rem;
+}
+
+.participation-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.participation-item:last-child {
+    border-bottom: none;
+}
+
+.participation-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.participation-tab {
+    font-weight: 600;
+    color: var(--secondary-color);
+}
+
+.participation-time {
+    font-size: var(--font-size-small);
+    color: var(--text-muted);
+}
+
+.participation-details {
+    font-size: var(--font-size-small);
+    color: var(--text-secondary);
+}
+
+/* Logs */
+.logs-container {
+    margin-top: 1.5rem;
+}
+
+.logs-controls {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.clear-logs-btn,
+.export-logs-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: var(--font-size-small);
+    transition: var(--transition-fast);
+}
+
+.clear-logs-btn {
+    background: var(--error-color);
+    color: white;
+}
+
+.export-logs-btn {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.logs-display {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    max-height: 300px;
+    overflow-y: auto;
+    font-family: 'Courier New', monospace;
+    font-size: var(--font-size-small);
+    line-height: 1.4;
+}
+
+.log-entry {
+    margin-bottom: 0.5rem;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.log-entry:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.log-timestamp {
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.log-level {
+    font-weight: 600;
+    padding: 0.1rem 0.3rem;
+    border-radius: 3px;
+    font-size: 10px;
+    text-transform: uppercase;
+}
+
+.log-level.info {
+    background: rgba(52, 152, 219, 0.3);
+    color: var(--secondary-color);
+}
+
+.log-level.success {
+    background: rgba(46, 204, 113, 0.3);
+    color: var(--success-color);
+}
+
+.log-level.warning {
+    background: rgba(243, 156, 18, 0.3);
+    color: var(--warning-color);
+}
+
+.log-level.error {
+    background: rgba(231, 76, 60, 0.3);
+    color: var(--error-color);
+}
+
+.log-message {
+    color: var(--text-primary);
+    margin-left: 1rem;
+}
+
+/* Resumo geral */
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.summary-card {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    transition: var(--transition-fast);
+}
+
+.summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+    border-color: var(--secondary-color);
+}
+
+.summary-header {
+    font-weight: 600;
+    color: var(--secondary-color);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.summary-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.summary-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.summary-stat span:first-child {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.summary-stat span:last-child {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* Responsividade para tabs */
+@media (max-width: 768px) {
+    .tab-navigation {
+        padding: 0 1rem;
+        overflow-x: auto;
+        justify-content: flex-start;
+    }
+    
+    .tab-button {
+        padding: 1rem 1.5rem;
+        flex-shrink: 0;
+    }
+    
+    .main-content {
+        padding: 1rem;
+    }
+    
+    .content-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .metrics-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+    
+    .control-buttons {
+        grid-template-columns: 1fr;
+    }
+    
+    .bot-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .summary-cards {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .tab-button {
+        padding: 0.75rem 1rem;
+        font-size: var(--font-size-small);
+    }
+    
+    .config-section,
+    .stats-section,
+    .reports-section {
+        padding: 1rem;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .checkbox-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .tab-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .tab-controls {
+        align-self: stretch;
+        justify-content: space-between;
+    }
+}

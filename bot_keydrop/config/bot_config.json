@@ -1,0 +1,10 @@
+{
+  "num_tabs": 5,
+  "execution_speed": 3.0,
+  "retry_attempts": 5,
+  "headless_mode": false,
+  "mini_window_mode": false,
+  "enable_login_tabs": false,
+  "discord_webhook_url": "",
+  "discord_notifications": false
+}

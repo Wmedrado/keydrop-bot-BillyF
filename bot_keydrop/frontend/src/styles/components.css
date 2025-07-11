@@ -1,0 +1,517 @@
+/* Componentes UI - Keydrop Bot Professional */
+
+/* Formulários */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: var(--font-size-normal);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-size: var(--font-size-normal);
+    transition: var(--transition-fast);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+.form-group input[type="range"] {
+    padding: 0;
+    height: 6px;
+    background: var(--bg-tertiary);
+    appearance: none;
+    border-radius: 3px;
+}
+
+.form-group input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--secondary-color);
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: var(--shadow-small);
+}
+
+.form-group input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--secondary-color);
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: var(--shadow-small);
+}
+
+.form-help {
+    font-size: var(--font-size-small);
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* Checkboxes personalizados */
+.checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.checkbox-group {
+    position: relative;
+}
+
+.checkbox-group input[type="checkbox"] {
+    opacity: 0;
+    position: absolute;
+    width: 0;
+    height: 0;
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    cursor: pointer;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background: var(--bg-tertiary);
+    transition: var(--transition-fast);
+    flex-direction: column;
+}
+
+.checkbox-group label:hover {
+    border-color: var(--secondary-color);
+    background: var(--bg-card);
+}
+
+.checkbox-custom {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-small);
+    background: var(--bg-secondary);
+    position: relative;
+    transition: var(--transition-fast);
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+
+.checkbox-group input[type="checkbox"]:checked + label .checkbox-custom {
+    background: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+.checkbox-group input[type="checkbox"]:checked + label .checkbox-custom::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.checkbox-help {
+    font-size: var(--font-size-small);
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+/* Botões */
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: var(--font-size-normal);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    box-shadow: var(--shadow-small);
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-medium);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-primary {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2980b9;
+}
+
+.btn-success {
+    background: var(--success-color);
+    color: white;
+}
+
+.btn-success:hover {
+    background: #27ae60;
+}
+
+.btn-warning {
+    background: var(--warning-color);
+    color: white;
+}
+
+.btn-warning:hover {
+    background: #e67e22;
+}
+
+.btn-danger {
+    background: var(--error-color);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c0392b;
+}
+
+.btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background: var(--bg-card);
+    border-color: var(--secondary-color);
+}
+
+.btn-icon {
+    font-size: var(--font-size-medium);
+}
+
+/* Controles principais */
+.control-section {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+}
+
+.control-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.control-btn {
+    padding: 1rem 1.5rem;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: var(--font-size-normal);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    box-shadow: var(--shadow-small);
+    min-height: 60px;
+}
+
+.start-btn {
+    background: var(--success-color);
+    color: white;
+}
+
+.start-btn:hover {
+    background: #27ae60;
+}
+
+.stop-btn {
+    background: var(--error-color);
+    color: white;
+}
+
+.stop-btn:hover {
+    background: #c0392b;
+}
+
+.restart-btn {
+    background: var(--warning-color);
+    color: white;
+}
+
+.restart-btn:hover {
+    background: #e67e22;
+}
+
+.cache-btn {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.cache-btn:hover {
+    background: #2980b9;
+}
+
+.save-btn {
+    background: var(--success-color);
+    color: white;
+}
+
+.save-btn:hover {
+    background: #27ae60;
+}
+
+.update-btn {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.update-btn:hover {
+    background: var(--bg-card);
+    border-color: var(--secondary-color);
+}
+
+.test-discord-btn {
+    background: #7289da;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    margin-top: 1rem;
+}
+
+.test-discord-btn:hover {
+    background: #5b6eae;
+    transform: translateY(-1px);
+}
+
+/* Cards */
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-small);
+    transition: var(--transition-fast);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.card-title {
+    font-size: var(--font-size-large);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.card-body {
+    color: var(--text-secondary);
+}
+
+/* Métricas */
+.metric-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    text-align: center;
+    transition: var(--transition-fast);
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+    border-color: var(--secondary-color);
+}
+
+.metric-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.metric-icon {
+    font-size: var(--font-size-large);
+}
+
+.metric-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: var(--font-size-normal);
+}
+
+.metric-value {
+    font-size: var(--font-size-xxl);
+    font-weight: 700;
+    color: var(--secondary-color);
+    margin-bottom: 0.5rem;
+}
+
+.metric-details {
+    font-size: var(--font-size-small);
+    color: var(--text-muted);
+}
+
+/* Listas */
+.list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.list-item {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: var(--transition-fast);
+}
+
+.list-item:hover {
+    background: var(--bg-tertiary);
+}
+
+.list-item:last-child {
+    border-bottom: none;
+}
+
+/* Status indicators */
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: var(--font-size-small);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-badge.success {
+    background: rgba(46, 204, 113, 0.2);
+    color: var(--success-color);
+}
+
+.status-badge.error {
+    background: rgba(231, 76, 60, 0.2);
+    color: var(--error-color);
+}
+
+.status-badge.warning {
+    background: rgba(243, 156, 18, 0.2);
+    color: var(--warning-color);
+}
+
+.status-badge.info {
+    background: rgba(52, 152, 219, 0.2);
+    color: var(--secondary-color);
+}
+
+/* Loading spinner */
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border-color);
+    border-top: 2px solid var(--secondary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Tooltips */
+.tooltip {
+    position: relative;
+    cursor: help;
+}
+
+.tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    padding: 0.5rem;
+    border-radius: var(--border-radius-small);
+    font-size: var(--font-size-small);
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: var(--transition-fast);
+    border: 1px solid var(--border-color);
+    z-index: 1000;
+}
+
+.tooltip:hover::after {
+    opacity: 1;
+    visibility: visible;
+}

@@ -1,0 +1,10 @@
+{
+  "num_bots": 1,
+  "velocidade_navegacao": 2,
+  "headless": false,
+  "login_mode": false,
+  "contender_mode": false,
+  "mini_window": false,
+  "discord_webhook": "https://discord.com/api/webhooks/1392188886469443586/VtsFEQm-DPZyVOY0MHFUpjd7qirn_Hxb-rdQDOAjl25cZRc35FzTXw0y2cJzvqsUNEcu",
+  "relatorios_automaticos": true
+}
