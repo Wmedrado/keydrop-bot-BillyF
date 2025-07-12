@@ -1,7 +1,6 @@
 import argparse
 import subprocess
 import shutil
-import sys
 import os
 import json
 import time
@@ -18,7 +17,7 @@ def run(cmd, cwd=None, env=None):
 def parse_coverage(xml_path: Path) -> float:
     if not xml_path.exists():
         return 0.0
-    import xml.etree.ElementTree as ET
+    from defusedxml import ElementTree as ET
     tree = ET.parse(xml_path)
     root = tree.getroot()
     rate = float(root.get('line-rate', 0)) * 100

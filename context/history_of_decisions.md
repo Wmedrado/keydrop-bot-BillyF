@@ -24,3 +24,9 @@ Este arquivo documenta justificativas para alterações em arquivos críticos. S
 - **Afeta/Substitui:** adiciona `ci/run_staging_pipeline.sh` e atualiza `ci.yml` com job de staging.
 - **Justificativa técnica:** roda container isolado por 3 minutos em modo debug e checa logs para falhas críticas.
 - **Tipo:** melhoria
+
+## Ruff e Bandit na CI
+- **Motivo:** padronizar estilo e identificar vulnerabilidades automaticamente.
+- **Afeta/Substitui:** adiciona `pyproject.toml`, scripts de lint e segurança e altera workflow `ci.yml`.
+- **Justificativa técnica:** ferramentas garantem qualidade e previnem riscos antes do merge.
+- **Tipo:** melhoria
