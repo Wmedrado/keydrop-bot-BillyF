@@ -13,5 +13,8 @@ def test_auto_review_file_created(tmp_path):
         review_file.unlink()
     run_review()
     assert review_file.exists()
-    content = review_file.read_text()
+    try:
+        content = review_file.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        content = review_file.read_text(encoding="latin-1")
     assert content.strip()

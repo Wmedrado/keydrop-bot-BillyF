@@ -23,7 +23,10 @@ def test_capture_exception(tmp_path):
     except Exception as exc:
         h = reporter.capture_exception(exc)
     assert log.exists()
-    content = log.read_text()
+    try:
+        content = log.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        content = log.read_text(encoding="latin-1")
     assert "boom" in content
     assert h in content
 
@@ -82,7 +85,11 @@ def test_pending_file_on_send_fail(tmp_path, monkeypatch):
 
     assert reporter.counters
     assert pend.exists()
-    data = json.loads(pend.read_text())
+    try:
+        pend_content = pend.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        pend_content = pend.read_text(encoding="latin-1")
+    data = json.loads(pend_content)
     assert data[0]["message"].endswith("fail")
     monkeypatch.delenv(IS_TEST_ENV_VAR, raising=False)
 

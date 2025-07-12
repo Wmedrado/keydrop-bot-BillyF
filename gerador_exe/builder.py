@@ -35,6 +35,9 @@ REQUIREMENTS_FILE = (
     else BASE_DIR / "bot_keydrop" / "requirements.txt"
 )
 
+ERROR_LOG_DIR = BASE_DIR / "logs_erros_build"
+TEST_FAIL_LOG = ERROR_LOG_DIR / "testes_falhos.txt"
+
 logger = setup_logger("builder")
 
 error_count = 0
@@ -43,7 +46,6 @@ tolerancia_erros_teste = 2
 
 
 def open_log_file() -> None:
-    """Open the builder log file with the default application."""
     try:
         if sys.platform.startswith("win"):
             os.startfile(LOG_FILE)  # type: ignore[attr-defined]
@@ -56,7 +58,6 @@ def open_log_file() -> None:
 
 
 def show_step(step: int, total: int, message: str) -> None:
-    """Display build progress with visual indicators."""
     percent = int(step / total * 100)
     icons = ["🧪", "🔨", "📦", "✅"]
     icon = icons[min(step - 1, len(icons) - 1)]
@@ -66,7 +67,6 @@ def show_step(step: int, total: int, message: str) -> None:
 
 
 def acquire_builder_lock() -> "LockFile | None":
-    """Ensure only one instance of the builder is running."""
     lock = LockFile(LOCK_PATH)
     if not lock.acquire():
         try:
@@ -93,14 +93,12 @@ def get_version(config: dict) -> str:
 
 
 def log_error(message: str) -> None:
-    """Log error and increment counter."""
     global error_count
     error_count += 1
     logger.error(message)
 
 
 def log_warning(message: str) -> None:
-    """Log warning and increment counter."""
     global warning_count
     warning_count += 1
     logger.warning(message)
@@ -127,20 +125,29 @@ def ensure_dependency(package: str) -> None:
         subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 
 
-def install_requirements() -> None:
-    """Install project dependencies from the requirements file."""
+def install_requirements() -> bool:
     if REQUIREMENTS_FILE.exists():
         logger.info("Instalando dependências do %s", REQUIREMENTS_FILE.name)
-        subprocess.check_call(
-            [sys.executable, "-m", "pip", "install", "-r", str(REQUIREMENTS_FILE)]
+        try:
+            subprocess.check_call(
+                [sys.executable, "-m", "pip", "install", "-r", str(REQUIREMENTS_FILE)]
+            )
+        except subprocess.CalledProcessError as exc:
+            log_error(f"Erro ao instalar dependências: {exc}")
+            return False
+
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "PyQtWebEngine"])
+    except subprocess.CalledProcessError:
+        log_error(
+            "❌ Erro: Dependência 'PyQtWebEngine' ausente. Instale manualmente com:\n"
+            "pip install PyQtWebEngine"
         )
+        return False
+    return True
 
 
 def install_test_dependencies() -> None:
-    """Install additional dependencies required for tests."""
-    root_req = BASE_DIR / "requirements.txt"
-    if root_req.exists():
-        subprocess.run([sys.executable, "-m", "pip", "install", "-r", str(root_req)], check=False)
     backend_req = BASE_DIR / "bot_keydrop" / "backend" / "requirements.txt"
     subprocess.run([sys.executable, "-m", "pip", "install", "-r", str(backend_req)], check=False)
     subprocess.run(
@@ -162,16 +169,11 @@ def install_test_dependencies() -> None:
 
 
 def check_required_files() -> bool:
-    """Ensure main project files exist."""
     logger.info("Verificando arquivos essenciais...")
     reqs = {
         "launcher.py": BASE_DIR / "launcher.py",
         "config.json": BASE_DIR / "config.json",
-        "requirements.txt": (
-            BASE_DIR / "requirements.txt"
-            if (BASE_DIR / "requirements.txt").exists()
-            else BASE_DIR / "bot_keydrop" / "requirements.txt"
-        ),
+        "requirements.txt": REQUIREMENTS_FILE,
     }
     cred = BASE_DIR / "firebase_credentials.json"
     if not cred.exists():
@@ -187,7 +189,6 @@ def check_required_files() -> bool:
 
 
 def check_pyinstaller() -> bool:
-    """Verify PyInstaller availability."""
     try:
         result = subprocess.run(
             [sys.executable, "-m", "PyInstaller", "--version"],
@@ -212,39 +213,41 @@ def validate_environment(min_version=(3, 10)) -> bool:
         return False
     for pkg in ("pyinstaller", "pytest", "psutil", "requests"):
         ensure_dependency(pkg)
-    install_requirements()
+    if not install_requirements():
+        return False
     if not check_pyinstaller():
         return False
     return True
 
 
 def run_tests() -> bool:
-    """Execute the project's test suite.
-
-    Returns True when tests pass or none are found. Any failure cancels the build.
-    """
     if os.getenv("TEST_ENV", "false").lower() == "true":
         logger.info("TEST_ENV detectado - ignorando execução de testes")
         return True
 
     logger.info("Executando testes...")
     install_test_dependencies()
-    cmd = [sys.executable, "-m", "pytest", "-q"]
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-    output_lines = []
-    spinner = itertools.cycle("|/-\\")
-    while proc.poll() is None:
-        line = proc.stdout.readline()
-        if line:
-            output_lines.append(line)
-        print(f"\r🧪 Testando... {next(spinner)}", end="", flush=True)
-        time.sleep(0.1)
-    print("\r", end="")
-    remaining = proc.stdout.read()
-    if remaining:
-        output_lines.append(remaining)
-    output = "".join(output_lines)
-    returncode = proc.returncode
+    print("🔍 Executando testes com Pytest...\n")
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            "--tb=short",
+            "-v",
+            "--maxfail=5",
+            "--disable-warnings",
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        encoding="utf-8",
+    )
+
+    output = result.stdout + result.stderr
+    print(result.stdout)
+    if result.stderr:
+        print(result.stderr)
+
     lower_out = output.lower()
     for known in ("flaky", "intermittent"):
         if known in lower_out:
@@ -255,7 +258,7 @@ def run_tests() -> bool:
         logger.info(output)
         return True
 
-    if returncode != 0:
+    if result.returncode != 0:
         failed = 0
         match = re.search(r"(\d+) failed", lower_out)
         if match:
@@ -268,6 +271,8 @@ def run_tests() -> bool:
             return True
         log_error("❌ Testes falharam.")
         log_error(output)
+        ERROR_LOG_DIR.mkdir(exist_ok=True)
+        TEST_FAIL_LOG.write_text(output, encoding="utf-8")
         return False
 
     logger.info(output)
@@ -278,10 +283,16 @@ def clean_previous_build():
     logger.info("Limpando build anterior...")
     for name in ["build", "dist", "__pycache__"]:
         path = BASE_DIR / name
-        if path.exists():
-            shutil.rmtree(path)
+        try:
+            if path.exists():
+                shutil.rmtree(path)
+        except Exception as exc:
+            log_warning(f"Erro ao limpar '{path}': {exc}")
     for spec in BASE_DIR.glob("*.spec"):
-        spec.unlink()
+        try:
+            spec.unlink()
+        except Exception as exc:
+            log_warning(f"Erro ao remover spec '{spec}': {exc}")
     if TEMP_DIR.exists():
         shutil.rmtree(TEMP_DIR)
     TEMP_DIR.mkdir(parents=True, exist_ok=True)
@@ -296,13 +307,12 @@ def check_port(port: int = 8000) -> bool:
 
 
 def build_executable(config: dict, version: str, debug: bool, arch: str) -> Path:
-    """Build the executable using PyInstaller for the given mode and arch."""
     mode = "debug" if debug else "release"
     exe_name = f"{config['output_name'].lower()}_{mode}_{arch}_v{version}.exe"
     main_script = BASE_DIR / config.get("main_script", "")
     spec_file = config.get("spec_file")
 
-    if spec_file:
+    if isinstance(spec_file, str) and spec_file:
         spec_path = BASE_DIR / spec_file
         if not spec_path.exists():
             log_error(f"Spec file '{spec_path}' não encontrado.")
@@ -321,8 +331,6 @@ def build_executable(config: dict, version: str, debug: bool, arch: str) -> Path
             "--name",
             exe_name,
         ]
-    if not spec_file:
-
         if os.getenv("MODO_DEBUG") == "1" or os.getenv("MODO_SEGURO") == "1":
             cmd.remove("--noconsole")
             cmd.append("--console")
@@ -335,11 +343,9 @@ def build_executable(config: dict, version: str, debug: bool, arch: str) -> Path
             if icon_path.exists():
                 cmd.extend(["--icon", str(icon_path)])
             else:
-                log_warning(
-                    f"Ícone '{icon}' não encontrado. Continuando sem ícone."
-                )
-
+                log_warning(f"Ícone '{icon}' não encontrado. Continuando sem ícone.")
         cmd.append(str(main_script))
+
     dist_dir = BASE_DIR / "dist" / mode
     dist_dir.mkdir(parents=True, exist_ok=True)
     cmd.extend(["--distpath", str(dist_dir)])
@@ -399,8 +405,8 @@ def package_build(exe_path: Path, version: str, config: dict) -> Path:
         return Path()
     return zip_path
 
+
 def perform_build(config: dict, version: str, debug: bool = False, safe: bool = False, arch: str = "x64") -> Path:
-    """Compile and package the project for a single mode."""
     build_cfg = dict(config)
     if debug:
         os.environ["MODO_DEBUG"] = "1"

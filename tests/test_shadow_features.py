@@ -44,5 +44,9 @@ def test_branch_failure_manager(tmp_path, monkeypatch):
     for _ in range(3):
         bfm.update_failure(success=False, branch=branch)
     assert bfm.check_and_mark(branch)
-    data = json.loads(state.read_text())
+    try:
+        st_content = state.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        st_content = state.read_text(encoding="latin-1")
+    data = json.loads(st_content)
     assert data[branch] == 3
