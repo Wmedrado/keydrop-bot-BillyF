@@ -10,6 +10,7 @@ import time
 import webbrowser
 import threading
 import subprocess
+import importlib.util
 from pathlib import Path
 
 # Configuration
@@ -41,6 +42,65 @@ class ProductionLauncher:
         print(f"🌐 Interface: {FRONTEND_URL}")
         print(f"📂 Diretório: {self.base_path}")
         print()
+
+    def animate_robot(self, message: str = "Carregando"):
+        """Display a small dancing robot animation"""
+        frames = [
+            r"[¬º-°]¬",
+            r"[¬º-°]¬ ",
+            r"[¬º-°]¬♪",
+            r"[¬º-°]¬ ",
+        ]
+        for frame in frames:
+            print(f"\r{frame} {message}", end="", flush=True)
+            time.sleep(0.3)
+        print("\r", end="", flush=True)
+
+    def install_package(self, package: str):
+        """Install a Python package showing a progress animation"""
+        cmd = [sys.executable, "-m", "pip", "install", package]
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        bar_length = 20
+        pos = 0
+        while process.poll() is None:
+            bar = "=" * pos + ">" + " " * (bar_length - pos)
+            self.animate_robot(f"Instalando {package} [{bar}]")
+            pos = (pos + 1) % bar_length
+        process.communicate()
+        if process.returncode == 0:
+            print(f"✅ {package} instalado")
+        else:
+            print(f"❌ Falha ao instalar {package}")
+
+    def verify_python_dependencies(self):
+        """Check and install Python dependencies"""
+        print("🤖 Verificando dependências Python...")
+
+        req_file = self.base_path / "backend" / "requirements.txt"
+        packages = []
+        if req_file.exists():
+            for line in req_file.read_text(encoding="utf-8").splitlines():
+                line = line.strip()
+                if line and not line.startswith("#"):
+                    pkg = line.split("==")[0]
+                    packages.append(pkg)
+        else:
+            packages = ["fastapi", "uvicorn", "playwright", "psutil"]
+
+        missing = []
+        for pkg in packages:
+            if importlib.util.find_spec(pkg) is None:
+                missing.append(pkg)
+                print(f"❌ {pkg} ausente")
+            else:
+                print(f"✅ {pkg} disponível")
+
+        if missing:
+            print("\n🔧 Instalando dependências...")
+            for pkg in missing:
+                self.install_package(pkg)
+        else:
+            print("✅ Todas as dependências já estão instaladas")
 
     def check_chrome_installation(self):
         """Check if Chrome is installed"""
@@ -193,10 +253,13 @@ class ProductionLauncher:
 def main():
     """Main launcher function"""
     launcher = ProductionLauncher()
-    
+
     # Show banner
     launcher.show_startup_banner()
-    
+
+    # Verify Python requirements
+    launcher.verify_python_dependencies()
+
     # Check dependencies
     launcher.check_chrome_installation()
     
