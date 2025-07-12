@@ -3,7 +3,10 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Dict, Tuple
-from PIL import Image, ImageTk
+try:
+    from PIL import Image, ImageTk
+except Exception:  # pragma: no cover - optional dependency
+    Image = ImageTk = None  # type: ignore
 
 FALLBACK_ICON = Path(__file__).resolve().parent.parent / "bot-icone.png"
 

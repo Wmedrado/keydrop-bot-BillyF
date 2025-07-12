@@ -6,8 +6,15 @@ import logging
 from pathlib import Path
 from typing import Any, Callable, Tuple, Union
 
-import customtkinter as ctk
-from PIL import Image, ImageTk
+try:
+    import customtkinter as ctk
+except Exception:  # pragma: no cover - optional dependency
+    ctk = None  # type: ignore
+
+try:  # Pillow might be missing in minimal environments
+    from PIL import Image, ImageTk
+except Exception:  # pragma: no cover - optional dependency
+    Image = ImageTk = None  # type: ignore
 
 
 def exibir_erro(mensagem: str) -> None:
