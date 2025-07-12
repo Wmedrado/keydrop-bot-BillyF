@@ -48,15 +48,12 @@ _PLACEHOLDER_IMAGE = Path(__file__).resolve().parent / "bot_keydrop" / "bot-icon
 
 
 
-def _load_pyrebase() -> Any:
+def _load_pyrebase() -> "pyrebase.pyrebase.Firebase":
     """Initialize a Pyrebase client using ``firebase_config.json``.
 
     The import is performed lazily so tests can run without the optional
     ``pyrebase`` dependency installed.
     """
-
-def _load_pyrebase() -> "pyrebase.pyrebase.Firebase":
-    """Initialize a Pyrebase client using ``firebase_config.json``."""
 
     if not _FIREBASE_CONFIG.exists():
         raise FileNotFoundError(
