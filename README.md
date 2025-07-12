@@ -80,6 +80,9 @@ Para executar quaisquer testes presentes no repositório:
 pytest -q       # se o pytest estiver configurado
 python -m unittest discover -v
 ```
+Instale as dependências de desenvolvimento listadas em `requirements-dev.txt`
+para garantir que plugins como `pytest-asyncio` e `pytest-mock` estejam
+disponíveis.
 
 ## 🛠 Builds Disponíveis
 Execute `python gerador_exe/builder.py` para gerar os executáveis. O script cria automaticamente dois arquivos em `gerador_exe/binario_final`:

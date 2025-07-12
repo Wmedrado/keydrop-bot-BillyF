@@ -19,6 +19,7 @@ from tkinter import messagebox, filedialog
 # Pillow is required for tkhtmlview but direct imports aren't needed here
 from tkhtmlview import HTMLLabel
 from bot_keydrop.gui.utils import safe_load_image, safe_widget_call
+from cloud.firebase_client import registrar_compra
 
 try:
     import pyrebase
@@ -34,7 +35,9 @@ from cloud.firebase_client import (
     initialize_firebase,
     salvar_perfil,
     upload_foto_perfil,
+    salvar_discord_info,
 )
+from discord_oauth import oauth_login, add_vip_role
 
 logger = logging.getLogger(__name__)
 
@@ -133,6 +136,7 @@ class LoginFrame(ctk.CTkFrame):
         self.on_register = on_register
         self.email_var = ctk.StringVar()
         self.senha_var = ctk.StringVar()
+        self.discord_data: Optional[Dict[str, Any]] = None
         self._build()
 
     def _build(self) -> None:
@@ -141,6 +145,8 @@ class LoginFrame(ctk.CTkFrame):
 
         ctk.CTkLabel(self, text="Senha:").pack(pady=5)
         ctk.CTkEntry(self, textvariable=self.senha_var, show="*").pack(pady=5)
+
+        ctk.CTkButton(self, text="Entrar com Discord", command=self._login_discord).pack(pady=5)
 
         ctk.CTkButton(self, text="Entrar", command=self._handle_login).pack(pady=10)
         ctk.CTkButton(self, text="Cadastrar", command=self.on_register).pack()
@@ -153,9 +159,21 @@ class LoginFrame(ctk.CTkFrame):
             return
         try:
             user = autenticar_usuario(email, senha)
+            if self.discord_data:
+                user["discord"] = self.discord_data
             self.on_login(user)
         except Exception as exc:  # pragma: no cover - network errors
             messagebox.showerror("Falha no login", str(exc))
+
+    def _login_discord(self) -> None:
+        try:
+            info = oauth_login()
+            self.discord_data = info
+            if info.get("email"):
+                self.email_var.set(info["email"])
+            messagebox.showinfo("Discord", f"Conectado como {info['username']}")
+        except Exception as exc:  # pragma: no cover - network errors
+            messagebox.showerror("Discord", str(exc))
 
 
 class RegisterFrame(ctk.CTkFrame):
@@ -297,4 +315,151 @@ class RankingFrame(ctk.CTkFrame):
             html.append(f"<li>{medal} {uid} - R$ {lucro:.2f} {highlight}</li>")
         html.append("</ol>")
         safe_widget_call(self.html_label.set_html, "".join(html))
+
+
+class StoreFrame(ctk.CTkFrame):
+    """Loja de recursos premium."""
+
+    PIX_KEY = (
+        "00020126360014BR.GOV.BCB.PIX0114+55199875533535204000053039865802BR5925William Franck Medrado Ba6009SAO PAULO62140510i2Xyt24EJY63040EB7"
+    )
+
+    PRODUCTS = [
+        {
+            "id": "premium",
+            "nome": "Acesso Premium",
+            "preco": 29.9,
+            "descricao": "Desbloqueia recursos profissionais",
+        },
+        {
+            "id": "tema_extra",
+            "nome": "Tema Extra",
+            "preco": 9.9,
+            "descricao": "Tema visual adicional",
+        },
+    ]
+
+    def __init__(self, master: ctk.CTk, user_id: str, discord_data: Optional[Dict[str, Any]] = None, **kwargs):
+        super().__init__(master, **kwargs)
+        self.user_id = user_id
+        self.discord_data = discord_data
+        self.cart: list[dict] = []
+        self._build()
+
+    def _build(self) -> None:
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=0)
+        self.products_frame = ctk.CTkScrollableFrame(self)
+        self.products_frame.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
+        self.cart_frame = ctk.CTkFrame(self)
+        self.cart_frame.grid(row=0, column=1, sticky="ns", padx=5, pady=5)
+
+        self.cart_list = ctk.CTkFrame(self.cart_frame)
+        self.cart_list.pack(fill="both", expand=True)
+        self.total_var = ctk.StringVar(value="Total: R$ 0.00")
+        ctk.CTkLabel(self.cart_frame, textvariable=self.total_var).pack(pady=5)
+        ctk.CTkButton(
+            self.cart_frame, text="Finalizar Pagamento", command=self._checkout
+        ).pack(pady=5)
+
+        for prod in self.PRODUCTS:
+            card = ctk.CTkFrame(self.products_frame)
+            card.pack(fill="x", pady=5, padx=5)
+            ctk.CTkLabel(card, text=prod["nome"], font=("Arial", 14)).pack(anchor="w")
+            ctk.CTkLabel(card, text=prod["descricao"], wraplength=180).pack(anchor="w")
+            ctk.CTkLabel(card, text=f"R$ {prod['preco']:.2f}").pack(anchor="w")
+            ctk.CTkButton(
+                card,
+                text="Adicionar ao carrinho",
+                command=lambda p=prod: self._add_to_cart(p),
+            ).pack(anchor="e", pady=5)
+
+    def _add_to_cart(self, prod: dict) -> None:
+        self.cart.append(prod)
+        self._update_cart()
+
+    def _remove_item(self, index: int) -> None:
+        self.cart.pop(index)
+        self._update_cart()
+
+    def _update_cart(self) -> None:
+        for child in self.cart_list.winfo_children():
+            child.destroy()
+        total = 0.0
+        for idx, item in enumerate(self.cart):
+            row = ctk.CTkFrame(self.cart_list)
+            row.pack(fill="x")
+            ctk.CTkLabel(row, text=item["nome"]).pack(side="left")
+            ctk.CTkButton(row, text="Remover", width=60, command=lambda i=idx: self._remove_item(i)).pack(side="right")
+            total += item["preco"]
+        self.total_var.set(f"Total: R$ {total:.2f}")
+
+    def _checkout(self) -> None:
+        if not self.cart:
+            messagebox.showinfo("Carrinho", "Adicione itens ao carrinho primeiro.")
+            return
+        PaymentWindow(self, self.user_id, self.cart, self.PIX_KEY, self.discord_data)
+
+
+class PaymentWindow(ctk.CTkToplevel):
+    def __init__(self, master: ctk.CTk, user_id: str, itens: list[dict], pix_key: str, discord_data: Optional[Dict[str, Any]] = None):
+        super().__init__(master)
+        self.user_id = user_id
+        self.itens = itens
+        self.pix_key = pix_key
+        self.discord_data = discord_data
+        self.title("Pagamento")
+        self._build()
+
+    def _build(self) -> None:
+        ctk.CTkLabel(self, text="Chave Pix:").pack(pady=5)
+        entry = ctk.CTkEntry(self, width=300)
+        entry.insert(0, self.pix_key)
+        entry.configure(state="readonly")
+        entry.pack(pady=5)
+
+        btn_copy = ctk.CTkButton(self, text="Copiar", command=lambda: self.clipboard_append(self.pix_key))
+        btn_copy.pack()
+
+        try:
+            import qrcode
+            from PIL import ImageTk
+
+            img = qrcode.make(self.pix_key)
+            img = img.resize((180, 180))
+            photo = ImageTk.PhotoImage(img)
+            label = ctk.CTkLabel(self, image=photo, text="")
+            label.image = photo
+            label.pack(pady=5)
+        except Exception:
+            pass
+
+        ctk.CTkButton(self, text="Já paguei", command=self._confirm).pack(pady=10)
+
+    def _confirm(self) -> None:
+        try:
+            registrar_compra(self.user_id, self.itens)
+            if self.discord_data and 'token' in self.discord_data:
+                try:
+                    add_vip_role(self.discord_data['id'], self.discord_data['token'])
+                    salvar_discord_info(
+                        self.user_id,
+                        {
+                            'discord_id': self.discord_data['id'],
+                            'username': self.discord_data['username'],
+                            'email': self.discord_data.get('email'),
+                            'vip_status': True,
+                            'guild_joined': True,
+                        },
+                    )
+                except Exception as exc:  # pragma: no cover - network errors
+                    logger.exception("Falha ao aplicar VIP - fallback manual: %s", exc)
+        except Exception as exc:  # pragma: no cover - network errors
+            messagebox.showerror("Erro", f"Falha ao registrar compra.\n{exc}")
+        finally:
+            messagebox.showinfo(
+                "Pagamento",
+                "Compra em validação, será liberado em até 10 minutos.",
+            )
+            self.destroy()
 

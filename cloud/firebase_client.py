@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Any, List, Dict
+from datetime import datetime
 
 try:
     import firebase_admin
@@ -122,3 +123,36 @@ def upload_foto_perfil(user_id: str, caminho_imagem: str) -> str:
         logger.exception("Falha ao enviar foto de perfil: %s", exc)
         raise RuntimeError("Falha ao enviar foto de perfil") from exc
 
+
+def registrar_compra(user_id: str, itens: List[Dict[str, Any]]) -> None:
+    """Persist a purchase attempt in the realtime database."""
+    initialize_firebase()
+    compra_ref = db.reference(f"compras/{user_id}")
+    dados = {
+        "itens": itens,
+        "timestamp": int(datetime.utcnow().timestamp()),
+    }
+    compra_ref.push(dados)
+    logger.debug("Compra registrada para %s: %s", user_id, dados)
+
+
+
+def salvar_discord_info(user_id: str, info: Dict[str, Any]) -> None:
+    """Persist Discord-related information for a user."""
+    initialize_firebase()
+    ref = db.reference(f"users/{user_id}/discord")
+    ref.update(info)
+    logger.debug("Discord info salvo para %s: %s", user_id, 
+def registrar_log_suspeito(user_id: str, hwid: str, recurso: str, mensagem: str) -> None:
+    """Save a suspicious activity log entry."""
+    initialize_firebase()
+    log_ref = db.reference("logs_suspeitos")
+    dados = {
+        "user_id": user_id,
+        "hwid": hwid,
+        "recurso": recurso,
+        "mensagem": mensagem,
+        "timestamp": int(datetime.utcnow().timestamp()),
+    }
+    log_ref.push(dados)
+    logger.warning("Registro suspeito: %s", dados)

@@ -40,7 +40,16 @@ from bot_logic import (
     BotStatus,
     TabWatchdog,
 )
+from cloud.permissions import (
+    fetch_permissions,
+    has_premium_access,
+    has_telegram_access,
+    subscription_active,
+)
+from cloud.hwid import validate_user_hwid, generate_hwid
+from cloud.firebase_client import registrar_log_suspeito
 from tools.proxy_manager import ProxyManager
+from . import premium
 
 # Configuração de logging
 logging.basicConfig(level=logging.INFO)
@@ -75,6 +84,7 @@ bot_scheduler = None
 tab_watchdog = None
 telegram_bot = None
 proxy_manager = None
+permissions_data: Dict[str, Any] = {}
 
 
 # Gerenciamento de WebSocket
@@ -173,6 +183,26 @@ async def startup_event():
     browser_manager.proxy_manager = proxy_manager
     browser_manager.page_load_timeout = config.page_load_timeout * 1000
 
+    # Carregar permissoes do usuario se houver sessao
+    session_file = Path("user_session.json")
+    if session_file.exists():
+        try:
+            uid = json.loads(session_file.read_text()).get("localId")
+            if uid:
+                permissions_data.update(fetch_permissions(uid))
+                if not validate_user_hwid(uid):
+                    registrar_log_suspeito(uid, generate_hwid(), "startup", "HWID divergente")
+                    raise RuntimeError("Essa conta está vinculada a outro dispositivo. Acesso bloqueado.")
+                if not subscription_active(permissions_data):
+                    permissions_data["premium_access"] = False
+                    permissions_data["telegram_access"] = False
+                if not has_premium_access(permissions_data) and config.num_tabs > 20:
+                    config_manager.update_config(num_tabs=20)
+                if not has_telegram_access(permissions_data):
+                    config_manager.update_config(telegram_enabled=False)
+        except Exception as exc:  # pragma: no cover - network or parse errors
+            logger.error("Erro ao verificar permissoes: %s", exc)
+
     # Criar instâncias do bot
     automation_engine = create_keydrop_automation(browser_manager)
     bot_scheduler = create_bot_scheduler(
@@ -191,8 +221,12 @@ async def startup_event():
     )
     tab_watchdog.start()
 
-    # Iniciar bot do Telegram se configurado
-    if config.telegram_enabled and config.telegram_bot_token:
+    # Iniciar bot do Telegram se configurado e permitido pelo premium
+    if (
+        config.telegram_enabled
+        and config.telegram_bot_token
+        and premium.has_permission("default", "telegram_access")
+    ):
         from telegram_control import TelegramControl
 
         telegram_bot = TelegramControl(
@@ -343,7 +377,11 @@ async def update_configuration(request: ConfigUpdateRequest):
                 if telegram_bot:
                     await telegram_bot.stop()
                 cfg = get_config()
-                if cfg.telegram_enabled and cfg.telegram_bot_token:
+                if (
+                    cfg.telegram_enabled
+                    and cfg.telegram_bot_token
+                    and premium.has_permission("default", "telegram_access")
+                ):
                     from telegram_control import TelegramControl
 
                     telegram_bot = TelegramControl(
@@ -382,7 +420,11 @@ async def reset_configuration():
             if telegram_bot:
                 await telegram_bot.stop()
             cfg = get_config()
-            if cfg.telegram_enabled and cfg.telegram_bot_token:
+            if (
+                cfg.telegram_enabled
+                and cfg.telegram_bot_token
+                and premium.has_permission("default", "telegram_access")
+            ):
                 from telegram_control import TelegramControl
 
                 telegram_bot = TelegramControl(
