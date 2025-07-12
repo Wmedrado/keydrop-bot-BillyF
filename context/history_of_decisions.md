@@ -42,3 +42,9 @@ Cada nova funcionalidade ou ajuste relevante deve adicionar um bloco seguindo o 
 - **Afeta/Substitui:** remove `validate_pr.yml`, passo `Validate PR description` em `ci.yml` e checagem em `run_pipeline.sh`.
 - **Justificativa técnica:** simplifica o fluxo de CI, mantendo a recomendação do template sem impedir integrações úteis.
 - **Tipo:** melhoria
+
+## Sistema de cache e limitador
+- **Motivo:** otimizar operações repetitivas e controle de requisições.
+- **Afeta/Substitui:** adiciona `smart_cache`, `history_recorder`, `rate_limiter`, `browser_fallback` e verificação de variáveis sensíveis no CI.
+- **Justificativa técnica:** reduz custo computacional, registra histórico individual e previne vazamento de credenciais.
+- **Tipo:** melhoria

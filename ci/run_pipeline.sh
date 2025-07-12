@@ -23,6 +23,7 @@ pip install beautifulsoup4
 
 # Validate modifications to protected files
 python ci/check_protected_files.py | tee build_results/protected_files.log
+python ci/sensitive_var_check.py | tee build_results/sensitive_vars.log
 
 
 # Validate pull request structure (optional)
