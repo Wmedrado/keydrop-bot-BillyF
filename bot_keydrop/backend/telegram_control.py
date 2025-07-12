@@ -3,6 +3,7 @@ from typing import List, Optional
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Application, CallbackQueryHandler, CommandHandler, ContextTypes
+from telegram.error import InvalidToken, NetworkError, TelegramError
 
 from bot_logic import BrowserManager, BotScheduler, BotStatus
 
@@ -38,9 +39,33 @@ class TelegramControl:
         return chat and chat.id in self.allowed_chat_ids
 
     async def start(self) -> None:
-        await self.app.initialize()
-        await self.app.start()
-        await self.app.updater.start_polling()
+        """Inicia o controle via Telegram com tratamento de erros."""
+        try:
+            await self.app.initialize()
+            await self.app.start()
+            await self.app.updater.start_polling()
+        except InvalidToken as e:
+            msg = "Token do Telegram inválido."
+            logger.error(f"{msg}: {e}")
+            print(msg)
+        except NetworkError as e:
+            msg = "Falha de rede ao conectar ao Telegram."
+            logger.error(f"{msg}: {e}")
+            print(msg)
+            try:
+                for chat_id in self.allowed_chat_ids:
+                    await self.app.bot.send_message(chat_id=chat_id, text=msg)
+            except TelegramError as te:
+                logger.error(f"Erro ao enviar mensagem de falha via Telegram: {te}")
+        except Exception as e:
+            msg = "Erro inesperado ao iniciar o bot do Telegram."
+            logger.error(f"{msg}: {e}")
+            print(msg)
+            try:
+                for chat_id in self.allowed_chat_ids:
+                    await self.app.bot.send_message(chat_id=chat_id, text=msg)
+            except TelegramError as te:
+                logger.error(f"Erro ao enviar mensagem de falha via Telegram: {te}")
 
     async def stop(self) -> None:
         await self.app.updater.stop()
