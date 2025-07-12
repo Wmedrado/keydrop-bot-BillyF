@@ -1,6 +1,5 @@
 import sys
 import json
-import asyncio
 from pathlib import Path
 from unittest import mock
 import pytest
@@ -66,5 +65,5 @@ def test_gui_starts_with_failed_integrations(monkeypatch):
     monkeypatch.setattr('tkinter.StringVar', dummy)
     monkeypatch.setattr('tkinter.BooleanVar', dummy)
     with mock.patch('cloud.firebase_client.initialize_firebase', side_effect=RuntimeError('offline')):
-        gui = KeydropBotGUI()
+        KeydropBotGUI()
     assert dummy.called

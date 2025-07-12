@@ -1,6 +1,5 @@
 import sys
 from pathlib import Path
-import asyncio
 import types
 
 ROOT = Path(__file__).resolve().parents[1]

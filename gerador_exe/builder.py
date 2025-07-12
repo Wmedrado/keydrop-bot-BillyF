@@ -6,8 +6,6 @@ import sys
 import atexit
 import re
 from datetime import datetime
-import itertools
-import time
 from pathlib import Path
 
 from log_utils import setup_logger

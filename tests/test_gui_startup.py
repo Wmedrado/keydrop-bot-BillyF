@@ -1,7 +1,6 @@
 import sys
 from pathlib import Path
 
-import pytest
 from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -24,5 +23,5 @@ def test_gui_instantiation(monkeypatch):
     monkeypatch.setattr('tkinter.StringVar', dummy)
     monkeypatch.setattr('tkinter.BooleanVar', dummy)
     monkeypatch.setattr(KeydropBotGUI, 'start_monitoring', lambda self: None)
-    gui = KeydropBotGUI()
+    KeydropBotGUI()
     assert dummy.called

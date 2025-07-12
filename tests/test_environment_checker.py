@@ -1,11 +1,9 @@
 
-from pathlib import Path
 from bot_keydrop.system_safety.environment_checker import (
     executando_no_diretorio_correto,
     verificar_arquivos_obrigatorios,
 )
 from tkinter import messagebox
-from bot_keydrop.system_safety.environment_checker import executando_no_diretorio_correto
 
 
 def test_executando_no_diretorio_correto(tmp_path, monkeypatch):
