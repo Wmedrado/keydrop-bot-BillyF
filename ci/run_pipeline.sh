@@ -25,5 +25,7 @@ pytest --html=tests/test_report.html --self-contained-html --cov=bot_keydrop --c
 
 # Regression intelligence validation
 python ci/check_regression_intelligence.py | tee build_results/regression_check.log
+# Automated PR review
+python ci/auto_pr_review.py | tee build_results/auto_review.log
 
 echo "Build succeeded" > build_results/build_status.log
