@@ -6,7 +6,7 @@ Fornece endpoints para comunicação com o frontend
 import asyncio
 import logging
 import sys
-from datetime import datetime
+from datetime import datetime, date
 from typing import Dict, List, Optional, Any
 import json
 
@@ -655,6 +655,26 @@ async def get_reports_summary():
 
     except Exception as e:
         logger.error(f"Erro ao gerar resumo de relatórios: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Endpoint de análise histórica
+@app.get("/analytics/performance")
+def get_performance_summary(start_date: Optional[str] = None, end_date: Optional[str] = None):
+    """Retorna resumo de performance a partir dos registros históricos."""
+    try:
+        from tools import PerformanceHistory
+
+        start = datetime.fromisoformat(start_date).date() if start_date else date.today()
+        end = datetime.fromisoformat(end_date).date() if end_date else date.today()
+
+        history = PerformanceHistory("default")
+        summary = history.summarize(start, end)
+        summary["start_date"] = start.isoformat()
+        summary["end_date"] = end.isoformat()
+        return summary
+    except Exception as e:
+        logger.error(f"Erro ao obter análise histórica: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

@@ -10,6 +10,8 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
 
+from ..tools import PerformanceHistory, SessionRecord
+
 # Configuração de logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -264,6 +266,28 @@ class BotScheduler:
                 await self.browser_manager.emergency_stop()
             else:
                 await self.browser_manager.stop_browser()
+
+            # Registrar estatísticas da sessão
+            try:
+                if self.automation_engine:
+                    history = PerformanceHistory("default")
+                    sessions = self.automation_engine.get_participation_history()
+                    successes = len([a for a in sessions if a['result'] == 'success'])
+                    failures = len([a for a in sessions if a['result'] == 'failed'])
+                    profit = sum(w['amount'] for w in self.automation_engine.get_winnings_history())
+                    active_time = (datetime.now() - self.statistics.start_time).total_seconds() if self.statistics.start_time else 0
+                    record = SessionRecord(
+                        start_time=self.statistics.start_time.isoformat() if self.statistics.start_time else datetime.now().isoformat(),
+                        end_time=datetime.now().isoformat(),
+                        participations=len(sessions),
+                        successes=successes,
+                        failures=failures,
+                        profit=profit,
+                        active_time=active_time,
+                    )
+                    history.record_session(record)
+            except Exception as e:
+                logger.error(f"Erro ao registrar histórico de performance: {e}")
             
             self.status = BotStatus.STOPPED
             await self._notify_status_change()
