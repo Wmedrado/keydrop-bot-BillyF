@@ -57,6 +57,15 @@ python bot_keydrop/production_launcher.py
 O launcher verifica o Chrome, cria as pastas necessárias, inicia o servidor e
 abre o navegador padrão apontando para a interface do bot.
 
+### Lançador com Seleção de Interface
+
+Se preferir escolher entre a interface web clássica ou a nova interface moderna
+em DearPyGUI, utilize o `interface_selector.py`:
+
+```bash
+python bot_keydrop/interface_selector.py
+```
+
 ## Configuração do Bot
 
 As configurações padrão encontram-se no arquivo `config.json` na raiz do
