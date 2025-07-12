@@ -10,5 +10,6 @@
 | Timeout enforcer | Implemented | `bot_keydrop/system_safety/timeout.py` used in `discord_oauth.py` |
 | Ruff analysis | Implemented | Hook added in `.pre-commit-config.yaml` and run in CI |
 | Bandit security checks | Implemented | Hook added in `.pre-commit-config.yaml` and run in CI |
+| SonarCloud static analysis | Implemented | `sonar-project.properties` and workflow in `ci.yml` |
 | Sandbox execution | Implemented | `bot_keydrop/system_safety/sandbox.py` provides sandbox helper |
 | Detailed logger | Implemented | `log_utils.py` formatter includes level, module and line |

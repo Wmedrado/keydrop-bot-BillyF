@@ -31,6 +31,10 @@ jobs:
         run: |
           pip install bandit
           bandit -r .
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       - name: Run pipeline
         run: |
           bash ci/run_pipeline.sh
