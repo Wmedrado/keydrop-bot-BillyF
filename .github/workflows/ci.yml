@@ -13,6 +13,8 @@ jobs:
         with:
           python-version: '3.11'
       - name: Auto rebase AI branches
+        if: startsWith(github.ref_name, 'codex/') || startsWith(github.ref_name, 'bot/') ||
+            startsWith(github.head_ref, 'codex/') || startsWith(github.head_ref, 'bot/')
         run: python ci/pre_pr_rebase.py
       - name: Validate PR description
         if: github.event_name == 'pull_request'
