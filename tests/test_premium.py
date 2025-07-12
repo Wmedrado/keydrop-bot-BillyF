@@ -58,8 +58,8 @@ class TestPremiumSystem(unittest.TestCase):
         self.assertFalse(premium.has_permission("u1", "premium_access"))
 
     def test_purchase_frame(self):
-        premium.purchase_product("u2", "frame_gold")
-        self.assertIn("frame_gold", self.store.data["u2"]["items_owned"])
+        premium.purchase_product("u2", "frame_neon")
+        self.assertIn("frame_neon", self.store.data["u2"]["items_owned"])
 
 
 if __name__ == "__main__":

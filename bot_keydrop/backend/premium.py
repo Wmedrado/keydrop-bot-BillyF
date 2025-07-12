@@ -10,9 +10,9 @@ PREMIUM_PRODUCTS = {
     "telegram_month": {"permission": "telegram_access", "duration_days": 30},
     "premium_month": {"permission": "premium_access", "duration_days": 30},
     "premium_year": {"permission": "premium_access", "duration_days": 365},
+    "frame_neon": {"item": "frame_neon"},
+    "frame_diamond": {"item": "frame_diamond"},
     "frame_gold": {"item": "frame_gold"},
-    "frame_shadow": {"item": "frame_shadow"},
-    "frame_animated": {"item": "frame_animated"},
 }
 
 

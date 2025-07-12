@@ -142,7 +142,8 @@ def salvar_discord_info(user_id: str, info: Dict[str, Any]) -> None:
     initialize_firebase()
     ref = db.reference(f"users/{user_id}/discord")
     ref.update(info)
-    logger.debug("Discord info salvo para %s: %s", user_id, 
+    logger.debug("Discord info salvo para %s: %s", user_id, info)
+
 def registrar_log_suspeito(user_id: str, hwid: str, recurso: str, mensagem: str) -> None:
     """Save a suspicious activity log entry."""
     initialize_firebase()
@@ -156,3 +157,4 @@ def registrar_log_suspeito(user_id: str, hwid: str, recurso: str, mensagem: str)
     }
     log_ref.push(dados)
     logger.warning("Registro suspeito: %s", dados)
+
