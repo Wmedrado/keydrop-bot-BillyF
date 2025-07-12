@@ -87,6 +87,12 @@ root = tk.Tk()
 root.title("Keydrop Bot - Selecione o Modo")
 root.geometry("420x250")
 root.resizable(False, False)
+icon_path = Path(__file__).resolve().parent / "bot-icone.ico"
+if icon_path.exists():
+    try:
+        root.iconbitmap(icon_path)
+    except Exception:
+        pass
 
 main_label = ttk.Label(
     root, text="Keydrop Bot - Selecione o Modo", font=("Arial", 14, "bold")
