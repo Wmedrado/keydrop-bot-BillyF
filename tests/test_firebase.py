@@ -48,6 +48,8 @@ class TestUserAuth(unittest.TestCase):
 
 class TestUploadFoto(unittest.TestCase):
     def setUp(self):
+        if not hasattr(firebase_client, 'storage'):
+            self.skipTest('firebase_admin not available')
         self.init_patch = mock.patch("cloud.firebase_client.initialize_firebase")
         self.init_patch.start()
         self.blob = mock.Mock()

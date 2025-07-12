@@ -10,20 +10,21 @@ from .backups import backup_arquivo, restaurar_arquivo
 from .watchdog import ProcessWatchdog
 from .error_reporter import error_reporter, ErrorReporter
 from .diagnostic import diagnostic
-from .dependency_validator import run_dependency_check
+from .dependency_validator import run_dependency_check, get_available_browser
 
 __all__ = [
-    'verificar_conexao_internet',
-    'ambiente_compativel',
-    'verificar_arquivos_obrigatorios',
-    'LockFile',
-    'executando_no_diretorio_correto',
-    'validar_permissoes',
-    'backup_arquivo',
-    'restaurar_arquivo',
-    'ProcessWatchdog',
-    'error_reporter',
-    'ErrorReporter',
-    'diagnostic',
-    'run_dependency_check',
+    "verificar_conexao_internet",
+    "ambiente_compativel",
+    "verificar_arquivos_obrigatorios",
+    "LockFile",
+    "executando_no_diretorio_correto",
+    "validar_permissoes",
+    "backup_arquivo",
+    "restaurar_arquivo",
+    "ProcessWatchdog",
+    "error_reporter",
+    "ErrorReporter",
+    "diagnostic",
+    "run_dependency_check",
+    "get_available_browser",
 ]
