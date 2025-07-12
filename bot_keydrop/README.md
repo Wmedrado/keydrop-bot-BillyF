@@ -211,6 +211,7 @@ WS     /ws
 ### Recursos Otimizados
 - **Memória:** Gerenciamento eficiente de instâncias
 - **CPU:** Processamento assíncrono
+- **Looping:** Ciclos contínuos migrados para `asyncio`
 - **Rede:** Uso otimizado de bandwidth
 - **Disco:** Logs rotativos e limpeza automática
 

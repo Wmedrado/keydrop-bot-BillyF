@@ -10,6 +10,8 @@ import time
 import webbrowser
 import threading
 import subprocess
+import asyncio
+import httpx
 from pathlib import Path
 
 # Configuration
@@ -128,25 +130,24 @@ class ProductionLauncher:
             print(f"❌ Erro ao iniciar backend: {e}")
             return False
 
-    def wait_for_server(self, max_wait=30):
-        """Wait for server to be ready"""
+    async def wait_for_server(self, max_wait: int = 30) -> bool:
+        """Wait asynchronously for the backend server to be ready"""
         print("⏳ Aguardando servidor estar pronto...")
-        
-        import requests
-        
-        for i in range(max_wait):
-            try:
-                response = requests.get(f"{FRONTEND_URL}/health", timeout=2)
-                if response.status_code == 200:
-                    print("✅ Servidor pronto!")
-                    return True
-            except:
-                pass
-            
-            time.sleep(1)
-            if i % 5 == 0 and i > 0:
-                print(f"⏳ Aguardando... ({i}s)")
-        
+
+        async with httpx.AsyncClient(timeout=2) as client:
+            for i in range(max_wait):
+                try:
+                    response = await client.get(f"{FRONTEND_URL}/health")
+                    if response.status_code == 200:
+                        print("✅ Servidor pronto!")
+                        return True
+                except Exception:
+                    pass
+
+                await asyncio.sleep(1)
+                if i % 5 == 0 and i > 0:
+                    print(f"⏳ Aguardando... ({i}s)")
+
         print("⚠️  Servidor não respondeu em tempo hábil")
         return False
 
@@ -180,17 +181,12 @@ class ProductionLauncher:
         print("❓ Para sair: Pressione Ctrl+C")
         print("=" * 60)
 
-    def main_loop(self):
-        """Main application loop"""
-        try:
-            while True:
-                time.sleep(1)
-        except KeyboardInterrupt:
-            print("\n🛑 Parando aplicação...")
-            print("👋 Obrigado por usar Keydrop Bot Professional!")
-            sys.exit(0)
+    async def main_loop(self):
+        """Main asynchronous application loop"""
+        while True:
+            await asyncio.sleep(1)
 
-def main():
+async def main():
     """Main launcher function"""
     launcher = ProductionLauncher()
     
@@ -209,7 +205,7 @@ def main():
         sys.exit(1)
     
     # Wait for server
-    if not launcher.wait_for_server():
+    if not await launcher.wait_for_server():
         input("❌ Servidor não iniciou. Pressione Enter para sair...")
         sys.exit(1)
     
@@ -220,7 +216,11 @@ def main():
     launcher.show_instructions()
     
     # Main loop
-    launcher.main_loop()
+    await launcher.main_loop()
 
 if __name__ == "__main__":
-    main()
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("\n🛑 Parando aplicação...")
+        print("👋 Obrigado por usar Keydrop Bot Professional!")
