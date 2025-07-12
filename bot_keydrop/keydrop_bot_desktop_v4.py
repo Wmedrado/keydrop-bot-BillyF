@@ -132,6 +132,8 @@ class KeydropBot:
             'ultima_participacao': None,
             'ultima_atividade': 'Iniciando...'
         }
+        # Track giveaway list size to detect DOM changes
+        self.last_giveaway_count = -1
         
     def start(self):
         """Iniciar bot"""
@@ -383,9 +385,10 @@ class KeydropBot:
                 self.driver.get("https://key-drop.com/pt/giveaways")
                 time.sleep(3)
             
-            # Atualizar página para ver novos sorteios
-            self.driver.refresh()
-            time.sleep(2)
+            # Atualizar página para ver novos sorteios somente se necessário
+            if self.page_needs_refresh():
+                self.driver.refresh()
+                time.sleep(2)
             
             # Fechar possíveis popups
             self.close_popups()
@@ -545,6 +548,24 @@ class KeydropBot:
                     
         except Exception as e:
             print(f"[Bot {self.bot_id}] Erro ao fechar popups: {e}")
+
+    def page_needs_refresh(self):
+        """Verifica se a lista de sorteios mudou e decide se deve atualizar"""
+        try:
+            if not self.driver or not By:
+                return True
+
+            elements = self.driver.find_elements(By.CSS_SELECTOR,
+                                                 "[data-testid='div-active-giveaways-list-single-card']")
+            current_count = len(elements)
+
+            if self.last_giveaway_count != current_count:
+                self.last_giveaway_count = current_count
+                return False
+        except Exception:
+            return True
+
+        return True
     
     def handle_error(self, error):
         """Lidar com erros e implementar retry"""

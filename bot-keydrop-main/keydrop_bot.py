@@ -61,6 +61,8 @@ class KeyDropBot:
             'ganho_periodo': 0.0,
             'total_ganho': 0.0
         }
+        # Para detectar mudanças na lista de sorteios
+        self.last_giveaway_count = -1
     def checar_alerta_discord(self):
         """Envia alerta para o Discord se ficar 30 minutos sem participar"""
         if not self.discord_webhook:
@@ -405,6 +407,24 @@ class KeyDropBot:
             return True
         except:
             return False
+
+    def page_needs_refresh(self):
+        """Verifica se a lista de sorteios mudou para decidir atualizar"""
+        try:
+            if not self.driver:
+                return True
+
+            elements = self.driver.find_elements(By.CSS_SELECTOR,
+                                                 "[data-testid='div-active-giveaways-list-single-card']")
+            current_count = len(elements)
+
+            if self.last_giveaway_count != current_count:
+                self.last_giveaway_count = current_count
+                return False
+        except Exception:
+            return True
+
+        return True
 
     def participar_sorteio(self):
         """Lógica principal para participar de sorteios com sistema de retry avançado"""
@@ -1069,9 +1089,10 @@ class KeyDropBot:
             except Exception as e:
                 print(f"[Bot {self.bot_id}] Limpeza via DevTools falhou: {e}")
             
-            # Atualiza a página atual
-            self.driver.refresh()
-            time.sleep(3)
+            # Atualiza a página atual somente se necessário
+            if self.page_needs_refresh():
+                self.driver.refresh()
+                time.sleep(3)
             
             self.status = "✅ Cache limpo com sucesso!"
             print(f"[Bot {self.bot_id}] Cache limpo com sucesso!")
