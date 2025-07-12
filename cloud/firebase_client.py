@@ -136,9 +136,23 @@ def registrar_compra(user_id: str, itens: List[Dict[str, Any]]) -> None:
     logger.debug("Compra registrada para %s: %s", user_id, dados)
 
 
+
 def salvar_discord_info(user_id: str, info: Dict[str, Any]) -> None:
     """Persist Discord-related information for a user."""
     initialize_firebase()
     ref = db.reference(f"users/{user_id}/discord")
     ref.update(info)
-    logger.debug("Discord info salvo para %s: %s", user_id, info)
+    logger.debug("Discord info salvo para %s: %s", user_id, 
+def registrar_log_suspeito(user_id: str, hwid: str, recurso: str, mensagem: str) -> None:
+    """Save a suspicious activity log entry."""
+    initialize_firebase()
+    log_ref = db.reference("logs_suspeitos")
+    dados = {
+        "user_id": user_id,
+        "hwid": hwid,
+        "recurso": recurso,
+        "mensagem": mensagem,
+        "timestamp": int(datetime.utcnow().timestamp()),
+    }
+    log_ref.push(dados)
+    logger.warning("Registro suspeito: %s", dados)

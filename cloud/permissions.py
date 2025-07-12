@@ -32,6 +32,26 @@ def update_permissions(user_id: str, data: Dict[str, Any]) -> None:
     ref.update(data)
 
 
+def save_hwid(user_id: str, hwid: str) -> None:
+    """Persist the user's hardware id."""
+    if db is None:
+        raise ImportError("firebase_admin is required for Firebase operations")
+
+    initialize_firebase()
+    ref = db.reference(f"permissions/{user_id}")
+    ref.update({"hwid": hwid})
+
+
+def fetch_hwid(user_id: str) -> str | None:
+    """Return saved hardware id for a user."""
+    if db is None:
+        raise ImportError("firebase_admin is required for Firebase operations")
+
+    initialize_firebase()
+    ref = db.reference(f"permissions/{user_id}/hwid")
+    return ref.get()
+
+
 def _parse_date(date_str: str) -> datetime:
     return datetime.fromisoformat(date_str.replace("Z", "+00:00")).astimezone(timezone.utc)
 
