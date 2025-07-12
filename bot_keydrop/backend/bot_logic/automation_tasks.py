@@ -86,7 +86,7 @@ class KeydropAutomation:
             browser_manager: Instância do gerenciador de navegador
         """
         self.browser_manager = browser_manager
-        # Utiliza deque para manter histórico limitado de forma eficiente
+        # Utilize deque to automatically discard oldest entries when the limit is exceeded
         self.max_history_size = 1000
         self.participation_history: Deque[ParticipationAttempt] = deque(maxlen=self.max_history_size)
         
@@ -532,7 +532,7 @@ class KeydropAutomation:
         history: List[ParticipationAttempt] = list(self.participation_history)
         if limit:
             history = history[-limit:]
-
+        
         return [attempt.to_dict() for attempt in history]
 
 
