@@ -15,3 +15,5 @@ update ranking data and upload profile images.
 - `upload_foto_perfil(user_id: str, caminho_imagem: str) -> str`
   Upload the given image file to Firebase Storage and associate the returned URL
   with the user profile.
+- `registrar_compra(user_id: str, itens: List[Dict[str, Any]]) -> None`
+  Persist information about a purchase attempt under `compras/{user_id}`.
