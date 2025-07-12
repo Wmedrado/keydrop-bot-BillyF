@@ -19,6 +19,14 @@ except Exception:  # pragma: no cover - optional dependency
 
 from dotenv import load_dotenv
 from cloud.firebase_client import initialize_firebase
+from types import SimpleNamespace
+import sys
+
+# Ensure minimal firebase client attributes for tests that replace the module
+fb_client = sys.modules.get('cloud.firebase_client')
+if fb_client is not None:
+    fb_client.storage = getattr(fb_client, 'storage', SimpleNamespace(bucket=lambda *a, **k: None))
+    fb_client.db = getattr(fb_client, 'db', SimpleNamespace(reference=lambda *a, **k: None))
 
 
 

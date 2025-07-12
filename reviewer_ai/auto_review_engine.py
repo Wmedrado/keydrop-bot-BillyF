@@ -20,7 +20,7 @@ def read_diff() -> str:
     """Return the diff of the current working tree against ``HEAD``."""
 
     try:
-        return subprocess.check_output(["git", "diff", "HEAD"], text=True)
+        return subprocess.check_output(["git", "diff", "--cached", "HEAD"], text=True)
     except Exception:
         return ""
 
@@ -58,7 +58,7 @@ def check_complexity(diff: str) -> str | None:
     ]
     line_count = 0
     for line in added:
-        if re.match(r"\s*def ", line):
+        if re.match(r"\s*(async\s+)?def ", line):
             line_count = 0
         if line.strip():
             line_count += 1
@@ -85,6 +85,8 @@ def check_tests_present(diff: str) -> str | None:
         )
     except Exception:
         status = ""
+    if not diff.strip():
+        return None
     if any("tests/" in line for line in status.splitlines()):
         return None
     if re.search(r"^diff --git a/tests", diff, re.MULTILINE):

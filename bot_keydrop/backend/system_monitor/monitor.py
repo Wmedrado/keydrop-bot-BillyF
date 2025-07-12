@@ -9,6 +9,9 @@ import asyncio
 import logging
 from typing import Dict, Any, List, Optional
 import os
+import json
+import platform
+from pathlib import Path
 from dataclasses import dataclass, asdict
 from datetime import datetime
 
@@ -107,6 +110,7 @@ class SystemMonitor:
         self._metrics_history: List[SystemMetrics] = []
         self._max_history_size = 100  # Manter últimas 100 medições
         self._boot_time = psutil.boot_time()
+        self.notifier = None
         
         # Métricas iniciais de rede para calcular delta
         net_io = psutil.net_io_counters()
@@ -198,7 +202,7 @@ class SystemMonitor:
         self._metrics_history.append(metrics)
 
         if len(self._metrics_history) >= self._max_history_size:
-            self._metrics_history.clear()
+            self._metrics_history.pop(0)
     
     def get_metrics_history(self, last_n: Optional[int] = None) -> List[SystemMetrics]:
         """
@@ -329,11 +333,76 @@ class SystemMonitor:
     def get_chrome_processes(self) -> List[Dict[str, Any]]:
         """
         Obtém informações específicas dos processos do Chrome
-        
+
         Returns:
             Lista de processos do Chrome
         """
         return self.get_process_info("chrome")
+
+    # ------------------------------------------------------------------
+    def set_notifier(self, notifier) -> None:
+        """Configura notificador para alertas."""
+        self.notifier = notifier
+
+    def detect_memory_leak(self, threshold_mb: float = 50.0, window: int = 5) -> bool:
+        """Detecta aumento contínuo de memória do processo."""
+        if len(self._metrics_history) < window:
+            return False
+        diff = (
+            self._metrics_history[-1].process_memory_mb
+            - self._metrics_history[-window].process_memory_mb
+        )
+        return diff > threshold_mb
+
+    def _collect_anomaly_alerts(
+        self, metrics: SystemMetrics, cpu_threshold: float, memory_threshold: float
+    ) -> List[str]:
+        """Return list of anomaly messages based on thresholds."""
+
+        alerts = []
+        if metrics.cpu_percent > cpu_threshold:
+            alerts.append(f"High CPU usage: {metrics.cpu_percent:.1f}%")
+        if metrics.memory_percent > memory_threshold:
+            alerts.append(f"High memory usage: {metrics.memory_percent:.1f}%")
+        if self.detect_memory_leak():
+            alerts.append("Possible memory leak detected")
+        return alerts
+
+    def _notify_anomaly(self, msg: str) -> None:
+        """Send anomaly message through the configured notifier."""
+        if not self.notifier:
+            return
+        from ..discord_integration.notifier import NotificationData
+        import asyncio
+
+        asyncio.run(
+            self.notifier.send_notification(
+                NotificationData(
+                    title="⚠️ Anomalia Detectada",
+                    description=msg,
+                    color=self.notifier.COLORS.get("warning", 0xF39C12),
+                )
+            )
+        )
+
+    def check_anomalies(
+        self,
+        cpu_threshold: float = 90.0,
+        memory_threshold: float = 90.0,
+    ) -> Optional[str]:
+        """Verifica uso excessivo de recursos e envia alerta."""
+
+        metrics = self.get_current_metrics()
+        alerts = self._collect_anomaly_alerts(metrics, cpu_threshold, memory_threshold)
+        if not alerts:
+            return None
+
+        msg = "; ".join(alerts)
+        logger.warning(msg)
+        self._notify_anomaly(msg)
+        return msg
+
+
 
 
 # Instância global do monitor
@@ -360,3 +429,18 @@ async def start_system_monitoring(callback=None):
 def stop_system_monitoring():
     """Para o monitoramento global do sistema"""
     system_monitor.stop_monitoring()
+
+
+def create_environment_snapshot(config: Dict[str, Any], path: str = "logs/environment_snapshot.json") -> Path:
+    """Salva snapshot do ambiente e configuracao atual."""
+    snapshot = {
+        "timestamp": datetime.now().isoformat(),
+        "platform": platform.platform(),
+        "bot_version": config.get("version", "unknown"),
+        "config": config,
+        "metrics": system_monitor.get_current_metrics().to_dict(),
+    }
+    p = Path(path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps(snapshot, indent=2, ensure_ascii=False), encoding="utf-8")
+    return p

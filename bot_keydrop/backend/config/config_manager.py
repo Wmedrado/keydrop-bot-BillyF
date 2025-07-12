@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Dict, Any, Optional, List
 from pydantic import BaseModel, Field
 import logging
+from ...system_safety.backups import backup_arquivo
 
 # Configuração de logging
 logging.basicConfig(level=logging.INFO)
@@ -212,6 +213,8 @@ class ConfigManager:
         """
         try:
             config_dict = self._config.dict()
+            # Create a backup before overwriting
+            backup_arquivo(self.config_file)
             with open(self.config_file, "w", encoding="utf-8") as f:
                 json.dump(config_dict, f, indent=2, ensure_ascii=False)
             logger.info(f"Configurações salvas em {self.config_file}")

@@ -20,7 +20,6 @@ from tkinter import messagebox, filedialog
 from tkhtmlview import HTMLLabel
 from bot_keydrop.gui.utils import safe_load_image, safe_widget_call
 from cloud.firebase_client import registrar_compra
-from password_reset import request_reset, reset_password
 
 try:
     import pyrebase
@@ -492,6 +491,7 @@ class ResetRequestWindow(ctk.CTkToplevel):
             messagebox.showerror("Erro", "Informe o e-mail")
             return
         try:
+            from password_reset import request_reset
             request_reset(email)
             messagebox.showinfo(
                 "Redefinição",
@@ -528,6 +528,7 @@ class NewPasswordWindow(ctk.CTkToplevel):
             messagebox.showerror("Erro", "Preencha todos os campos")
             return
         try:
+            from password_reset import reset_password
             reset_password(token, passwd)
             messagebox.showinfo("Sucesso", "Senha atualizada")
             self.destroy()
