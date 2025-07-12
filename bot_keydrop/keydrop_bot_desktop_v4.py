@@ -789,6 +789,9 @@ class KeydropBotGUI:
         self.root = tk.Tk()
         self.root.title("Keydrop Bot Professional v4.0.0")
         self.root.geometry("1000x800")
+
+        # Exportar logs quando a janela for fechada
+        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
         
         # Configurar ícone
         self.setup_icon()
@@ -1244,6 +1247,24 @@ class KeydropBotGUI:
         except Exception as e:
             self.log_message(f"❌ Erro ao salvar logs: {e}", "ERROR")
 
+    def salvar_logs_em_arquivo(self):
+        """Salvar logs automaticamente ao encerrar a aplicação"""
+        try:
+            logs_dir = Path("logs")
+            logs_dir.mkdir(exist_ok=True)
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = logs_dir / f"logs_{timestamp}.txt"
+            with open(filename, 'w', encoding='utf-8') as f:
+                f.write(self.logs_text.get(1.0, 'end'))
+            self.log_message(f"📄 Logs exportados para {filename}", "SUCCESS")
+        except Exception as e:
+            self.log_message(f"❌ Erro ao exportar logs: {e}", "ERROR")
+
+    def on_close(self):
+        """Exportar logs e fechar a aplicação"""
+        self.salvar_logs_em_arquivo()
+        self.root.destroy()
+    
     def append_log(self, text, level="INFO"):
         """Inserir texto nos logs com cores por nível"""
         try:
@@ -1253,7 +1274,7 @@ class KeydropBotGUI:
             self.logs_text.config(state='disabled')
         except Exception:
             pass
-
+          
     def log_message(self, message, level="INFO"):
         """Adicionar mensagem aos logs"""
         timestamp = datetime.now().strftime("%H:%M:%S")
@@ -1352,10 +1373,10 @@ Bot {bot_id}:
         self.log_message("📱 Aplicação desktop nativa funcionando", "INFO")
         self.log_message("⚙️ Configure os parâmetros na aba 'Configurações'", "INFO")
         self.log_message("🚀 Clique em 'Iniciar Bots' para começar a automação", "INFO")
-        
+
         if not SELENIUM_AVAILABLE:
             self.log_message("⚠️ ATENÇÃO: Selenium não disponível. Instale as dependências.", "WARNING")
-        
+
         self.root.mainloop()
 
 def main():
