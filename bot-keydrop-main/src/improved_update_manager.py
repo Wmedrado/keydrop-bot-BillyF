@@ -23,12 +23,13 @@ import logging
 class ImprovedUpdateManager:
     """Gerenciador de atualizações via GitHub com melhor tratamento de erros"""
     
-    def __init__(self, repo_owner="wmedrado", repo_name="bot-keydrop", current_version="2.0.7"):
+    def __init__(self, repo_owner="wmedrado", repo_name="bot-keydrop", current_version="2.0.7", private_repo=True):
         self.repo_owner = repo_owner
         self.repo_name = repo_name
         self.current_version = current_version
         self.github_api = f"https://api.github.com/repos/{repo_owner}/{repo_name}"
         self.update_in_progress = False
+        self.private_repo = private_repo
 
         # Configuração de logging
         log_dir = Path("logs")
@@ -117,6 +118,12 @@ class ImprovedUpdateManager:
     def check_for_updates(self, retries: int = 3):
         """Verifica se há atualizações disponíveis com tentativas de retry"""
         if not self.github_token:
+            if self.private_repo:
+                self.logger.error("Token do GitHub não configurado para repositório privado")
+                return {
+                    "available": False,
+                    "error": "Token do GitHub ausente ou inválido para repositório privado"
+                }
             self.logger.warning("Token do GitHub não configurado. Usando requisições anônimas")
 
         url = f"{self.github_api}/releases/latest"
@@ -133,7 +140,12 @@ class ImprovedUpdateManager:
                 self.logger.info(f"Tentativa {attempt}: status {response.status_code}")
 
                 if response.status_code == 401 and self.github_token:
-                    # Token inválido, tentar sem autenticação
+                    if self.private_repo:
+                        self.logger.error("Token do GitHub inválido para repositório privado")
+                        return {
+                            "available": False,
+                            "error": "Token do GitHub inválido ou sem permissão"
+                        }
                     self.logger.warning("Token inválido. Tentando sem autenticação")
                     self.headers = {}
                     self.github_token = None
@@ -171,9 +183,12 @@ class ImprovedUpdateManager:
                             "message": f"Versão atual ({self.current_version}) está atualizada"
                         }
                 elif response.status_code == 404:
+                    msg = "Repositório não encontrado ou sem permissão"
+                    if self.private_repo:
+                        msg += " (verifique o token)"
                     return {
                         "available": False,
-                        "error": "Repositório não encontrado ou sem permissão"
+                        "error": msg
                     }
                 else:
                     self.logger.error(f"Erro HTTP {response.status_code}: {response.text}")

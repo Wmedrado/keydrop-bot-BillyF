@@ -107,7 +107,8 @@ bot-keydrop/
 - Logs históricos preservados
 - Backups automáticos por 30 dias
 - Sistema de retry automático em caso de falha de conexão
-- Fallback para requisições anônimas se o token estiver inválido
+- Fallback para requisições anônimas se o token estiver inválido (repositórios públicos)
+- Repositórios privados exigem token válido
 - Registro detalhado em `logs/update.log`
 
 ## 🚨 Resolução de Problemas
