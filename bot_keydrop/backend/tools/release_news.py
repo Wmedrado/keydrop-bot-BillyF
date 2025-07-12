@@ -3,6 +3,7 @@ import json
 import asyncio
 from typing import Optional
 
+import logging
 import requests
 
 from discord_integration import configure_discord_webhook, send_discord_notification
@@ -11,6 +12,8 @@ from discord_integration import configure_discord_webhook, send_discord_notifica
 GITHUB_API_RELEASE_URL = "https://api.github.com/repos/{repo}/releases/latest"
 STATE_FILE = os.path.join(os.path.dirname(__file__), "release_state.json")
 
+logger = logging.getLogger(__name__)
+
 
 def get_latest_release(repo: str, token: Optional[str] = None) -> dict:
     """Fetch latest release info from GitHub."""
@@ -18,8 +21,12 @@ def get_latest_release(repo: str, token: Optional[str] = None) -> dict:
     headers = {"Accept": "application/vnd.github+json"}
     if token:
         headers["Authorization"] = f"Bearer {token}"
-    response = requests.get(url, headers=headers, timeout=10)
-    response.raise_for_status()
+    try:
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+    except Exception as e:
+        logger.warning(f"Erro ao buscar versão mais recente: {e}")
+        return {"error": "Erro ao buscar atualização"}
     return response.json()
 
 

@@ -2,12 +2,15 @@
 from __future__ import annotations
 
 from typing import Dict, Any
+import logging
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
 from PIL import Image, ImageTk
 
 from firebase_admin import db
 from cloud.firebase_client import initialize_firebase, upload_foto_perfil
+
+logger = logging.getLogger(__name__)
 
 
 def carregar_dados_usuario(user_id: str) -> Dict[str, Any]:
@@ -42,7 +45,12 @@ class DashboardFrame(ctk.CTkFrame):
         self.pack_propagate(False)
 
     def refresh(self) -> None:
-        data = carregar_dados_usuario(self.user_id)
+        try:
+            data = carregar_dados_usuario(self.user_id)
+        except Exception as e:
+            logger.exception("Erro ao carregar dados do usuário")
+            messagebox.showerror("Erro", f"Falha ao carregar dados do perfil.\n{e}")
+            return
         self.data = data
         self.name_var.set(data.get("nome", "-"))
         self.lucro_var.set(f"Lucro total: R$ {data.get('lucro_total', 0):.2f}")
