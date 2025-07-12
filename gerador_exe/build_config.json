@@ -1,0 +1,6 @@
+{
+  "main_script": "launcher.py",
+  "output_name": "KeydropBot",
+  "version_file": "update_info_example.json",
+  "icon": "bot-icone.ico"
+}
