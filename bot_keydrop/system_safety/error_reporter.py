@@ -8,11 +8,10 @@ from collections import Counter
 from datetime import datetime
 from pathlib import Path
 from typing import Callable, Optional
+import getpass
+import requests
 
 TEST_ENV_VAR = "PYTEST_CURRENT_TEST"
-import getpass
-
-import requests
 
 
 class ErrorReporter:
@@ -66,18 +65,17 @@ class ErrorReporter:
             fh.write(entry)
 
         # Avoid sending notifications during automated tests
-        if self.send_callback and TEST_ENV_VAR not in os.environ:
+        if TEST_ENV_VAR not in os.environ:
+            info = self._build_error_data(exc, tb)
+            self._flush_pending()
+            if not self._send_discord(info):
+                self._save_pending(info)
 
-        info = self._build_error_data(exc, tb)
-        self._flush_pending()
-        if not self._send_discord(info):
-            self._save_pending(info)
-
-        if self.send_callback:
-            try:
-                self.send_callback(hsh, tb)
-            except Exception as e:
-                self.logger.warning("Failed to send error: %s", e)
+            if self.send_callback:
+                try:
+                    self.send_callback(hsh, tb)
+                except Exception as e:
+                    self.logger.warning("Failed to send error: %s", e)
         return hsh
 
     # ------------------------------------------------------------------
