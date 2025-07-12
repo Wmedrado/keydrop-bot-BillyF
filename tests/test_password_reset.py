@@ -24,8 +24,10 @@ fake_admin.auth = types.SimpleNamespace(
 sys.modules['firebase_admin'] = fake_admin
 
 updates = []
-
-password_reset = importlib.import_module('password_reset')
+if 'password_reset' in sys.modules:
+    password_reset = importlib.reload(sys.modules['password_reset'])
+else:
+    password_reset = importlib.import_module('password_reset')
 password_reset.db = types.SimpleNamespace(reference=lambda p: types.SimpleNamespace(delete=lambda: None))
 
 
