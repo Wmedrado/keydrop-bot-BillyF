@@ -18,3 +18,9 @@ Cada nova funcionalidade ou ajuste relevante deve adicionar um bloco seguindo o 
 - **Justificativa técnica:** Facilita auditoria e impede regressões não justificadas.
 - **Tipo:** melhoria
 Este arquivo documenta justificativas para alterações em arquivos críticos. Sempre descreva abaixo a razão de qualquer mudança nesses arquivos.
+
+## Staging sandbox pipeline
+- **Motivo:** validar merges na branch principal sem impactar usuários finais.
+- **Afeta/Substitui:** adiciona `ci/run_staging_pipeline.sh` e atualiza `ci.yml` com job de staging.
+- **Justificativa técnica:** roda container isolado por 3 minutos em modo debug e checa logs para falhas críticas.
+- **Tipo:** melhoria
