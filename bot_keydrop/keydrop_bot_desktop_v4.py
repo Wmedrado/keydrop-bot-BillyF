@@ -957,6 +957,24 @@ class KeydropBotGUI:
                 self.log_message(f"📄 Logs salvos: {filename}", "SUCCESS")
         except Exception as e:
             self.log_message(f"❌ Erro ao salvar logs: {e}", "ERROR")
+
+    def salvar_logs_em_arquivo(self):
+        """Salvar logs automaticamente ao encerrar a aplicação"""
+        try:
+            logs_dir = Path("logs")
+            logs_dir.mkdir(exist_ok=True)
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = logs_dir / f"logs_{timestamp}.txt"
+            with open(filename, 'w', encoding='utf-8') as f:
+                f.write(self.logs_text.get(1.0, 'end'))
+            print(f"Logs exportados para {filename}")
+        except Exception as e:
+            print(f"Erro ao exportar logs: {e}")
+
+    def on_close(self):
+        """Exportar logs e fechar a aplicação"""
+        self.salvar_logs_em_arquivo()
+        self.root.destroy()
     
     def log_message(self, message, level="INFO"):
         """Adicionar mensagem aos logs"""
@@ -1062,10 +1080,13 @@ Bot {bot_id}:
         self.log_message("📱 Aplicação desktop nativa funcionando", "INFO")
         self.log_message("⚙️ Configure os parâmetros na aba 'Configurações'", "INFO")
         self.log_message("🚀 Clique em 'Iniciar Bots' para começar a automação", "INFO")
-        
+
         if not SELENIUM_AVAILABLE:
             self.log_message("⚠️ ATENÇÃO: Selenium não disponível. Instale as dependências.", "WARNING")
-        
+
+        # Exportar logs ao fechar a janela
+        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
+
         self.root.mainloop()
 
 def main():
