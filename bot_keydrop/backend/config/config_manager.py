@@ -25,6 +25,10 @@ class BotConfig(BaseModel):
     
     # Configurações do navegador
     headless_mode: bool = Field(default=False, description="Executar em modo headless")
+    stealth_headless_mode: bool = Field(
+        default=False,
+        description="Executar em modo headless com proteção contra detecção"
+    )
     mini_window_mode: bool = Field(default=False, description="Usar janelas em modo mini (200x300)")
     enable_login_tabs: bool = Field(default=False, description="Abrir abas de login automático")
     tab_proxies: Dict[int, str] = Field(default_factory=dict, description="Proxy por guia (tab)")

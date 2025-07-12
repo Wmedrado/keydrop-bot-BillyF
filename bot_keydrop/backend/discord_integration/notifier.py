@@ -169,6 +169,7 @@ class DiscordNotifier:
                 {
                     'name': '⚙️ Modo',
                     'value': f"**Headless:** {'✅' if config_data.get('headless_mode') else '❌'}\n"
+                           f"**Stealth Headless:** {'✅' if config_data.get('stealth_headless_mode') else '❌'}\n"
                            f"**Mini Window:** {'✅' if config_data.get('mini_window_mode') else '❌'}\n"
                            f"**Login Tabs:** {'✅' if config_data.get('enable_login_tabs') else '❌'}",
                     'inline': True

@@ -3,6 +3,7 @@
   "execution_speed": 1.0,
   "retry_attempts": 5,
   "headless_mode": false,
+  "stealth_headless_mode": false,
   "mini_window_mode": false,
   "enable_login_tabs": false,
   "discord_webhook_url": "",

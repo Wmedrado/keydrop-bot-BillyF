@@ -71,7 +71,8 @@ python bot_keydrop/interface_selector.py
 As configurações padrão encontram-se no arquivo `config.json` na raiz do
 repositório. Altere os campos conforme a necessidade (número de guias, velocidade,
 integração com Discord, etc.). A interface também permite editar essas
-configurações.
+configurações. A partir desta versão, há também a opção `stealth_headless_mode`
+para executar o navegador em modo headless protegido contra detecção.
 
 ## Testes
 
