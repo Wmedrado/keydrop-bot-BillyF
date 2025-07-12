@@ -40,6 +40,24 @@ warning_count = 0
 tolerancia_erros_teste = 2
 
 
+def open_log_file() -> None:
+    """Open the builder log file with the default application."""
+    try:
+        if sys.platform.startswith("win"):
+            os.startfile(LOG_FILE)  # type: ignore[attr-defined]
+        elif sys.platform.startswith("darwin"):
+            subprocess.Popen(["open", str(LOG_FILE)])
+        else:
+            subprocess.Popen(["xdg-open", str(LOG_FILE)])
+    except Exception as exc:
+        logger.error("Falha ao abrir log automaticamente: %s", exc)
+
+
+def show_step(step: int, total: int, message: str) -> None:
+    """Display build progress."""
+    logger.info("[%s/%s] %s", step, total, message)
+
+
 def acquire_builder_lock() -> "LockFile | None":
     """Ensure only one instance of the builder is running."""
     lock = LockFile(LOCK_PATH)
@@ -362,35 +380,63 @@ def main():
     config = load_config()
     version = get_version(config)
     logger.info(f"Versão do build: {version}")
+    step = 1
+    total = 8
 
+    show_step(step, total, "Verificando lock do builder")
     lock = acquire_builder_lock()
     if not lock:
+        open_log_file()
         sys.exit(1)
     atexit.register(lock.release)
+    step += 1
 
+    show_step(step, total, "Checando diretório de execução")
     if not executando_no_diretorio_correto():
         log_error("Execute o builder a partir da raiz do projeto.")
+        open_log_file()
         sys.exit(1)
+    step += 1
 
+    show_step(step, total, "Verificando arquivos requeridos")
     if not check_required_files():
         log_error("Arquivos obrigatórios ausentes. Abortando build.")
+        open_log_file()
         sys.exit(1)
+    step += 1
+
+    show_step(step, total, "Validando ambiente")
     if not validate_environment():
         log_error("Ambiente inválido.")
+        open_log_file()
         sys.exit(1)
     if not check_port(8000):
         log_error("Porta 8000 em uso. Abortando build.")
+        open_log_file()
         sys.exit(1)
+    step += 1
+
+    show_step(step, total, "Executando testes")
     if not run_tests():
         log_error("Build cancelado devido a falhas nos testes.")
+        open_log_file()
         sys.exit(1)
+    step += 1
 
+    show_step(step, total, "Limpando build anterior")
     clean_previous_build()
+    step += 1
 
+    show_step(step, total, "Gerando build release")
     normal_zip = perform_build(config, version, debug=False)
+    step += 1
+
+    show_step(step, total, "Gerando build debug")
     debug_zip = perform_build(config, version, debug=True)
     safe_zip = Path()
     if os.getenv("MODO_SEGURO") == "1":
+        step += 1
+        show_step(step, total, "Gerando build safe")
         safe_zip = perform_build(config, version, safe=True)
 
     end_time = datetime.now()
@@ -403,6 +449,8 @@ def main():
     logger.info(f"✅ {error_count} erros")
     logger.info(f"⚠️ {warning_count} avisos")
     logger.info(f"📋 Logs salvos em {LOG_FILE.relative_to(BASE_DIR)}")
+    if error_count:
+        open_log_file()
 
 
 if __name__ == "__main__":

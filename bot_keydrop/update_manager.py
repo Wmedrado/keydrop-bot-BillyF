@@ -75,7 +75,7 @@ def apply_update(package_path: Path) -> None:
         with zipfile.ZipFile(package_path, "r") as zf:
             zf.extractall(package_path.parent)
     elif package_path.suffix == ".exe" and os.name == "nt":
-        subprocess.Popen([str(package_path)], shell=True)
+        subprocess.Popen([str(package_path)], shell=False)
     else:
         raise RuntimeError("Formato de pacote n\u00e3o suportado")
 
