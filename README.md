@@ -66,6 +66,14 @@ em DearPyGUI, utilize o `interface_selector.py`:
 python bot_keydrop/interface_selector.py
 ```
 
+### Launcher Unificado
+
+Para iniciar apenas a interface desktop, somente a API FastAPI ou ambos ao mesmo tempo, utilize o `launcher.py` na raiz do projeto:
+
+```bash
+python launcher.py
+```
+
 ## Configuração do Bot
 
 As configurações padrão encontram-se no arquivo `config.json` na raiz do
