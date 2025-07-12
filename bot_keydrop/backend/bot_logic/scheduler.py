@@ -372,7 +372,12 @@ class BotScheduler:
                 task.status = TaskStatus.CANCELLED
 
             # Reiniciar guia no navegador
-            success = await self.browser_manager.restart_tab(tab_id, proxy=proxy)
+            if proxy is None:
+                success = await self.browser_manager.restart_tab(tab_id)
+            else:
+                success = await self.browser_manager.restart_tab(
+                    tab_id, proxy=proxy
+                )
 
             if success:
                 # Recriar tarefas para a guia

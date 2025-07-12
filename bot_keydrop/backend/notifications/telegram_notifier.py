@@ -1,17 +1,16 @@
 import logging
-import httpx
+import requests
 
 from .notification_worker import OfflineNotificationQueue
 
 logger = logging.getLogger(__name__)
 
 
-async def send_telegram_message_now(token: str, chat_id: str, text: str) -> bool:
-    """Send a Telegram message immediately without blocking the event loop."""
+def send_telegram_message_now(token: str, chat_id: str, text: str) -> bool:
+    """Send a Telegram message immediately."""
     url = f"https://api.telegram.org/bot{token}/sendMessage"
     try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.post(url, data={"chat_id": chat_id, "text": text})
+        resp = requests.post(url, data={"chat_id": chat_id, "text": text}, timeout=10)
         if resp.status_code == 200:
             data = resp.json()
             return data.get("ok", False)
@@ -21,7 +20,7 @@ async def send_telegram_message_now(token: str, chat_id: str, text: str) -> bool
         return False
 
 
-async def send_telegram_message(token: str, chat_id: str, text: str, critical: bool = False) -> bool:
+def send_telegram_message(token: str, chat_id: str, text: str, critical: bool = False) -> bool:
     """Queue a Telegram message to be sent by the NotificationWorker."""
     notification = {
         "type": "telegram",
@@ -29,5 +28,5 @@ async def send_telegram_message(token: str, chat_id: str, text: str, critical: b
         "critical": critical,
         "retries": 0,
     }
-    await OfflineNotificationQueue.enqueue(notification, priority=critical)
+    OfflineNotificationQueue.enqueue(notification, priority=critical)
     return True
