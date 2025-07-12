@@ -12,6 +12,15 @@ import getpass
 import requests
 
 TEST_ENV_VAR = "PYTEST_CURRENT_TEST"
+IS_TEST_ENV_VAR = "IS_TEST_ENV"
+
+
+def _is_test_env() -> bool:
+    """Return True when running under pytest or CI test environment."""
+    return (
+        TEST_ENV_VAR in os.environ
+        or os.getenv(IS_TEST_ENV_VAR, "").lower() == "true"
+    )
 
 
 class ErrorReporter:
@@ -66,20 +75,7 @@ class ErrorReporter:
 
 
         info = self._build_error_data(exc, tb)
-        self._flush_pending()
-        if not self._send_discord(info):
-            self._save_pending(info)
-
-        # Avoid calling local callbacks during automated tests
-        if self.send_callback and TEST_ENV_VAR not in os.environ:
-            try:
-                self.send_callback(hsh, tb)
-            except Exception as e:
-                self.logger.warning("Failed to send error: %s", e)
-
-        # Avoid sending notifications during automated tests
-        if TEST_ENV_VAR not in os.environ:
-            info = self._build_error_data(exc, tb)
+        if not _is_test_env():
             self._flush_pending()
             if not self._send_discord(info):
                 self._save_pending(info)

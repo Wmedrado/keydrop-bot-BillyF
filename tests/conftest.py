@@ -1,5 +1,8 @@
 import sys
+import os
 import types
+
+os.environ["IS_TEST_ENV"] = "true"
 
 # Provide a lightweight stub for customtkinter if not installed
 if "customtkinter" not in sys.modules:

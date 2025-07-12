@@ -8,6 +8,7 @@ from .environment_checker import (
 from .permissions_validator import validar_permissoes
 from .backups import backup_arquivo, restaurar_arquivo
 from .watchdog import ProcessWatchdog
+from .crash_tracker import start_crash_tracker, log_exception
 from .error_reporter import error_reporter, ErrorReporter
 from .diagnostic import diagnostic
 from .dependency_validator import run_dependency_check, get_available_browser
@@ -23,7 +24,6 @@ from .stability import (
     detect_memory_leak,
     send_log_to_discord,
 )
-
 
 __all__ = [
     "verificar_conexao_internet",
@@ -51,4 +51,6 @@ __all__ = [
     "detect_anomalies",
     "detect_memory_leak",
     "send_log_to_discord",
+    "start_crash_tracker",
+    "log_exception",
 ]

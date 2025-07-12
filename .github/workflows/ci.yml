@@ -1,4 +1,6 @@
+```yaml
 name: CI
+
 on:
   pull_request:
   push:
@@ -8,38 +10,56 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Check main branch push
+      - name: ⬇️ Checkout do Código
+        uses: actions/checkout@v4
+
+      - name: 🚫 Verificar push direto na main
         run: python ci/check_main_push.py
-      - uses: actions/setup-python@v5
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Auto rebase AI branches
+
+      - name: 🤖 Auto rebase de branches da IA
         if: startsWith(github.ref_name, 'codex/') || startsWith(github.ref_name, 'bot/') ||
             startsWith(github.head_ref, 'codex/') || startsWith(github.head_ref, 'bot/')
         run: python ci/pre_pr_rebase.py
-      - name: Validate PR description
-        if: github.event_name == 'pull_request'
-        env:
-          PR_BODY: ${{ github.event.pull_request.body }}
-        run: python ci/validate_pr_description.py
-      - name: Run pipeline
-        run: |
-          bash ci/run_pipeline.sh
 
-      - name: Check decision history
-        run: python ci/check_history.py
-      - name: Run UI pipeline
+      - name: 🧹 Run Ruff (Lint) e Bandit (Security Audit)
         run: |
-          bash ci/run_ui_pipeline.sh
+          pip install ruff bandit
+          ruff check .
+          bandit -r .
+
+      - name: ✅ Validar descrição do PR
+        run: python ci/validate_pr_description.py
+
+      - name: 📊 SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2
+        with:
+          projectKey: your_project_key  # 🔁 Substitua pelo ID real
+          organization: your_organization_id  # 🔁 Substitua pelo ID real
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: 🧪 Rodar pipeline de testes
+        run: bash ci/run_pipeline.sh
+
+      - name: 📜 Verificar histórico de decisões
+        run: python ci/check_history.py
+
+      - name: 🧪 Rodar pipeline da interface gráfica
+        run: bash ci/run_ui_pipeline.sh
 
   staging:
     if: github.event_name == 'push'
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Run staging pipeline
-        run: |
-          bash ci/run_staging_pipeline.sh
+      - name: ⬇️ Checkout do Código
+        uses: actions/checkout@v4
 
+      - name: 🚀 Rodar pipeline de staging
+        run: bash ci/run_staging_pipeline.sh
+```
