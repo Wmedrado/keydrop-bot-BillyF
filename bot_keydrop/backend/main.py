@@ -682,6 +682,19 @@ def get_participation_history(limit: Optional[int] = 100):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.post("/stats/reset")
+def reset_statistics():
+    """Reseta históricos de participação e ganhos."""
+    if not automation_engine:
+        raise HTTPException(status_code=400, detail="Bot não inicializado")
+    try:
+        automation_engine.reset_statistics()
+        return {"status": "ok"}
+    except Exception as e:
+        logger.error(f"Erro ao resetar estatísticas: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # Endpoints de ganhos
 @app.post("/winnings")
 def register_winning(request: WinningRequest):

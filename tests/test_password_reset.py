@@ -25,6 +25,7 @@ sys.modules['firebase_admin'] = fake_admin
 
 updates = []
 
+sys.modules.pop('password_reset', None)
 password_reset = importlib.import_module('password_reset')
 password_reset.db = types.SimpleNamespace(reference=lambda p: types.SimpleNamespace(delete=lambda: None))
 

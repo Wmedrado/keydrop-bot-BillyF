@@ -18,3 +18,9 @@ Cada nova funcionalidade ou ajuste relevante deve adicionar um bloco seguindo o 
 - **Justificativa técnica:** Facilita auditoria e impede regressões não justificadas.
 - **Tipo:** melhoria
 Este arquivo documenta justificativas para alterações em arquivos críticos. Sempre descreva abaixo a razão de qualquer mudança nesses arquivos.
+
+## Validação de Sincronização Frontend/Backend
+- **Motivo:** Garantir que todas as rotas da API utilizadas no frontend existam no backend.
+- **Afeta/Substitui:** adiciona `ci/check_frontend_backend_sync.py` e testes relacionados.
+- **Justificativa técnica:** Evita erros em tempo de execução por chamadas inexistentes.
+- **Tipo:** melhoria

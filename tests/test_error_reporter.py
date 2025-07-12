@@ -42,6 +42,7 @@ def test_pending_file_on_send_fail(tmp_path, monkeypatch):
     reporter = ErrorReporter(log_file=log, pending_file=pend)
 
     monkeypatch.setattr(reporter, "_send_discord", lambda info: False)
+    monkeypatch.delenv(TEST_ENV_VAR, raising=False)
 
     try:
         raise ValueError("fail")

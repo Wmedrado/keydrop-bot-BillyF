@@ -769,6 +769,11 @@ class KeydropAutomation:
             history = history[-limit:]
         return [record.to_dict() for record in history]
 
+    def reset_statistics(self) -> None:
+        """Limpa históricos de participação e ganhos."""
+        self.participation_history.clear()
+        self.winnings_history.clear()
+
 
 # Função utilitária para criar instância da automação
 def create_keydrop_automation(browser_manager) -> KeydropAutomation:

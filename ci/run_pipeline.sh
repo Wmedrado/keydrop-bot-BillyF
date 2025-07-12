@@ -39,6 +39,9 @@ python ci/check_naming_quality.py | tee build_results/naming_quality.log
 # Validate PR checklist
 python ci/pr_validation.py
 
+# Verify frontend/backend synchronization
+python ci/check_frontend_backend_sync.py | tee build_results/frontend_backend_sync.log
+
 
 # Dependency check
 python - <<'PY'
