@@ -41,3 +41,13 @@ jobs:
           pip install bandit
           bandit -r .
 
+  staging:
+    if: github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run staging pipeline
+        run: |
+          bash ci/run_staging_pipeline.sh
+
