@@ -67,7 +67,14 @@ def build_installer(exe: Path, arch: str, version: str):
     )
     wxs_file = INSTALLER_DIR / f"temp_{arch}.wxs"
     wxs_file.write_text(wxs_script, encoding="utf-8")
-    run(["wixl", "-o", str(DIST_DIR / f"KeydropBot_Installer_{arch}.msi"), str(wxs_file)])
+    run(
+        [
+            "wixl",
+            "-o",
+            str(DIST_DIR / f"KeydropBot_Installer_{arch}.msi"),
+            str(wxs_file),
+        ]
+    )
 
 
 def main():
