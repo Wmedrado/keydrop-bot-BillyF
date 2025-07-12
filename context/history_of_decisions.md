@@ -48,3 +48,9 @@ Cada nova funcionalidade ou ajuste relevante deve adicionar um bloco seguindo o 
 - **Afeta/Substitui:** adiciona `smart_cache`, `history_recorder`, `rate_limiter`, `browser_fallback` e verificação de variáveis sensíveis no CI.
 - **Justificativa técnica:** reduz custo computacional, registra histórico individual e previne vazamento de credenciais.
 - **Tipo:** melhoria
+
+## Verificação de duplicidade do RateLimiter
+- **Motivo:** confirmar se havia múltiplas implementações da classe `RateLimiter`.
+- **Afeta/Substitui:** documentação do `RateLimiter`.
+- **Justificativa técnica:** apenas `bot_keydrop.system_safety.rate_limiter` existe; atualizada documentação para deixar claro.
+- **Tipo:** melhoria
