@@ -146,6 +146,13 @@ Auxiliares de notificação ficam em `bot_keydrop/backend/notifications`:
 Execute `python ci/build_pipeline.py --snapshot` para rodar lint, testes e gerar `build/build_info.txt`.
 Use `launcher.py --watch` para iniciar o monitoramento em tempo real que grava `logs/live_monitor.html`.
 
+Execute os validadores localmente com:
+
+```bash
+python scripts/lint_code.py      # Verificação de estilo
+python scripts/security_scan.py  # Análise de segurança
+```
+
 ## 🚀 Integração Contínua
 
 O repositório possui um workflow do GitHub Actions que valida cada Pull Request.

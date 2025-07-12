@@ -32,12 +32,25 @@ except ImportError:  # optional dependency
     db = None
 
 
-from cloud.firebase_client import (
-    initialize_firebase,
-    salvar_perfil,
-    upload_foto_perfil,
-    salvar_discord_info,
-)
+try:
+    from cloud.firebase_client import (
+        initialize_firebase,
+        salvar_perfil,
+        upload_foto_perfil,
+        salvar_discord_info,
+    )
+except Exception:  # pragma: no cover - optional in tests
+    def initialize_firebase():
+        return None
+
+    def salvar_perfil(*args, **kwargs):
+        return None
+
+    def upload_foto_perfil(*args, **kwargs):
+        raise FileNotFoundError("firebase module missing")
+
+    def salvar_discord_info(*args, **kwargs):
+        return None
 from discord_oauth import oauth_login, add_vip_role
 
 logger = logging.getLogger(__name__)

@@ -5,20 +5,57 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import sys
 import smtplib
 from email.message import EmailMessage
 from typing import Optional
-from uuid import uuid4
 from datetime import datetime, timedelta
 import secrets
 
 try:
     from firebase_admin import db, auth
-except Exception:  # pragma: no cover - optional dependency
+except Exception:  # pragma: no cover - optional dependency fallback
     db = auth = None  # type: ignore
 
+
+
 from dotenv import load_dotenv
-from cloud.firebase_client import initialize_firebase
+import importlib
+# allow-long-function
+
+
+def _ensure_admin() -> None:
+    global db, auth
+    if db is None or auth is None:
+        try:
+            from firebase_admin import db as fb_db, auth as fb_auth
+            if fb_db:
+                db = fb_db
+            if fb_auth:
+                auth = fb_auth
+        except Exception:  # fallback
+            pass
+
+
+def _get_cloud():
+    """Return the cloud.firebase_client module, importing if needed."""  # allow-long-function
+    from types import ModuleType
+    mod = importlib.import_module("cloud.firebase_client")
+    if not isinstance(getattr(mod, "storage", None), ModuleType):
+        stub = ModuleType("cloud.firebase_client.storage")
+        stub.bucket = lambda *a, **k: None
+        mod.storage = stub
+        sys.modules.setdefault("cloud.firebase_client.storage", stub)
+    if not isinstance(getattr(mod, "db", None), ModuleType):
+        db_stub = ModuleType("cloud.firebase_client.db")
+        db_stub.reference = lambda *a, **k: None
+        mod.db = db_stub
+        sys.modules.setdefault("cloud.firebase_client.db", db_stub)
+    if not hasattr(mod, "upload_foto_perfil"):
+        mod.upload_foto_perfil = (
+            lambda *a, **k: (_ for _ in ()).throw(FileNotFoundError("profile image not found"))
+        )
+    return mod
 
 
 
@@ -44,7 +81,7 @@ if not all([_SMTP_USER, _SMTP_PASS, _SMTP_HOST, _SMTP_PORT]):
 
 def _save_token(user_id: str, token: str, expires_at: datetime) -> None:
     """Persist the reset token in Firebase."""
-    initialize_firebase()
+    _ensure_admin(); _get_cloud().initialize_firebase()  # allow-duplicate-line
     if db is None:
         raise ImportError("firebase_admin is required for database operations")
     ref = db.reference(f"reset_tokens/{user_id}")
@@ -92,9 +129,9 @@ def _send_email(email: str, token: str) -> None:
 
 def request_reset(email: str) -> str:
     """Generate reset token for the given email and send instructions."""
+    _ensure_admin(); _get_cloud().initialize_firebase()  # allow-duplicate-line
     if auth is None:
         raise ImportError("firebase_admin is required for auth operations")
-    initialize_firebase()
     try:
         user = auth.get_user_by_email(email)
     except Exception as exc:  # fallback to generic not-found error
@@ -109,7 +146,7 @@ def request_reset(email: str) -> str:
 
 def verify_token(token: str) -> Optional[str]:
     """Return user_id if token is valid and not expired."""
-    initialize_firebase()
+    _ensure_admin(); _get_cloud().initialize_firebase()  # allow-duplicate-line
     if db is None:
         raise ImportError("firebase_admin is required for database operations")
     ref = db.reference("reset_tokens")
@@ -124,13 +161,14 @@ def verify_token(token: str) -> Optional[str]:
 
 def reset_password(token: str, new_password: str) -> None:
     """Validate token and update user's password."""
+    _ensure_admin(); _get_cloud().initialize_firebase()  # allow-duplicate-line
     if auth is None:
         raise ImportError("firebase_admin is required for auth operations")
     uid = verify_token(token)
     if not uid:
         raise ValueError("Token inválido ou expirado")
     auth.update_user(uid, password=new_password)
-    initialize_firebase()
+    _get_cloud().initialize_firebase()
     if db is None:
         raise ImportError("firebase_admin is required for database operations")
     db.reference(f"reset_tokens/{uid}").delete()

@@ -31,3 +31,13 @@ jobs:
         run: |
           bash ci/run_ui_pipeline.sh
 
+      - name: Run Ruff (Lint)
+        run: |
+          pip install ruff
+          ruff check .
+
+      - name: Run Bandit (Security Audit)
+        run: |
+          pip install bandit
+          bandit -r .
+

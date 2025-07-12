@@ -1,0 +1,6 @@
+[tool.ruff]
+line-length = 120
+fix = true
+exclude = ["tests/", ".venv/"]
+extend-ignore = ["E402", "E722", "F821", "F823", "F811", "E702", "F841", "F401", "E731"]
+

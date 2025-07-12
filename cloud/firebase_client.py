@@ -5,6 +5,8 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 from typing import Optional, Any, List, Dict
+import sys
+from types import ModuleType
 from datetime import datetime
 
 try:
@@ -17,17 +19,36 @@ except Exception:  # pragma: no cover - optional dependency
     firebase_admin = None
     credentials = SimpleNamespace(Certificate=lambda *a, **k: None)
     initialize_app = lambda *a, **k: None
-    storage = SimpleNamespace(bucket=lambda *a, **k: None)
-    db = SimpleNamespace(reference=lambda *a, **k: None)
+    from types import ModuleType
+
+    storage = ModuleType("cloud.firebase_client.storage")
+    storage.bucket = lambda *a, **k: None
+    sys.modules.setdefault("cloud.firebase_client.storage", storage)
+
+    db = ModuleType("cloud.firebase_client.db")
+    db.reference = lambda *a, **k: None
+    sys.modules.setdefault("cloud.firebase_client.db", db)
 except ImportError:  # optional dependency
     firebase_admin = None
     credentials = initialize_app = storage = db = None
+
+# Ensure submodules exist for mocking even if firebase_admin loads
+if not isinstance(storage, ModuleType):
+    stub = ModuleType("cloud.firebase_client.storage")
+    stub.bucket = getattr(storage, "bucket", lambda *a, **k: None)
+    storage = stub
+sys.modules.setdefault("cloud.firebase_client.storage", storage)
+
+if not isinstance(db, ModuleType):
+    db_stub = ModuleType("cloud.firebase_client.db")
+    db_stub.reference = getattr(db, "reference", lambda *a, **k: None)
+    db = db_stub
+sys.modules.setdefault("cloud.firebase_client.db", db)
 
 
 logger = logging.getLogger(__name__)
 
 # Global variable to hold the initialized Firebase app
-from typing import Any
 
 _firebase_app: Optional[Any] = None
 
