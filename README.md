@@ -105,9 +105,9 @@ MODO_DEBUG=1 python gerador_exe/builder.py
 Com `MODO_DEBUG=1` o programa exibe todos os logs, pinta a interface de vermelho e executa uma falha simulada após alguns segundos.
 
 ## 📦 Instalador Windows
-Depois de gerar o executável em `dist/KeydropBot_Professional.exe`, use o script
-`installer/KeydropBotInstaller.iss` com o Inno Setup para criar um instalador
-com ícone, atalhos e entrada em *Adicionar/Remover Programas*.
+Depois de gerar o executável em `dist/KeydropBot_Professional.exe`, execute
+`python gerador_exe/installer_builder.py --exe dist/KeydropBot_Professional.exe --arch x64 --version <versão>`
+para gerar instaladores `.exe` e `.msi` via `makensis` e `wixl`.
 
 ## 🐳 Docker
 Com Docker instalado, é possível levantar rapidamente a API executando:
