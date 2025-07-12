@@ -105,8 +105,14 @@ def test_rate_limiter():
     assert rl.allow("p")
 
 
-def test_browser_fallback(tmp_path):
+def test_browser_fallback(tmp_path, monkeypatch):
+    """Ensure fallback returns ``None`` when no browsers are available."""
     fake = tmp_path / "notfound.exe"
+    monkeypatch.setattr(
+        "bot_keydrop.system_safety.browser_fallback.BROWSER_PATHS",
+        [],
+        raising=False,
+    )
     assert launch_browser_with_fallback(str(fake)) is None
 
 
