@@ -12,7 +12,7 @@ class UIManager {
         this.stats = {};
         this.systemInfo = {};
         this.updateIntervals = new Map();
-        
+
         // Sound notification system
         this.soundEnabled = localStorage.getItem('soundNotifications') !== 'false';
         this.audioContext = null;
@@ -22,7 +22,7 @@ class UIManager {
             warning: { frequency: 600, duration: 300 },
             emergency: { frequency: 300, duration: 1000 }
         };
-        
+
         // Bind methods
         this.handleTabSwitch = this.handleTabSwitch.bind(this);
         this.handleConfigChange = this.handleConfigChange.bind(this);
@@ -102,7 +102,7 @@ class UIManager {
         configElements.forEach(id => {
             const element = document.getElementById(id);
             if (element) {
-                const eventType = element.type === 'checkbox' ? 'change' : 
+                const eventType = element.type === 'checkbox' ? 'change' :
                                 element.type === 'range' ? 'input' : 'change';
                 element.addEventListener(eventType, this.handleConfigChange);
             }
@@ -325,7 +325,7 @@ class UIManager {
         document.querySelectorAll('.tab-content').forEach(content => {
             content.classList.remove('active');
         });
-        
+
         const targetContent = document.getElementById(tabName);
         if (targetContent) {
             targetContent.classList.add('active');
@@ -361,7 +361,7 @@ class UIManager {
      */
     handleConfigChange(event) {
         const { id, type, value, checked } = event.target;
-        
+
         if (type === 'checkbox') {
             this.config[id] = checked;
         } else if (type === 'number' || type === 'range') {
@@ -803,17 +803,17 @@ class UIManager {
                     result = await window.apiClient.testProxy(payload.proxy);
                     break;
                 default:
-                    result = { success: false, message: 'Teste desconhecido' };
+                    result = { success: false, message: this.t('TEST_UNKNOWN') };
             }
             if (output) {
                 output.textContent = JSON.stringify(result, null, 2);
             }
-            this.showNotification(result.message || 'Teste concluído', result.success ? 'success' : 'error');
+            this.showNotification(result.message || this.t('TEST_COMPLETED'), result.success ? 'success' : 'error');
         } catch (error) {
             if (output) {
                 output.textContent = error.message;
             }
-            this.showNotification('Erro no diagnóstico', 'error');
+            this.showNotification(this.t('DIAGNOSIS_ERROR'), 'error');
         }
     }
 
@@ -823,7 +823,7 @@ class UIManager {
     showNotification(message, type = 'info') {
         // Play sound notification
         this.playSound(type);
-        
+
         // Create notification element
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
@@ -885,18 +885,18 @@ class UIManager {
         const closeBtn = document.getElementById('modalClose');
         if (!overlay) return;
 
-        title.textContent = 'Ensinar IA';
-        body.innerHTML = '<p>Após clicar em iniciar, uma guia será aberta.</p><p>Realize manualmente a participação do sorteio e feche a janela para finalizar.</p>';
-        footer.innerHTML = '<button id="startTeachAI">Iniciar</button>';
+        title.textContent = this.t('TEACH_AI_TITLE');
+        body.innerHTML = this.t('TEACH_AI_BODY');
+        footer.innerHTML = `<button id="startTeachAI">${this.t('TEACH_AI_START_BUTTON')}</button>`;
         overlay.style.display = 'block';
 
         document.getElementById('startTeachAI').addEventListener('click', async () => {
             overlay.style.display = 'none';
             try {
                 await window.apiClient.teachAI();
-                this.showNotification('Modo de ensino concluído', 'success');
+                this.showNotification(this.t('TEACH_AI_COMPLETED'), 'success');
             } catch (err) {
-                this.showNotification('Erro no modo de ensino', 'error');
+                this.showNotification(this.t('TEACH_AI_ERROR'), 'error');
             }
         });
 
@@ -908,18 +908,18 @@ class UIManager {
     async startMacro() {
         try {
             await window.apiClient.startMacro(1);
-            this.showNotification('Gravação iniciada', 'success');
+            this.showNotification(this.t('START_RECORDING'), 'success');
         } catch (err) {
-            this.showNotification('Erro ao iniciar gravação', 'error');
+            this.showNotification(this.t('ERROR_START_RECORDING'), 'error');
         }
     }
 
     async pauseMacro() {
         try {
             await window.apiClient.pauseMacro(1);
-            this.showNotification('Gravação pausada', 'info');
+            this.showNotification(this.t('PAUSE_RECORDING'), 'info');
         } catch (err) {
-            this.showNotification('Erro ao pausar gravação', 'error');
+            this.showNotification(this.t('ERROR_PAUSE_RECORDING'), 'error');
         }
     }
 
@@ -927,9 +927,9 @@ class UIManager {
         const useFirst = document.getElementById('useMacroFirst')?.checked || false;
         try {
             await window.apiClient.saveMacro(1, useFirst);
-            this.showNotification('Macro salva', 'success');
+            this.showNotification(this.t('MACRO_SAVED'), 'success');
         } catch (err) {
-            this.showNotification('Erro ao salvar macro', 'error');
+            this.showNotification(this.t('ERROR_SAVE_MACRO'), 'error');
         }
     }
 
