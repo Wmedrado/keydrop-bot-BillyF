@@ -38,10 +38,17 @@ jobs:
       - name: 📊 SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
         with:
-          projectKey: your_project_key  # 🔁 Substitua pelo ID real
-          organization: your_organization_id  # 🔁 Substitua pelo ID real
+          projectKey: keydrop-bot
+          organization: your-org
+          args: >-
+            -Dsonar.qualitygate.wait=true
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_PROJECT_KEY: keydrop-bot
+          SONAR_ORGANIZATION: your-org
+
+      - name: 📄 Relatório do SonarCloud
+        run: python ci/sonar_report.py
 
       - name: 🧪 Rodar pipeline de testes
         run: bash ci/run_pipeline.sh
