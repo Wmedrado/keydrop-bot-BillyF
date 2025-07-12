@@ -2,6 +2,9 @@ import json
 import time
 from pathlib import Path
 from typing import List, Dict
+import logging
+
+logger = logging.getLogger(__name__)
 
 class ActionRecorder:
     """Simple DOM action recorder for Playwright pages."""
@@ -42,5 +45,8 @@ class ActionRecorder:
     async def stop(self):
         """Stop recording and save actions."""
         if self.actions:
-            with self.output_file.open("w", encoding="utf-8") as f:
-                json.dump(self.actions, f, indent=2, ensure_ascii=False)
+            try:
+                with self.output_file.open("w", encoding="utf-8") as f:
+                    json.dump(self.actions, f, indent=2, ensure_ascii=False)
+            except Exception as e:
+                logger.error("Erro ao salvar ações aprendidas: %s", e)

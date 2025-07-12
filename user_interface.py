@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Dict, Optional, Any
+import logging
 
 import customtkinter as ctk
 from tkinter import messagebox, filedialog
@@ -25,6 +26,8 @@ from cloud.firebase_client import (
     salvar_perfil,
     upload_foto_perfil,
 )
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Firebase helpers
@@ -189,7 +192,12 @@ class ProfileFrame(ctk.CTkFrame):
         ctk.CTkButton(self, text="Enviar Foto", command=self.upload_photo).pack()
 
     def refresh(self) -> None:
-        data = carregar_dados_usuario(self.user_id) or {}
+        try:
+            data = carregar_dados_usuario(self.user_id) or {}
+        except Exception as e:
+            logger.exception("Erro ao carregar dados do usuário")
+            messagebox.showerror("Erro", f"Falha ao carregar dados do perfil.\n{e}")
+            return
         self.data = data
         self.name_var.set(data.get("nome", "-"))
         self.lucro_var.set(f"Lucro total: R$ {data.get('lucro_total', 0):.2f}")
@@ -231,9 +239,14 @@ class RankingFrame(ctk.CTkFrame):
         self.refresh()
 
     def refresh(self) -> None:
-        initialize_firebase()
-        ref = db.reference("rankings/top_lucro")
-        ranking = ref.order_by_value().limit_to_last(10).get() or {}
+        try:
+            initialize_firebase()
+            ref = db.reference("rankings/top_lucro")
+            ranking = ref.order_by_value().limit_to_last(10).get() or {}
+        except Exception as e:
+            logger.exception("Erro ao obter ranking do Firebase")
+            messagebox.showerror("Erro", f"Falha ao carregar ranking.\n{e}")
+            return
         sorted_items = sorted(ranking.items(), key=lambda x: x[1], reverse=True)
         html = ["<h3>Ranking Global</h3><ol>"]
         for idx, (uid, lucro) in enumerate(sorted_items, start=1):

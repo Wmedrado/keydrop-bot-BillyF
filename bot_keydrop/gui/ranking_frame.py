@@ -1,10 +1,13 @@
 """Ranking display component."""
 from __future__ import annotations
 
+import logging
 import customtkinter as ctk
 from tkhtmlview import HTMLLabel
 
 from cloud.firebase_client import initialize_firebase, db
+
+logger = logging.getLogger(__name__)
 
 
 class RankingFrame(ctk.CTkFrame):
@@ -15,9 +18,14 @@ class RankingFrame(ctk.CTkFrame):
         self.refresh()
 
     def refresh(self) -> None:
-        initialize_firebase()
-        ref = db.reference("rankings/top_lucro")
-        ranking = ref.order_by_value().limit_to_last(10).get() or {}
+        try:
+            initialize_firebase()
+            ref = db.reference("rankings/top_lucro")
+            ranking = ref.order_by_value().limit_to_last(10).get() or {}
+        except Exception as e:
+            logger.error("Erro ao carregar dados de ranking.")
+            messagebox.showerror("Erro", "Falha ao carregar o ranking. Verifique sua conexão.")
+            return
         sorted_items = sorted(ranking.items(), key=lambda x: x[1], reverse=True)
         html = ["<h3>Ranking Global</h3><ol>"]
         for idx, (uid, lucro) in enumerate(sorted_items, start=1):
