@@ -30,7 +30,7 @@ class ParticipationLearner:
         try:
             with self.state_file.open("w", encoding="utf-8") as f:
                 json.dump(self.state, f, indent=2, ensure_ascii=False)
-        except Exception as e:
+        except Exception:
             logger.exception("Erro ao salvar estado do aprendizado")
 
     def record_result(self, method: str, success: bool):

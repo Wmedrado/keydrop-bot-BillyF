@@ -25,7 +25,7 @@ class ExecutableBuilder:
     def check_pyinstaller(self):
         """Check if PyInstaller is available"""
         try:
-            import PyInstaller
+            import PyInstaller  # noqa: F401
             print("✅ PyInstaller encontrado")
             return True
         except ImportError:

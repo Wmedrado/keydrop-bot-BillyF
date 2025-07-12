@@ -3,8 +3,6 @@
 Teste rápido da automação Keydrop Bot v3.0.0
 """
 
-import sys
-import os
 
 def test_selenium():
     """Testar se Selenium está funcionando"""
@@ -59,11 +57,11 @@ def test_tkinter():
 def test_dependencies():
     """Testar outras dependências"""
     try:
-        import requests
-        import psutil
-        import json
-        import threading
-        import datetime
+        import requests  # noqa: F401
+        import psutil  # noqa: F401
+        import json  # noqa: F401
+        import threading  # noqa: F401
+        import datetime  # noqa: F401
         print("✅ Todas as dependências importadas")
         
         # Testar requests

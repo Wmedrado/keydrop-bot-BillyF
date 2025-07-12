@@ -12,7 +12,6 @@ import json
 import logging
 from pathlib import Path
 from typing import Dict, Optional, Any
-import logging
 
 import customtkinter as ctk
 from tkinter import messagebox, filedialog
@@ -37,9 +36,6 @@ logger = logging.getLogger(__name__)
 _FIREBASE_CONFIG = Path("firebase_config.json")
 _SESSION_FILE = Path("user_session.json")
 _PLACEHOLDER_IMAGE = Path(__file__).resolve().parent / "bot_keydrop" / "bot-icone.png"
-
-
-logger = logging.getLogger(__name__)
 
 
 def _load_pyrebase() -> pyrebase.pyrebase.Firebase:

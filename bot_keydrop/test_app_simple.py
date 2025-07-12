@@ -6,9 +6,6 @@ Aplicativo desktop com dark theme e perfis independentes
 
 import tkinter as tk
 from tkinter import ttk, messagebox
-import os
-import sys
-from datetime import datetime
 
 class KeydropBotGUI:
     def __init__(self):

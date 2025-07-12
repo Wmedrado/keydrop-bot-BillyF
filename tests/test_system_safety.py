@@ -24,7 +24,7 @@ def test_validar_permissoes(tmp_path):
 def test_backup_and_restore(tmp_path):
     p = tmp_path / "test.json"
     p.write_text("data")
-    backup = backup_arquivo(p)
+    backup_arquivo(p)
     p.unlink()
     restored = restaurar_arquivo(p)
     assert restored is not None

@@ -12,15 +12,14 @@ detecção automatizada. Está em nossos planos avaliar a migração para
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext, filedialog, TclError
 import threading
-import subprocess
-import sys
 import os
+import types
 import json
 import requests
 import time
 import logging
 import traceback
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 import psutil
 
@@ -54,14 +53,6 @@ try:
     from selenium.webdriver.common.by import By
     from selenium.webdriver.support.wait import WebDriverWait
     from selenium.webdriver.support import expected_conditions as EC
-    from selenium.common.exceptions import (
-        WebDriverException, 
-        TimeoutException, 
-        NoSuchElementException,
-        ElementClickInterceptedException,
-        StaleElementReferenceException,
-        SessionNotCreatedException
-    )
     from webdriver_manager.chrome import ChromeDriverManager
     try:
         import undetected_chromedriver as uc
@@ -817,6 +808,10 @@ class KeydropBotGUI:
     def __init__(self):
         self.headless = False
         self.setup_window()
+        if os.environ.get("MOCK_TK") == "1":
+            self.bot_manager = None
+            self.config = None
+            return
         self.bot_manager = KeydropBotManager()
         self.config = self.bot_manager.config
         if not self.headless:
@@ -825,6 +820,7 @@ class KeydropBotGUI:
         
     def setup_window(self):
         """Configurar janela principal"""
+
         try:
             self.root = tk.Tk()
         except TclError:
@@ -850,6 +846,18 @@ class KeydropBotGUI:
             self.root = DummyTk()
             self.headless = True
             return
+
+        if os.environ.get("MOCK_TK") == "1":
+            self.root = types.SimpleNamespace(
+                winfo_exists=lambda: True,
+                protocol=lambda *a, **k: None,
+                title=lambda *a, **k: None,
+                geometry=lambda *a, **k: None,
+                destroy=lambda: None,
+                tk=None,
+            )
+            return
+        self.root = tk.Tk()
         self.root.title("Keydrop Bot Professional v4.0.0")
         self.root.geometry("1000x800")
 
@@ -1170,7 +1178,7 @@ class KeydropBotGUI:
             
             # Criar bots
             for i in range(num_tabs):
-                bot = self.bot_manager.create_bot(i, self.config)
+                self.bot_manager.create_bot(i, self.config)
             
             # Iniciar todos os bots
             self.bot_manager.start_all_bots()

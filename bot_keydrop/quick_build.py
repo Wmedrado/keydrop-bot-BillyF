@@ -13,7 +13,7 @@ def main():
     try:
         # Instalar PyInstaller se necessário
         try:
-            import PyInstaller
+            import PyInstaller  # noqa: F401
             print("✅ PyInstaller disponível")
         except ImportError:
             print("📦 Instalando PyInstaller...")

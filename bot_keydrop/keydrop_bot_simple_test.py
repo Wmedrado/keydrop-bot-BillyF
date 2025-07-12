@@ -5,12 +5,8 @@ Versão simplificada para testar funcionalidade básica
 """
 
 import tkinter as tk
-from tkinter import ttk, messagebox, scrolledtext
-import threading
+from tkinter import messagebox, scrolledtext
 import sys
-import os
-import json
-import time
 from datetime import datetime
 
 class KeydropBotSimple:
@@ -116,7 +112,7 @@ class KeydropBotSimple:
         
         # Teste 4: Verificar requests
         try:
-            import requests
+            import requests  # noqa: F401
             self.log(f"🌐 Requests - OK")
         except ImportError:
             self.log("⚠️ requests não instalado - Instale com: pip install requests")
