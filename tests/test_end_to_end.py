@@ -27,7 +27,9 @@ class DummyBrowserManager:
         return True
 
     async def create_tab(self, tab_id, proxy=None):
-        class Info:
+        class TabInfo:
+            """Simple object tracking a tab used in tests."""
+
             def __init__(self, tab_id):
                 self.tab_id = tab_id
                 self.page = True
@@ -35,7 +37,8 @@ class DummyBrowserManager:
                 self.last_activity = datetime.now()
                 self.participation_count = 0
                 self.error_count = 0
-        info = Info(tab_id)
+
+        info = TabInfo(tab_id)
         self.tabs[tab_id] = info
         return info
 

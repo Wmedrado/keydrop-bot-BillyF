@@ -11,6 +11,9 @@ pip install pytest pytest-asyncio pytest-mock pytest-cov pytest-html flake8 blac
 flake8 . > build_results/flake8.log || true
 black --check . > build_results/black.log || true
 
+# Semantic naming validation
+python ci/check_naming_quality.py | tee build_results/naming_quality.log
+
 # Dependency check
 python - <<'PY'
 from bot_keydrop.system_safety import run_dependency_check

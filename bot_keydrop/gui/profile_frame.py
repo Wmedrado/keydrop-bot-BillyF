@@ -9,7 +9,10 @@ from tkinter import filedialog, messagebox
 from pathlib import Path
 from PIL import Image, ImageTk
 
-from firebase_admin import db
+try:
+    from firebase_admin import db
+except Exception:  # pragma: no cover - optional dependency
+    db = None  # type: ignore
 from cloud.firebase_client import initialize_firebase, upload_foto_perfil
 from .utils import safe_load_image, safe_widget_call
 
@@ -17,8 +20,10 @@ logger = logging.getLogger(__name__)
 
 
 def carregar_dados_usuario(user_id: str) -> Dict[str, Any]:
+    from firebase_admin import db as _db  # type: ignore
+
     initialize_firebase()
-    ref = db.reference(f"users/{user_id}")
+    ref = _db.reference(f"users/{user_id}")
     return ref.get() or {}
 
 
