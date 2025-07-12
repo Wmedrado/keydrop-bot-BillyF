@@ -12,6 +12,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: Validate PR description
+        if: github.event_name == 'pull_request'
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: python ci/validate_pr_description.py
       - name: Run pipeline
         run: |
           bash ci/run_pipeline.sh
+      - name: Run UI pipeline
+        run: |
+          bash ci/run_ui_pipeline.sh
