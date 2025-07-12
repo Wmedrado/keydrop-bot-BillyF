@@ -9,7 +9,7 @@ import asyncio
 import logging
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, asdict
-from datetime import datetime, timedelta
+from datetime import datetime
 
 # Configuração de logging
 logging.basicConfig(level=logging.INFO)

@@ -3,12 +3,15 @@ from __future__ import annotations
 
 from typing import Dict, Any
 import logging
+import threading
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
+from pathlib import Path
 from PIL import Image, ImageTk
 
 from firebase_admin import db
 from cloud.firebase_client import initialize_firebase, upload_foto_perfil
+from .utils import safe_load_image, safe_widget_call
 
 logger = logging.getLogger(__name__)
 
@@ -57,25 +60,25 @@ class DashboardFrame(ctk.CTkFrame):
         self.tempo_var.set(f"Tempo de uso: {data.get('tempo_total_min', 0)} min")
         self.bots_var.set(f"Bots simult\u00e2neos: {data.get('bots_ativos_max', 0)}")
         foto_url = data.get("foto_url")
-        if foto_url:
-            try:
-                from urllib.request import urlopen
-                with urlopen(foto_url) as resp:
-                    img = Image.open(resp)
-                    img = img.resize((80, 80))
-                    photo = ImageTk.PhotoImage(img)
-                    self.img_container.configure(image=photo)
-                    self.img_container.image = photo
-            except Exception:
-                self.img_container.configure(image=None)
+        placeholder = Path(__file__).resolve().parents[1] / "bot-icone.png"
+        photo = safe_load_image(foto_url or placeholder, size=(80, 80), placeholder=placeholder)
+        safe_widget_call(self.img_container.configure, image=photo)
+        self.img_container.image = photo
 
     def upload_photo(self) -> None:
         path = filedialog.askopenfilename(filetypes=[("Imagens", "*.png;*.jpg;*.jpeg")])
         if not path:
             return
-        try:
-            url = upload_foto_perfil(self.user_id, path)
-            messagebox.showinfo("Upload", f"Foto enviada para {url}")
-            self.refresh()
-        except Exception as exc:  # pragma: no cover
-            messagebox.showerror("Erro", str(exc))
+        def worker() -> None:
+            try:
+                url = upload_foto_perfil(self.user_id, path)
+                self.after(0, lambda: self._on_upload_success(url))
+            except Exception as exc:  # pragma: no cover - network errors
+                logger.exception("Falha ao enviar foto de perfil")
+                self.after(0, lambda: messagebox.showerror("Erro", f"Falha ao enviar foto.\n{exc}"))
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def _on_upload_success(self, url: str) -> None:
+        messagebox.showinfo("Upload", f"Foto enviada para {url}")
+        self.refresh()

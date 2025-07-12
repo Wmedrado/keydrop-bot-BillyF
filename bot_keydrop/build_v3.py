@@ -4,7 +4,6 @@ Script de Build para Keydrop Bot Professional v3.0.0
 Gera executável otimizado com ícone personalizado
 """
 
-import os
 import sys
 import shutil
 import subprocess
@@ -75,7 +74,7 @@ def main():
     # Executar build
     print("⚙️ Iniciando build...")
     try:
-        result = subprocess.run(cmd, check=True, capture_output=False)
+        subprocess.run(cmd, check=True, capture_output=False)
         print("✅ Build concluído com sucesso!")
         
         # Verificar executável gerado

@@ -39,7 +39,7 @@ def criar_log_debug():
                 print(f"ERRO NO LOG: {e}")
         
         return log, log_file
-    except Exception as e:
+    except Exception:
         def dummy_log(msg):
             print(f"[LOG] {msg}")
         return dummy_log, None
@@ -58,14 +58,14 @@ def teste_interface_minima():
         # Teste 1: Verificar imports
         log("TESTE 1: Verificando imports...")
         try:
-            import tkinter as tk_test
+            import tkinter as tk_test  # noqa: F401
             log("✅ tkinter importado")
         except Exception as e:
             log(f"❌ Erro tkinter: {e}")
             return
         
         try:
-            import psutil
+            import psutil  # noqa: F401
             log("✅ psutil importado")
         except Exception as e:
             log(f"❌ Erro psutil: {e}")

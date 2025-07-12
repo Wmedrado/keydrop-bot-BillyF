@@ -10,14 +10,15 @@ from __future__ import annotations
 
 import json
 import logging
+import threading
 from pathlib import Path
 from typing import Dict, Optional, Any
-import logging
 
 import customtkinter as ctk
 from tkinter import messagebox, filedialog
 from PIL import Image, ImageTk
 from tkhtmlview import HTMLLabel
+from bot_keydrop.gui.utils import safe_load_image, safe_widget_call
 
 import pyrebase
 from firebase_admin import db
@@ -37,9 +38,6 @@ logger = logging.getLogger(__name__)
 _FIREBASE_CONFIG = Path("firebase_config.json")
 _SESSION_FILE = Path("user_session.json")
 _PLACEHOLDER_IMAGE = Path(__file__).resolve().parent / "bot_keydrop" / "bot-icone.png"
-
-
-logger = logging.getLogger(__name__)
 
 
 def _load_pyrebase() -> pyrebase.pyrebase.Firebase:
@@ -209,38 +207,31 @@ class ProfileFrame(ctk.CTkFrame):
         self.tempo_var.set(f"Tempo de uso: {data.get('tempo_total_min', 0)} min")
         self.bots_var.set(f"Bots simultâneos: {data.get('bots_ativos_max', 0)}")
         foto_url = data.get("foto_url")
-        photo = None
-        if foto_url:
-            try:
-                from urllib.request import urlopen
-
-                with urlopen(foto_url) as resp:
-                    img = Image.open(resp)
-                    img = img.resize((80, 80))
-                    photo = ImageTk.PhotoImage(img)
-            except Exception as exc:  # pragma: no cover - network errors
-                logger.exception("Failed to download avatar: %s", exc)
-        if photo is None and _PLACEHOLDER_IMAGE.exists():
-            try:
-                img = Image.open(_PLACEHOLDER_IMAGE)
-                img = img.resize((80, 80))
-                photo = ImageTk.PhotoImage(img)
-            except Exception as exc:  # pragma: no cover - pillow errors
-                logger.exception("Failed to load placeholder image: %s", exc)
-
-        self.img_container.configure(image=photo)
+        photo = safe_load_image(
+            foto_url or _PLACEHOLDER_IMAGE,
+            size=(80, 80),
+            placeholder=_PLACEHOLDER_IMAGE,
+        )
+        safe_widget_call(self.img_container.configure, image=photo)
         self.img_container.image = photo
 
     def upload_photo(self) -> None:
         path = filedialog.askopenfilename(filetypes=[("Imagens", "*.png;*.jpg;*.jpeg")])
         if not path:
             return
-        try:
-            url = upload_foto_perfil(self.user_id, path)
-            messagebox.showinfo("Upload", f"Foto enviada para {url}")
-            self.refresh()
-        except Exception as exc:  # pragma: no cover - network errors
-            messagebox.showerror("Erro", str(exc))
+        def worker() -> None:
+            try:
+                url = upload_foto_perfil(self.user_id, path)
+                self.img_container.after(0, lambda: self._on_upload_success(url))
+            except Exception as exc:  # pragma: no cover - network errors
+                logger.exception("Falha ao enviar foto de perfil")
+                self.img_container.after(0, lambda: messagebox.showerror("Erro", f"Falha ao enviar foto.\n{exc}"))
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def _on_upload_success(self, url: str) -> None:
+        messagebox.showinfo("Upload", f"Foto enviada para {url}")
+        self.refresh()
 
 
 class RankingFrame(ctk.CTkFrame):
@@ -268,4 +259,4 @@ class RankingFrame(ctk.CTkFrame):
             highlight = "🔥" if idx == 1 else ("💰" if lucro > 500 else "")
             html.append(f"<li>{medal} {uid} - R$ {lucro:.2f} {highlight}</li>")
         html.append("</ol>")
-        self.html_label.set_html("".join(html))
+        safe_widget_call(self.html_label.set_html, "".join(html))

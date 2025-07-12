@@ -6,7 +6,6 @@ Teste Simples - Verificar se executável funciona
 import tkinter as tk
 import sys
 import os
-from pathlib import Path
 
 def main():
     """Teste simples de executável"""

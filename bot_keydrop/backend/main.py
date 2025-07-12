@@ -25,7 +25,7 @@ import uvicorn
 import httpx
 
 # Importar módulos do bot
-from config import ConfigManager, BotConfig, get_config, save_config
+from config import ConfigManager, get_config, save_config
 from system_monitor import (
     SystemMonitor,
     get_system_metrics,
@@ -38,7 +38,6 @@ from bot_logic import (
     create_keydrop_automation,
     create_bot_scheduler,
     BotStatus,
-    ParticipationResult,
     TabWatchdog,
 )
 
@@ -690,7 +689,7 @@ async def diagnostics_login():
     try:
         if not browser_manager.is_running:
             started = await browser_manager.start_browser(headless=True)
-        tab = await browser_manager.create_tab(-100, automation_engine.URLS['keydrop_main'])
+        await browser_manager.create_tab(-100, automation_engine.URLS['keydrop_main'])
         await asyncio.sleep(5)
         await browser_manager.close_tab(-100)
         if started:
@@ -725,7 +724,7 @@ async def diagnostics_proxy(request: ProxyTestRequest):
     try:
         if not browser_manager.is_running:
             started = await browser_manager.start_browser(headless=True)
-        tab = await browser_manager.create_tab(-101, automation_engine.URLS['keydrop_main'], proxy=request.proxy)
+        await browser_manager.create_tab(-101, automation_engine.URLS['keydrop_main'], proxy=request.proxy)
         await asyncio.sleep(5)
         await browser_manager.close_tab(-101)
         if started:
@@ -780,7 +779,7 @@ async def websocket_endpoint(websocket: WebSocket):
         # Manter conexão ativa
         while True:
             try:
-                data = await websocket.receive_text()
+                await websocket.receive_text()
                 # Processar mensagens do cliente se necessário
             except WebSocketDisconnect:
                 break

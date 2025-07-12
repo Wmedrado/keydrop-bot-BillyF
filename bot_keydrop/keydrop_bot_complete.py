@@ -8,13 +8,9 @@ import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext, filedialog
 import threading
 import subprocess
-import sys
 import os
 import json
-import requests
 import time
-import logging
-import traceback
 from datetime import datetime
 from pathlib import Path
 import psutil
@@ -218,7 +214,6 @@ class KeydropBotGUI:
                     fg=self.dark_colors['fg']).pack()
             
             # Notebook
-            style = ttk.Style()
             self.notebook = ttk.Notebook(self.root, style='Dark.TNotebook')
             self.notebook.pack(fill='both', expand=True, padx=15, pady=10)
             

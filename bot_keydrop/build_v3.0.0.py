@@ -8,7 +8,6 @@ import subprocess
 import sys
 import os
 import shutil
-from pathlib import Path
 
 def build_executable():
     """Construir executável v3.0.0 otimizado"""

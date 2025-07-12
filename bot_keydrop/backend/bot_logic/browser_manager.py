@@ -5,15 +5,11 @@ Responsável por iniciar, fechar e gerenciar instâncias do Chrome usando Playwr
 
 import asyncio
 import logging
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 from datetime import datetime
-import psutil
-import signal
-import os
 from pathlib import Path
 import json
-import shutil
 from playwright.async_api import async_playwright, Browser, BrowserContext, Page, Playwright
 
 # Configuração de logging

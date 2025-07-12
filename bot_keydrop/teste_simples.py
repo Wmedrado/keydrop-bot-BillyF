@@ -5,8 +5,7 @@ Versão ultra simplificada para teste
 
 import tkinter as tk
 import sys
-import time
-from pathlib import Path
+
 
 def criar_interface_simples():
     """Criar interface super simples sem complicações"""
@@ -44,11 +43,11 @@ def main():
         
         # Importar dependências
         print("Importando tkinter...")
-        import tkinter as tk_test
+        import tkinter as tk_test  # noqa: F401
         print("✅ tkinter OK")
         
         print("Importando psutil...")
-        import psutil
+        import psutil  # noqa: F401
         print("✅ psutil OK")
         
         print("Criando interface...")
