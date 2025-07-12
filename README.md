@@ -84,6 +84,18 @@ Instale as dependências de desenvolvimento listadas em `requirements-dev.txt`
 para garantir que plugins como `pytest-asyncio` e `pytest-mock` estejam
 disponíveis.
 
+### Executando pre-commit
+Para rodar os testes automatizados e verificações de estilo localmente utilize o
+`pre-commit`:
+
+```bash
+pip install -r bot_keydrop/requirements.txt -r bot_keydrop/backend/requirements.txt -r requirements-dev.txt
+pre-commit run --all-files
+```
+
+Isso garante que todas as dependências estejam presentes antes de executar o
+`pytest` e demais hooks configurados.
+
 ## 🛠 Builds Disponíveis
 Execute `python gerador_exe/builder.py` para gerar os executáveis. O script cria automaticamente dois arquivos em `gerador_exe/binario_final`:
 
@@ -142,4 +154,3 @@ Após os testes, um revisor automático avalia os logs e gera `build_results/aut
 Somente problemas encontrados nos arquivos modificados pelo PR contam como erro crítico.
 Se tais erros forem detectados, o PR é bloqueado; caso contrário, ele é aprovado automaticamente.
 Os relatórios são gerados em `tests/test_report.html` e `tests/coverage.txt`.
-

@@ -1,6 +1,7 @@
 import hashlib
 import json
 import logging
+import os
 import sys
 import traceback
 from collections import Counter
@@ -8,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Callable, Optional
 
+TEST_ENV_VAR = "PYTEST_CURRENT_TEST"
 import getpass
 
 import requests
@@ -62,6 +64,9 @@ class ErrorReporter:
         entry = f"#{hsh} {self.counters[hsh]}x\n{tb}\n"
         with open(self.log_file, "a", encoding="utf-8") as fh:
             fh.write(entry)
+
+        # Avoid sending notifications during automated tests
+        if self.send_callback and TEST_ENV_VAR not in os.environ:
 
         info = self._build_error_data(exc, tb)
         self._flush_pending()
