@@ -9,6 +9,14 @@ import psutil
 from datetime import datetime
 from keydrop_bot import BotManager
 
+# Ícone na bandeja
+try:
+    import pystray
+    from PIL import Image
+    PYSTRAY_AVAILABLE = True
+except Exception:
+    PYSTRAY_AVAILABLE = False
+
 class ToolTip:
     """Classe para criar tooltips explicativos"""
     
@@ -218,6 +226,7 @@ class KeyDropGUI:
         self.bots_rodando = False
         self.status_labels = []
         self.stats_labels = []
+        self.progress_bars = []
         self.update_thread = None
         self.start_time = None
         
@@ -228,6 +237,9 @@ class KeyDropGUI:
         
         # Criar interface
         self.criar_interface()
+
+        # Configurar ícone na bandeja
+        self.setup_tray_icon()
         
         # Iniciar update loop
         self.iniciar_update_loop()
@@ -596,7 +608,7 @@ class KeyDropGUI:
         linha_botoes3.grid_columnconfigure(0, weight=1)
         linha_botoes3.grid_columnconfigure(1, weight=1)
         
-        btn_salvar = tk.Button(
+        self.btn_salvar = tk.Button(
             linha_botoes3,
             text="💾 SALVAR CONFIG",
             command=self.salvar_config,
@@ -608,7 +620,7 @@ class KeyDropGUI:
             relief="flat",
             borderwidth=0
         )
-        btn_salvar.grid(row=0, column=0, sticky="ew", padx=(0, 3))
+        self.btn_salvar.grid(row=0, column=0, sticky="ew", padx=(0, 3))
         
         btn_startup = tk.Button(
             linha_botoes3,
@@ -629,7 +641,7 @@ class KeyDropGUI:
         ToolTip(self.btn_parar, "Para todos os bots em execução\nClique para parar")
         ToolTip(self.btn_reiniciar, "Reinicia as guias do navegador\nÚtil para resolver problemas")
         ToolTip(self.btn_limpar_cache, "Limpa cache do navegador\nMelhora performance")
-        ToolTip(btn_salvar, "Salva configurações atuais\nAutomático ao iniciar")
+        ToolTip(self.btn_salvar, "Salva configurações atuais\nAutomático ao iniciar")
         ToolTip(btn_startup, "Configura inicialização automática\nInicia com o Windows")
         
         # Efeitos hover para os botões
@@ -637,7 +649,7 @@ class KeyDropGUI:
         self.add_hover_effect(self.btn_parar, "#D9403A", "#F04747")
         self.add_hover_effect(self.btn_reiniciar, "#E65A28", "#FF6B35")
         self.add_hover_effect(self.btn_limpar_cache, "#8B4A9C", "#9B59B6")
-        self.add_hover_effect(btn_salvar, "#5E7DD3", "#7289DA")
+        self.add_hover_effect(self.btn_salvar, "#5E7DD3", "#7289DA")
         self.add_hover_effect(btn_startup, "#E19710", "#FAA61A")
         
         # Espaçamento final
@@ -804,9 +816,14 @@ class KeyDropGUI:
     def iniciar_bots(self):
         """Inicia todos os bots"""
         try:
+            # Feedback visual
+            self.btn_iniciar.config(text="⏳ INICIANDO...", state="disabled")
+            self.root.update_idletasks()
+
             # Validar configurações
             if self.num_bots_var.get() < 1 or self.num_bots_var.get() > 200:
                 messagebox.showerror("Erro", "Número de bots deve estar entre 1 e 200")
+                self.btn_iniciar.config(text="🚀 INICIAR BOTS", state="normal")
                 return
             
             if self.num_bots_var.get() > 50:
@@ -818,10 +835,12 @@ class KeyDropGUI:
                     "Deseja continuar?"
                 )
                 if not response:
+                    self.btn_iniciar.config(text="🚀 INICIAR BOTS", state="normal")
                     return
             
             if self.intervalo_sorteios_var.get() < 10:
                 messagebox.showerror("Erro", "Intervalo entre sorteios deve ser no mínimo 10 segundos")
+                self.btn_iniciar.config(text="🚀 INICIAR BOTS", state="normal")
                 return
             
             # Salvar configurações
@@ -849,6 +868,7 @@ class KeyDropGUI:
                 widget.destroy()
             self.status_labels = []
             self.stats_labels = []
+            self.progress_bars = []
             
             # Criar labels de status
             self.criar_labels_status()
@@ -859,6 +879,8 @@ class KeyDropGUI:
                 args=(self.intervalo_sorteios_var.get(),),
                 daemon=True
             ).start()
+
+            self.btn_iniciar.config(text="🚀 INICIAR BOTS")
             
             messagebox.showinfo(
                 "Sucesso",
@@ -873,6 +895,7 @@ class KeyDropGUI:
             
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao iniciar bots: {str(e)}")
+            self.btn_iniciar.config(text="🚀 INICIAR BOTS", state="normal")
     
     def parar_bots(self):
         """Para todos os bots"""
@@ -888,6 +911,9 @@ class KeyDropGUI:
             # Atualizar status
             for i, label in enumerate(self.status_labels):
                 label.config(text=f"Bot {i+1}: ⏹️ Parado", fg="#F04747")
+
+            for bar in self.progress_bars:
+                bar['value'] = 0
             
             messagebox.showinfo("Sucesso", "Todos os bots foram parados!\n\n✅ Notificação de parada enviada para o Discord (se configurado)!")
             
@@ -897,6 +923,11 @@ class KeyDropGUI:
     def salvar_config(self):
         """Salva as configurações"""
         try:
+            # Feedback visual
+            if hasattr(self, 'btn_salvar'):
+                self.btn_salvar.config(text="💾 Salvando...", state="disabled")
+                self.root.update_idletasks()
+
             config = {
                 'num_bots': self.num_bots_var.get(),
                 'intervalo_sorteios': self.intervalo_sorteios_var.get(),
@@ -911,6 +942,9 @@ class KeyDropGUI:
             messagebox.showinfo("Sucesso", "Configurações salvas com sucesso!")
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao salvar configurações: {str(e)}")
+        finally:
+            if hasattr(self, 'btn_salvar'):
+                self.btn_salvar.config(text="💾 SALVAR CONFIG", state="normal")
     
     def criar_labels_status(self):
         """Cria labels para mostrar status dos bots"""
@@ -944,7 +978,7 @@ class KeyDropGUI:
             )
             stats_label.pack(side="left")
             self.stats_labels.append(stats_label)
-            
+
             # Saldo (lado direito)
             saldo_label = tk.Label(
                 stats_frame,
@@ -955,6 +989,16 @@ class KeyDropGUI:
             )
             saldo_label.pack(side="right")
             self.stats_labels.append(saldo_label)  # Usar mesma lista para simplificar
+
+            # Barra de progresso
+            progress = ttk.Progressbar(
+                bot_frame,
+                maximum=self.intervalo_sorteios_var.get(),
+                length=200
+            )
+            progress.pack(fill="x", padx=10, pady=(0, 5))
+            self.progress_bars.append(progress)
+            ToolTip(progress, "Tempo restante para próximo ciclo")
     
     def iniciar_update_loop(self):
         """Inicia o loop de atualização de status"""
@@ -1003,7 +1047,7 @@ class KeyDropGUI:
                             
                             # Atualizar saldo (se disponível)
                             saldo = bot_stats.get('saldo_skins', 'R$ 0,00')
-                            
+
                             # Verificar se temos label de saldo (cada bot tem 2 labels no stats_labels)
                             if (i * 2 + 1) < len(self.stats_labels):
                                 self.stats_labels[i * 2].config(text=stats_text)
@@ -1012,6 +1056,13 @@ class KeyDropGUI:
                                 # Fallback se não tiver label de saldo
                                 if i < len(self.stats_labels):
                                     self.stats_labels[i].config(text=f"{stats_text} | {saldo}")
+
+                            # Atualizar progress bar
+                            if i < len(self.progress_bars):
+                                total = bot_stats.get('intervalo_total', self.intervalo_sorteios_var.get())
+                                progresso = bot_stats.get('progresso_intervalo', 0)
+                                self.progress_bars[i].config(maximum=total)
+                                self.progress_bars[i]['value'] = progresso
                 
                 time.sleep(2)  # Atualiza a cada 2 segundos
                 
@@ -1321,3 +1372,58 @@ class KeyDropGUI:
             
         except Exception as e:
             print(f"❌ Erro na configuração do ícone: {e}")
+
+    def setup_tray_icon(self):
+        """Configura o ícone da bandeja do sistema"""
+        if not PYSTRAY_AVAILABLE:
+            return
+        try:
+            from pystray import Icon, Menu, MenuItem
+            from PIL import Image
+
+            # Carregar imagem do ícone
+            icon_path = None
+            for caminho in [
+                os.path.join(os.path.dirname(__file__), 'bot-icone.png'),
+                os.path.join(os.path.dirname(__file__), 'bot-icone.ico'),
+                os.path.join(os.getcwd(), 'bot-icone.png'),
+                os.path.join(os.getcwd(), 'bot-icone.ico'),
+            ]:
+                if os.path.exists(caminho):
+                    icon_path = caminho
+                    break
+
+            if icon_path:
+                image = Image.open(icon_path)
+            else:
+                image = Image.new('RGB', (64, 64), color=(0, 0, 0))
+
+            menu = Menu(
+                MenuItem('Mostrar', self.show_window),
+                MenuItem('Sair', self.exit_app)
+            )
+
+            self.tray_icon = Icon('KeyDropBot', image, 'KeyDrop Bot', menu)
+            threading.Thread(target=self.tray_icon.run, daemon=True).start()
+
+            # Minimizar para bandeja ao fechar
+            self.root.protocol("WM_DELETE_WINDOW", self.hide_window)
+        except Exception as e:
+            print(f"⚠️ Falha ao iniciar ícone de bandeja: {e}")
+
+    def show_window(self, *args):
+        """Exibe a janela principal"""
+        self.root.after(0, self.root.deiconify)
+
+    def hide_window(self, *args):
+        """Esconde a janela na bandeja"""
+        self.root.withdraw()
+
+    def exit_app(self, *args):
+        """Fecha aplicação e ícone da bandeja"""
+        try:
+            if hasattr(self, 'tray_icon') and self.tray_icon:
+                self.tray_icon.stop()
+        except Exception:
+            pass
+        self.root.destroy()
