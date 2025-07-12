@@ -8,11 +8,10 @@ from collections import Counter
 from datetime import datetime
 from pathlib import Path
 from typing import Callable, Optional
+import getpass
+import requests
 
 TEST_ENV_VAR = "PYTEST_CURRENT_TEST"
-import getpass
-
-import requests
 
 
 class ErrorReporter:
@@ -65,15 +64,13 @@ class ErrorReporter:
         with open(self.log_file, "a", encoding="utf-8") as fh:
             fh.write(entry)
 
-        # Avoid sending notifications during automated tests
-        if self.send_callback and TEST_ENV_VAR not in os.environ:
-
         info = self._build_error_data(exc, tb)
         self._flush_pending()
         if not self._send_discord(info):
             self._save_pending(info)
 
-        if self.send_callback:
+        # Avoid calling local callbacks during automated tests
+        if self.send_callback and TEST_ENV_VAR not in os.environ:
             try:
                 self.send_callback(hsh, tb)
             except Exception as e:
