@@ -135,6 +135,12 @@ class BotConfig(BaseModel):
         le=600,
         description="Aguardar (segundos) antes de reagendar após falhas",
     )
+
+    # Múltiplas contas
+    accounts: List[str] = Field(
+        default_factory=list,
+        description="Lista de logins ou tokens para múltiplas contas",
+    )
     
 
     # Configurações de sistema
