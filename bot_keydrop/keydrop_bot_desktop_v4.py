@@ -3,6 +3,10 @@
 Keydrop Bot Professional v4.0.0 - Interface Gráfica Desktop
 Aplicativo desktop nativo com automação Chrome integrada para sorteios Keydrop
 Desenvolvido por William Medrado (wmedrado)
+
+Este módulo utiliza Selenium com **undetected-chromedriver** para minimizar a
+detecção automatizada. Está em nossos planos avaliar a migração para
+**Playwright** para maior performance e flexibilidade no futuro.
 """
 
 import tkinter as tk
@@ -45,6 +49,12 @@ try:
         SessionNotCreatedException
     )
     from webdriver_manager.chrome import ChromeDriverManager
+    try:
+        import undetected_chromedriver as uc
+        UNDETECTED_AVAILABLE = True
+    except ImportError:
+        uc = None
+        UNDETECTED_AVAILABLE = False
     from webdriver_manager.microsoft import EdgeChromiumDriverManager
     from webdriver_manager.firefox import GeckoDriverManager
     SELENIUM_AVAILABLE = True
@@ -171,7 +181,8 @@ class KeydropBot:
         # Adicionar Chrome se disponível  
         if ChromeOptions and ChromeService and ChromeDriverManager and webdriver:
             try:
-                browser_attempts.append(('chrome', 'Google Chrome', ChromeOptions, ChromeService, ChromeDriverManager, webdriver.Chrome))
+                chrome_driver = uc.Chrome if UNDETECTED_AVAILABLE else webdriver.Chrome
+                browser_attempts.append(('chrome', 'Google Chrome', ChromeOptions, ChromeService, ChromeDriverManager, chrome_driver))
             except AttributeError:
                 pass
         
@@ -205,8 +216,11 @@ class KeydropBot:
                 # Abordagem 1: webdriver-manager
                 try:
                     print(f"[Bot {self.bot_id}] Tentando {browser_name} com webdriver-manager...")
-                    service = ServiceClass(DriverManager().install())
-                    self.driver = WebDriverClass(service=service, options=options)
+                    if browser_type == 'chrome' and UNDETECTED_AVAILABLE and WebDriverClass is uc.Chrome:
+                        self.driver = WebDriverClass(options=options)
+                    else:
+                        service = ServiceClass(DriverManager().install())
+                        self.driver = WebDriverClass(service=service, options=options)
                     driver_created = True
                     print(f"[Bot {self.bot_id}] ✅ {browser_name} configurado com webdriver-manager")
                 except Exception as e1:
