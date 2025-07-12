@@ -94,6 +94,11 @@ pre-commit run --all-files
 
 Execute os testes separadamente com `pytest` quando necessário.
 
+```bash
+python scripts/lint_code.py      # Verificação de estilo
+python scripts/security_scan.py  # Análise de segurança
+```
+
 ## 🛠 Builds Disponíveis
 Execute `python gerador_exe/builder.py` para gerar os executáveis. O script cria automaticamente dois arquivos em `gerador_exe/binario_final`:
 
