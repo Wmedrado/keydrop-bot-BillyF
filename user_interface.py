@@ -20,6 +20,16 @@ from tkinter import messagebox, filedialog
 from tkhtmlview import HTMLLabel
 from bot_keydrop.gui.utils import safe_load_image, safe_widget_call
 
+try:
+    import pyrebase
+except ImportError:  # optional dependency
+    pyrebase = None
+try:
+    from firebase_admin import db
+except ImportError:  # optional dependency
+    db = None
+
+
 from cloud.firebase_client import (
     initialize_firebase,
     salvar_perfil,
@@ -37,20 +47,29 @@ _SESSION_FILE = Path("user_session.json")
 _PLACEHOLDER_IMAGE = Path(__file__).resolve().parent / "bot_keydrop" / "bot-icone.png"
 
 
+
 def _load_pyrebase() -> Any:
     """Initialize a Pyrebase client using ``firebase_config.json``.
 
     The import is performed lazily so tests can run without the optional
     ``pyrebase`` dependency installed.
     """
+
+def _load_pyrebase() -> "pyrebase.pyrebase.Firebase":
+    """Initialize a Pyrebase client using ``firebase_config.json``."""
+
     if not _FIREBASE_CONFIG.exists():
         raise FileNotFoundError(
             "Firebase configuration not found at firebase_config.json"
         )
+
     try:
         import pyrebase  # type: ignore
     except Exception as exc:
         raise ImportError("pyrebase is required for Firebase features") from exc
+
+    if pyrebase is None:
+        raise ImportError("pyrebase is required for Firebase operations")
     with open(_FIREBASE_CONFIG, "r", encoding="utf-8") as fh:
         config = json.load(fh)
     return pyrebase.initialize_app(config)
@@ -85,6 +104,8 @@ def registrar_usuario(email: str, senha: str) -> Dict[str, Any]:
 def carregar_dados_usuario(user_id: str) -> Optional[Dict[str, Any]]:
     """Load a user's profile data from Firebase."""
     from firebase_admin import db  # type: ignore
+    if db is None:
+        raise ImportError("firebase_admin is required for database operations")
 
     initialize_firebase()
     ref = db.reference(f"users/{user_id}")
@@ -257,7 +278,12 @@ class RankingFrame(ctk.CTkFrame):
 
     def refresh(self) -> None:
         try:
+
             from firebase_admin import db  # type: ignore
+
+
+            if db is None:
+                raise ImportError("firebase_admin is required for database operations")
 
             initialize_firebase()
             ref = db.reference("rankings/top_lucro")
@@ -274,3 +300,4 @@ class RankingFrame(ctk.CTkFrame):
             html.append(f"<li>{medal} {uid} - R$ {lucro:.2f} {highlight}</li>")
         html.append("</ol>")
         safe_widget_call(self.html_label.set_html, "".join(html))
+

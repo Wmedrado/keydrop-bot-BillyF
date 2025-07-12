@@ -9,6 +9,7 @@ from typing import Optional
 try:
     import firebase_admin
     from firebase_admin import credentials, initialize_app, storage, db
+
 except Exception:  # pragma: no cover - optional dependency
     from types import SimpleNamespace
 
@@ -17,6 +18,10 @@ except Exception:  # pragma: no cover - optional dependency
     initialize_app = lambda *a, **k: None
     storage = SimpleNamespace(bucket=lambda *a, **k: None)
     db = SimpleNamespace(reference=lambda *a, **k: None)
+except ImportError:  # optional dependency
+    firebase_admin = None
+    credentials = initialize_app = storage = db = None
+
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +38,9 @@ _STORAGE_BUCKET = "keydrop-bot-ab111.appspot.com"
 def initialize_firebase() -> Any:
     """Initialize Firebase if not already done."""
     global _firebase_app
+
+    if firebase_admin is None:
+        raise ImportError("firebase_admin is required for Firebase integration")
 
     if _firebase_app:
         return _firebase_app
@@ -113,3 +121,4 @@ def upload_foto_perfil(user_id: str, caminho_imagem: str) -> str:
     except Exception as exc:  # pragma: no cover - network errors
         logger.exception("Falha ao enviar foto de perfil: %s", exc)
         raise RuntimeError("Falha ao enviar foto de perfil") from exc
+
