@@ -44,6 +44,8 @@ O script `startup.py` inicia o backend FastAPI na porta `8000` e um servidor
 HTTP simples para a interface web (porta `3000`). Após iniciado, a interface
 pode ser acessada em `http://localhost:3000` e a API em
 `http://localhost:8000`.
+Também é servido um painel opcional em `http://localhost:8000/ui` com
+informações resumidas, gráficos de CPU/RAM e controles básicos do bot.
 
 ### Produção ou Executável
 
@@ -74,12 +76,29 @@ Para iniciar apenas a interface desktop, somente a API FastAPI ou ambos ao mesmo
 python launcher.py
 ```
 
+=======
+## Sistema de Atualização Automática
+
+O repositório inclui um utilitário simples de auto-update. O
+`update_manager.py` verifica um arquivo JSON hospedado (por exemplo em
+GitHub Pages) com a versão mais recente disponível. Caso detecte que a
+versão local está desatualizada, o script baixa o novo pacote `.zip` ou
+`.exe` e reinicia o bot automaticamente.
+
+```bash
+python bot_keydrop/update_manager.py
+```
+
+Um exemplo do formato esperado para o JSON pode ser encontrado em
+`update_info_example.json`.
+
 ## Configuração do Bot
 
 As configurações padrão encontram-se no arquivo `config.json` na raiz do
 repositório. Altere os campos conforme a necessidade (número de guias, velocidade,
 integração com Discord, etc.). A interface também permite editar essas
-configurações.
+configurações. A partir desta versão, há também a opção `stealth_headless_mode`
+para executar o navegador em modo headless protegido contra detecção.
 
 ## Testes
 

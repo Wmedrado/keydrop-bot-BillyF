@@ -12,6 +12,8 @@ import json
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 from pydantic import BaseModel
 import uvicorn
 
@@ -21,7 +23,7 @@ from system_monitor import SystemMonitor, get_system_metrics, start_system_monit
 from discord_integration import configure_discord_webhook, send_discord_notification
 from bot_logic import (
     browser_manager, create_keydrop_automation, create_bot_scheduler,
-    BotStatus, ParticipationResult
+    BotStatus, ParticipationResult, TabWatchdog
 )
 
 # Configuração de logging
@@ -44,11 +46,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Servir painel web opcional
+ui_directory = Path(__file__).parent / "dashboard"
+if ui_directory.exists():
+    app.mount("/ui", StaticFiles(directory=str(ui_directory), html=True), name="ui")
+
 # Instâncias globais
 config_manager = ConfigManager()
 system_monitor = SystemMonitor()
 automation_engine = None
 bot_scheduler = None
+tab_watchdog = None
 
 # Gerenciamento de WebSocket
 class ConnectionManager:
@@ -90,11 +98,17 @@ class ConfigUpdateRequest(BaseModel):
     execution_speed: Optional[float] = None
     retry_attempts: Optional[int] = None
     headless_mode: Optional[bool] = None
+    stealth_headless_mode: Optional[bool] = None
     mini_window_mode: Optional[bool] = None
     enable_login_tabs: Optional[bool] = None
     tab_proxies: Optional[Dict[int, str]] = None
     discord_webhook_url: Optional[str] = None
     discord_notifications: Optional[bool] = None
+    telegram_enabled: Optional[bool] = None
+    telegram_bot_token: Optional[str] = None
+    telegram_chat_id: Optional[str] = None
+    watchdog_enabled: Optional[bool] = None
+    watchdog_timeout: Optional[int] = None
 
 class BotControlRequest(BaseModel):
     action: str  # 'start', 'stop', 'pause', 'resume', 'emergency_stop'
@@ -114,20 +128,32 @@ class WinningRequest(BaseModel):
 @app.on_event("startup")
 async def startup_event():
     """Inicialização da aplicação"""
-    global automation_engine, bot_scheduler
+    global automation_engine, bot_scheduler, tab_watchdog
     
     logger.info("Iniciando API do Keydrop Bot...")
     
     # Criar instâncias do bot
     automation_engine = create_keydrop_automation(browser_manager)
     bot_scheduler = create_bot_scheduler(browser_manager, automation_engine, config_manager)
+
+    # Inicializar watchdog de abas
+    config = get_config()
+    tab_watchdog = TabWatchdog(
+        browser_manager,
+        bot_scheduler,
+        timeout_seconds=config.watchdog_timeout,
+        enabled=config.watchdog_enabled,
+        telegram_token=config.telegram_bot_token,
+        telegram_chat_id=config.telegram_chat_id,
+        discord_notifications=config.discord_notifications,
+    )
+    tab_watchdog.start()
     
     # Configurar callbacks
     bot_scheduler.add_status_callback(on_bot_status_change)
     bot_scheduler.add_task_callback(on_task_completion)
     
     # Configurar Discord webhook
-    config = get_config()
     if config.discord_webhook_url:
         configure_discord_webhook(config.discord_webhook_url)
     
@@ -144,6 +170,9 @@ async def shutdown_event():
     # Parar bot se estiver rodando
     if bot_scheduler and bot_scheduler.status != BotStatus.STOPPED:
         await bot_scheduler.stop_bot()
+
+    if tab_watchdog:
+        await tab_watchdog.stop()
     
     # Parar monitoramento
     stop_system_monitoring()
@@ -213,6 +242,7 @@ async def get_configuration():
 @app.post("/config")
 async def update_configuration(request: ConfigUpdateRequest):
     """Atualiza configuração"""
+    global tab_watchdog
     try:
         # Converter para dict e remover valores None
         updates = {k: v for k, v in request.dict().items() if v is not None}
@@ -224,7 +254,16 @@ async def update_configuration(request: ConfigUpdateRequest):
             # Configurar Discord webhook se atualizado
             if 'discord_webhook_url' in updates:
                 configure_discord_webhook(updates['discord_webhook_url'])
-            
+
+            if tab_watchdog:
+                tab_watchdog.update_config(
+                    timeout_seconds=updates.get('watchdog_timeout'),
+                    enabled=updates.get('watchdog_enabled'),
+                    telegram_token=updates.get('telegram_bot_token'),
+                    telegram_chat_id=updates.get('telegram_chat_id'),
+                    discord_notifications=updates.get('discord_notifications')
+                )
+
             # Atualizar configuração do agendador se estiver rodando
             if bot_scheduler:
                 bot_scheduler.update_config()
@@ -240,9 +279,19 @@ async def update_configuration(request: ConfigUpdateRequest):
 @app.post("/config/reset")
 async def reset_configuration():
     """Reseta configuração para padrão"""
+    global tab_watchdog
     try:
         success = config_manager.reset_to_defaults()
         if success:
+            if tab_watchdog:
+                cfg = get_config()
+                tab_watchdog.update_config(
+                    timeout_seconds=cfg.watchdog_timeout,
+                    enabled=cfg.watchdog_enabled,
+                    telegram_token=cfg.telegram_bot_token,
+                    telegram_chat_id=cfg.telegram_chat_id,
+                    discord_notifications=cfg.discord_notifications,
+                )
             return {"success": True, "message": "Configuração resetada para padrão"}
         else:
             raise HTTPException(status_code=500, detail="Erro ao resetar configuração")

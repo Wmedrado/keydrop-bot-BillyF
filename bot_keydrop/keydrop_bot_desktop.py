@@ -572,10 +572,21 @@ class KeydropBotGUI:
         modes_inner.pack(fill=tk.X, padx=16, pady=12)  # Era 20/15, agora 16/12
         
         self.headless_var = tk.BooleanVar()
-        tk.Checkbutton(modes_inner, text="🕶️ Modo Headless (invisível)", 
-                      variable=self.headless_var, bg=self.dark_colors['bg'], 
+        tk.Checkbutton(modes_inner, text="🕶️ Modo Headless (invisível)",
+                      variable=self.headless_var, bg=self.dark_colors['bg'],
                       fg=self.dark_colors['fg'], font=('Arial', 9),  # Era 11, agora 9
                       selectcolor=self.dark_colors['entry_bg']).pack(anchor=tk.W, pady=4)  # Era 5, agora 4
+
+        self.stealth_headless_var = tk.BooleanVar()
+        tk.Checkbutton(
+            modes_inner,
+            text="🛡️ Headless Stealth",
+            variable=self.stealth_headless_var,
+            bg=self.dark_colors['bg'],
+            fg=self.dark_colors['fg'],
+            font=('Arial', 9),
+            selectcolor=self.dark_colors['entry_bg']
+        ).pack(anchor=tk.W, pady=4)
         
         self.mini_window_var = tk.BooleanVar()
         tk.Checkbutton(modes_inner, text="📱 Modo Mini (100x200px)", 
@@ -1282,6 +1293,7 @@ class KeydropBotGUI:
         try:
             config = {
                 'headless_mode': self.headless_var.get(),
+                'stealth_headless_mode': self.stealth_headless_var.get(),
                 'mini_window_mode': self.mini_window_var.get(),
                 'login_tabs_mode': self.login_tabs_var.get(),
                 'contender_mode': self.contender_mode_var.get(),
@@ -1309,6 +1321,7 @@ class KeydropBotGUI:
                 
                 # Aplicar configurações carregadas
                 self.headless_var.set(config.get('headless_mode', False))
+                self.stealth_headless_var.set(config.get('stealth_headless_mode', False))
                 self.mini_window_var.set(config.get('mini_window_mode', False))
                 self.login_tabs_var.set(config.get('login_tabs_mode', False))
                 self.contender_mode_var.set(config.get('contender_mode', False))
