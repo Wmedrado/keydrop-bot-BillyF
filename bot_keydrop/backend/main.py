@@ -41,6 +41,7 @@ from bot_logic import (
     TabWatchdog,
 )
 from tools.proxy_manager import ProxyManager
+from . import premium
 
 # Configuração de logging
 logging.basicConfig(level=logging.INFO)
@@ -191,8 +192,12 @@ async def startup_event():
     )
     tab_watchdog.start()
 
-    # Iniciar bot do Telegram se configurado
-    if config.telegram_enabled and config.telegram_bot_token:
+    # Iniciar bot do Telegram se configurado e permitido pelo premium
+    if (
+        config.telegram_enabled
+        and config.telegram_bot_token
+        and premium.has_permission("default", "telegram_access")
+    ):
         from telegram_control import TelegramControl
 
         telegram_bot = TelegramControl(
@@ -343,7 +348,11 @@ async def update_configuration(request: ConfigUpdateRequest):
                 if telegram_bot:
                     await telegram_bot.stop()
                 cfg = get_config()
-                if cfg.telegram_enabled and cfg.telegram_bot_token:
+                if (
+                    cfg.telegram_enabled
+                    and cfg.telegram_bot_token
+                    and premium.has_permission("default", "telegram_access")
+                ):
                     from telegram_control import TelegramControl
 
                     telegram_bot = TelegramControl(
@@ -382,7 +391,11 @@ async def reset_configuration():
             if telegram_bot:
                 await telegram_bot.stop()
             cfg = get_config()
-            if cfg.telegram_enabled and cfg.telegram_bot_token:
+            if (
+                cfg.telegram_enabled
+                and cfg.telegram_bot_token
+                and premium.has_permission("default", "telegram_access")
+            ):
                 from telegram_control import TelegramControl
 
                 telegram_bot = TelegramControl(

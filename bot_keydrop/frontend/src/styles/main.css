@@ -315,3 +315,17 @@ body {
         justify-content: center;
     }
 }
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+}
+.product-card {
+    background: var(--bg-card);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-small);
+    text-align: center;
+}
