@@ -5,7 +5,6 @@ Teste simples do executável - Verificar se tkinter funciona
 
 import tkinter as tk
 from tkinter import messagebox
-import sys
 import traceback
 
 def teste_simples():

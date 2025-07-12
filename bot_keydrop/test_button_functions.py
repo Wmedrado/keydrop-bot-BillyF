@@ -13,8 +13,8 @@ def run_button_tests():
     app = KeydropBotGUI()
     app.root = root  # use our hidden root
 
-    with mock.patch('tkinter.messagebox.showinfo') as info, \
-         mock.patch('tkinter.messagebox.showwarning') as warning, \
+    with mock.patch('tkinter.messagebox.showinfo') as _info, \
+         mock.patch('tkinter.messagebox.showwarning') as _warning, \
          mock.patch('tkinter.messagebox.askyesno', return_value=True):
         app.start_automation()
         app.stop_automation()

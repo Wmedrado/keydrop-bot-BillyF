@@ -1,24 +1,14 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext, filedialog
 import threading
-import subprocess
-import sys
 import os
 import json
 import requests
 import time
-import logging
-import traceback
-import random
-from datetime import datetime
-from pathlib import Path
-import psutil
-import webbrowser
-import zipfile
 import shutil
+import psutil
 # Custom browser integration
 from custom_browser import CustomBrowser
-from urllib.parse import urlparse
 
 # matplotlib imports removidos temporariamente para evitar erro de dependências
 # import matplotlib.pyplot as plt
@@ -65,27 +55,8 @@ class KeydropBotGUI:
     def log_message(self, msg, level="INFO"):
         """Stub: Loga mensagem (implementação real deve ser feita)"""
         print(f"[{level}] {msg}")
-import tkinter as tk
-from tkinter import ttk, messagebox, scrolledtext, filedialog
-import threading
-import subprocess
-import sys
-import os
-import json
-import requests
-import time
-import logging
-import traceback
-import random
-from datetime import datetime
-from pathlib import Path
-import psutil
-import webbrowser
-import zipfile
-import shutil
 # Custom browser integration
 from custom_browser import CustomBrowser
-from urllib.parse import urlparse
 
 # matplotlib imports removidos temporariamente para evitar erro de dependências
 # import matplotlib.pyplot as plt
@@ -161,26 +132,8 @@ class KeydropBotGUI:
         """Stub: Verifica e envia alertas de inatividade para o Discord (implementação real deve ser feita)"""
         pass
 
-# ...restante do código...
-import threading
-import subprocess
-import sys
-import os
-import json
-import requests
-import time
-import logging
-import traceback
-import random
-from datetime import datetime
-from pathlib import Path
-import psutil
-import webbrowser
-import zipfile
-import shutil
 # Custom browser integration
 from custom_browser import CustomBrowser
-from urllib.parse import urlparse
 
 # matplotlib imports removidos temporariamente para evitar erro de dependências
 # import matplotlib.pyplot as plt
@@ -406,7 +359,6 @@ class KeydropBotGUI:
             # Nome do desenvolvedor removido conforme solicitado
             
             # Notebook
-            style = ttk.Style()
             self.notebook = ttk.Notebook(self.root, style='Dark.TNotebook')
             self.notebook.pack(fill='both', expand=True, padx=15, pady=10)
             
@@ -995,11 +947,11 @@ class KeydropBotGUI:
                         continue
                     # Participar de sorteio amateur (cada 3 minutos)
                     if (current_time - bot_stats['last_amateur_action']).total_seconds() >= 180:
-                        success = self.participate_amateur_raffle_custom(bot_id, browser)
+                        self.participate_amateur_raffle_custom(bot_id, browser)
                         bot_stats['last_amateur_action'] = datetime.now()
                     # Participar de sorteio contender (cada 1 hora)
                     if hasattr(self, 'contender_mode_var') and self.contender_mode_var.get() and (current_time - bot_stats['last_contender_action']).total_seconds() >= 3600:
-                        success = self.participate_contender_raffle_custom(bot_id, browser)
+                        self.participate_contender_raffle_custom(bot_id, browser)
                         bot_stats['last_contender_action'] = datetime.now()
                 # Verificar alertas de inatividade Discord
                 self.check_discord_inactivity_alerts()
@@ -1194,8 +1146,6 @@ class KeydropBotGUI:
             
             # Configurações da atualização
             current_version = "3.0.0"
-            github_api = "https://api.github.com/repos/seu-usuario/keydrop-bot/releases/latest"
-            download_url = "https://github.com/seu-usuario/keydrop-bot/releases/latest/download/"
             
             # Thread para não travar a interface
             def update_thread():

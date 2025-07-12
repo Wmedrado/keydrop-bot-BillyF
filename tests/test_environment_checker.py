@@ -1,4 +1,3 @@
-from pathlib import Path
 from bot_keydrop.system_safety.environment_checker import executando_no_diretorio_correto
 
 
