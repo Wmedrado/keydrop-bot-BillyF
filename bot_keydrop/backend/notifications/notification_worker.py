@@ -3,6 +3,7 @@ import json
 import logging
 from pathlib import Path
 from typing import Any, Dict, List
+import aiofiles
 
 from ..discord_integration.notifier import send_discord_notification_now
 
@@ -16,35 +17,36 @@ class OfflineNotificationQueue:
     """Simple persistent notification queue backed by a JSON file."""
 
     @classmethod
-    def load_queue(cls) -> List[Dict[str, Any]]:
+    async def load_queue(cls) -> List[Dict[str, Any]]:
         if QUEUE_FILE.exists():
             try:
-                with open(QUEUE_FILE, "r", encoding="utf-8") as f:
-                    return json.load(f)
+                async with aiofiles.open(QUEUE_FILE, "r", encoding="utf-8") as f:
+                    data = await f.read()
+                    return json.loads(data)
             except Exception:
                 return []
         return []
 
     @classmethod
-    def save_queue(cls, queue: List[Dict[str, Any]]) -> None:
-        with open(QUEUE_FILE, "w", encoding="utf-8") as f:
-            json.dump(queue, f, indent=2, ensure_ascii=False)
+    async def save_queue(cls, queue: List[Dict[str, Any]]) -> None:
+        async with aiofiles.open(QUEUE_FILE, "w", encoding="utf-8") as f:
+            await f.write(json.dumps(queue, indent=2, ensure_ascii=False))
 
     @classmethod
-    def enqueue(cls, notification: Dict[str, Any], priority: bool = False) -> None:
-        queue = cls.load_queue()
+    async def enqueue(cls, notification: Dict[str, Any], priority: bool = False) -> None:
+        queue = await cls.load_queue()
         if priority:
             queue.insert(0, notification)
         else:
             queue.append(notification)
-        cls.save_queue(queue)
+        await cls.save_queue(queue)
 
     @classmethod
-    def dequeue(cls) -> Dict[str, Any] | None:
-        queue = cls.load_queue()
+    async def dequeue(cls) -> Dict[str, Any] | None:
+        queue = await cls.load_queue()
         if queue:
             item = queue.pop(0)
-            cls.save_queue(queue)
+            await cls.save_queue(queue)
             return item
         return None
 
@@ -64,9 +66,10 @@ class NotificationWorker:
 
     async def stop(self) -> None:
         self.running = False
+        await asyncio.sleep(0)
 
     async def process_queue(self) -> None:
-        queue = OfflineNotificationQueue.load_queue()
+        queue = await OfflineNotificationQueue.load_queue()
         if not queue:
             return
 
@@ -79,7 +82,7 @@ class NotificationWorker:
         try:
             if ntype == "telegram":
                 from .telegram_notifier import send_telegram_message_now
-                success = send_telegram_message_now(**data)
+                success = await send_telegram_message_now(**data)
             elif ntype == "discord":
                 success = await send_discord_notification_now(**data)
             else:
@@ -101,4 +104,4 @@ class NotificationWorker:
                 notification["retries"] = retries
                 queue[0] = notification
                 logger.warning("Tentativa %d falhou, nova tentativa posterior", retries)
-        OfflineNotificationQueue.save_queue(queue)
+        await OfflineNotificationQueue.save_queue(queue)

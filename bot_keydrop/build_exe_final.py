@@ -3,8 +3,6 @@
 Script para gerar executável final do Keydrop Bot v3.0.0
 """
 import PyInstaller.__main__
-import os
-import sys
 
 def build_executable():
     """Gerar executável otimizado"""

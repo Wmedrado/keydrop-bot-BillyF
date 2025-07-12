@@ -6,10 +6,10 @@ Keydrop Bot Professional v2.1.0 - Versão Simplificada Funcional
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
 import sys
-import os
 import json
 import time
 from pathlib import Path
+from input_utils import safe_int, safe_float, sanitize_str
 
 class KeydropBotSimples:
     def __init__(self):
@@ -138,10 +138,10 @@ class KeydropBotSimples:
         """Salvar configurações"""
         try:
             config = {
-                "num_tabs": int(self.num_tabs_var.get()),
-                "speed": float(self.speed_var.get()),
+                "num_tabs": safe_int(self.num_tabs_var.get(), 5),
+                "speed": safe_float(self.speed_var.get(), 3.0),
                 "headless": self.headless_var.get(),
-                "mini": self.mini_var.get()
+                "mini": self.mini_var.get(),
             }
             
             self.config_file.parent.mkdir(exist_ok=True)
@@ -193,7 +193,7 @@ def main():
         
         # Verificar dependências básicas
         try:
-            import psutil
+            import psutil  # noqa: F401
             print("✅ psutil disponível")
         except ImportError:
             print("⚠️  psutil não disponível (opcional)")
