@@ -68,6 +68,21 @@ em DearPyGUI, utilize o `interface_selector.py`:
 python bot_keydrop/interface_selector.py
 ```
 
+## Sistema de Atualização Automática
+
+O repositório inclui um utilitário simples de auto-update. O
+`update_manager.py` verifica um arquivo JSON hospedado (por exemplo em
+GitHub Pages) com a versão mais recente disponível. Caso detecte que a
+versão local está desatualizada, o script baixa o novo pacote `.zip` ou
+`.exe` e reinicia o bot automaticamente.
+
+```bash
+python bot_keydrop/update_manager.py
+```
+
+Um exemplo do formato esperado para o JSON pode ser encontrado em
+`update_info_example.json`.
+
 ## Configuração do Bot
 
 As configurações padrão encontram-se no arquivo `config.json` na raiz do
