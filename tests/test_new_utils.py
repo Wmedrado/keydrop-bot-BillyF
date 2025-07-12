@@ -42,7 +42,10 @@ def test_async_logger_fallback(tmp_path, monkeypatch):
     logger.error("fail message")
     handler.queue.join()
     assert offline.exists()
-    content = offline.read_text()
+    try:
+        content = offline.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        content = offline.read_text(encoding="latin-1")
     assert "fail message" in content
 
 
@@ -122,5 +125,8 @@ def test_record_history(tmp_path):
     record_history("user", "event", logs_dir=tmp_path)
     log_file = tmp_path / "user_history.log"
     assert log_file.exists()
-    content = log_file.read_text()
+    try:
+        content = log_file.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        content = log_file.read_text(encoding="latin-1")
     assert "event" in content

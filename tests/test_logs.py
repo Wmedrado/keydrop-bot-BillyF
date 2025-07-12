@@ -8,5 +8,8 @@ def test_log_file_creation(tmp_path):
     logger.info("hello")
     log_file = tmp_path / "test_logger.log"
     assert log_file.exists()
-    content = log_file.read_text()
+    try:
+        content = log_file.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        content = log_file.read_text(encoding="latin-1")
     assert "hello" in content

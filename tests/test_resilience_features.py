@@ -51,7 +51,10 @@ def test_crash_tracker(tmp_path):
     except Exception as exc:
         log_exception(exc)
 
-    text = log.read_text()
+    try:
+        text = log.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        text = log.read_text(encoding="latin-1")
     assert "boom" in text
 
 

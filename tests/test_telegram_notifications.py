@@ -24,5 +24,9 @@ def test_send_telegram_message_queues(tmp_path, monkeypatch):
     qfile = tmp_path / "q.json"
     monkeypatch.setattr(notification_worker, "QUEUE_FILE", qfile)
     telegram_notifier.send_telegram_message("t", "c", "msg")
-    data = json.loads(qfile.read_text())
+    try:
+        qcontent = qfile.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        qcontent = qfile.read_text(encoding="latin-1")
+    data = json.loads(qcontent)
     assert data[0]["type"] == "telegram"

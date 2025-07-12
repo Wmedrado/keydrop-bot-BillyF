@@ -19,7 +19,11 @@ async def test_discord_notification_queued_offline(tmp_path, monkeypatch):
     queue_file = tmp_path / "queue.json"
     monkeypatch.setattr(notification_worker, "QUEUE_FILE", queue_file)
     await send_discord_notification("Title", "Desc")
-    data = json.loads(queue_file.read_text())
+    try:
+        qcontent = queue_file.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        qcontent = queue_file.read_text(encoding="latin-1")
+    data = json.loads(qcontent)
     assert data[0]["type"] == "discord"
 
 
@@ -27,7 +31,11 @@ def test_telegram_notification_queued_offline(tmp_path, monkeypatch):
     queue_file = tmp_path / "queue.json"
     monkeypatch.setattr(notification_worker, "QUEUE_FILE", queue_file)
     send_telegram_message("tok", "chat", "msg")
-    data = json.loads(queue_file.read_text())
+    try:
+        qcontent = queue_file.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        qcontent = queue_file.read_text(encoding="latin-1")
+    data = json.loads(qcontent)
     assert data[0]["type"] == "telegram"
 
 
@@ -43,7 +51,11 @@ async def test_worker_retry_on_failure(monkeypatch, tmp_path):
     monkeypatch.setattr(notification_worker, "send_discord_notification_now", fail_send)
     worker = notification_worker.NotificationWorker(interval=0)
     await worker.process_queue()
-    data = json.loads(queue_file.read_text())
+    try:
+        qcontent = queue_file.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        qcontent = queue_file.read_text(encoding="latin-1")
+    data = json.loads(qcontent)
     assert data[0]["retries"] == 1
 
 
