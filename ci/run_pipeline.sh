@@ -4,6 +4,12 @@ trap 'python ci/notify_webhook.py FAILED || true' ERR
 mkdir -p build_results tests
 python ci/check_main_push.py
 
+# Fail if TODO or FIXME comments remain
+python ci/todo_finder.py
+
+# Ensure new classes implement __str__ and __repr__
+python ci/enforce_str_repr.py
+
 # Install python dependencies
 pip install -r bot_keydrop/requirements.txt
 
@@ -66,4 +72,7 @@ python ci/branch_failure_manager.py --success | tee build_results/branch_failure
 echo "Build succeeded" > build_results/build_status.log
 python ci/auto_semver.py
 python ci/auto_update_docs.py
+python ci/generate_changelog.py
+python ci/pr_commenter.py
+python ci/auto_rollback.py --success
 python ci/notify_webhook.py SUCCESS || true
