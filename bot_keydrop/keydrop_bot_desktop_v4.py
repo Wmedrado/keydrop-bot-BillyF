@@ -23,7 +23,10 @@ from datetime import datetime
 from pathlib import Path
 import psutil
 from PIL import Image
-import pystray
+try:
+    import pystray  # type: ignore
+except Exception:  # pragma: no cover - optional dependency
+    pystray = None
 
 # Modo debug via variável de ambiente
 DEBUG_MODE = os.getenv("MODO_DEBUG") == "1"
@@ -1384,12 +1387,15 @@ class KeydropBotGUI:
         except Exception:
             image = Image.new("RGB", (64, 64), "black")
 
-        menu = pystray.Menu(
-            pystray.MenuItem("Abrir Interface", self.show_window),
-            pystray.MenuItem("Pausar todos os bots", self.pause_all_bots),
-            pystray.MenuItem("Sair", self.exit_app),
-        )
-        self.tray_icon = pystray.Icon("keydropbot", image, "Keydrop Bot", menu)
+        if pystray:
+            menu = pystray.Menu(
+                pystray.MenuItem("Abrir Interface", self.show_window),
+                pystray.MenuItem("Pausar todos os bots", self.pause_all_bots),
+                pystray.MenuItem("Sair", self.exit_app),
+            )
+            self.tray_icon = pystray.Icon("keydropbot", image, "Keydrop Bot", menu)
+        else:  # pragma: no cover - no tray in headless tests
+            self.tray_icon = None
 
     def show_window(self, _icon=None, _item=None):
         """Restaurar janela principal"""
