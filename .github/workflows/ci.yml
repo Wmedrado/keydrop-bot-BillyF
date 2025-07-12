@@ -15,3 +15,5 @@ jobs:
       - name: Run pipeline
         run: |
           bash ci/run_pipeline.sh
+      - name: Check decision history
+        run: python ci/check_history.py
