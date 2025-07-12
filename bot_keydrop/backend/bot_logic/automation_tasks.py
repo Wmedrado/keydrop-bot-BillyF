@@ -299,37 +299,42 @@ class KeydropAutomation:
 
     async def _try_participation_methods(self, page, lottery: Dict[str, Any], tab_id: int, attempt_number: int) -> ParticipationAttempt:
         """Try multiple participation strategies and record results."""
-        learned_selector = self.learner.get_selector()
+        learned_selector = self.learner.get_selector(tab_id)
         if learned_selector:
             result = await self._attempt_with_learned_selector(page, lottery, tab_id, attempt_number, learned_selector)
             if result.result == ParticipationResult.SUCCESS:
                 return result
 
-        methods = ["css", "js", "image"]
-        best = self.learner.best_method()
+        methods = ["css", "js", "image", "coordinates"]
+        best = self.learner.best_method(tab_id)
         if best in methods:
             methods.remove(best)
             methods.insert(0, best)
 
+        last_result = None
         for method in methods:
             if method == "css":
                 result = await self._attempt_participation(page, lottery, tab_id, attempt_number)
             elif method == "js":
                 result = await self._attempt_participation_js(page, lottery, tab_id, attempt_number)
-            else:
+            elif method == "image":
                 result = await self._attempt_participation_image(page, lottery, tab_id, attempt_number)
+            else:
+                result = await self._attempt_participation_coordinates(page, lottery, tab_id, attempt_number)
 
-            self.learner.record_result(method, result.result == ParticipationResult.SUCCESS)
+            self.learner.record_result(method, result.result == ParticipationResult.SUCCESS, tab_id)
 
             if result.result != ParticipationResult.SUCCESS:
                 logger.warning(
                     f"Método {method} falhou na guia {tab_id}: {result.result.value}"
                 )
-
-            if result.result == ParticipationResult.SUCCESS:
+            else:
                 return result
 
-        return result
+            last_result = result
+
+        await self.learn_participation(tab_id, learn_time=0)
+        return last_result
     
     async def _attempt_participation(self, page, lottery: Dict[str, Any], tab_id: int, attempt_number: int, selector: str = None) -> ParticipationAttempt:
         """
@@ -571,6 +576,29 @@ class KeydropAutomation:
                 result=ParticipationResult.FAILED,
                 error_message=str(e)
             )
+
+    async def _attempt_participation_coordinates(self, page, lottery: Dict[str, Any], tab_id: int, attempt_number: int) -> ParticipationAttempt:
+        """Fallback participation using stored screen coordinates."""
+        coords = self.learner.get_coordinates(tab_id)
+        if not coords:
+            return ParticipationAttempt(tab_id=tab_id, attempt_number=attempt_number, timestamp=datetime.now(), result=ParticipationResult.FAILED, error_message='no_coordinates')
+        try:
+            x, y = coords
+            await page.mouse.click(x, y)
+            await asyncio.sleep(2)
+            success = await self._verify_participation_success(page, None)
+            await page.go_back()
+            result = ParticipationResult.SUCCESS if success else ParticipationResult.FAILED
+            return ParticipationAttempt(tab_id, attempt_number, datetime.now(), result, lottery_type=lottery['info']['type'], lottery_title=lottery['info']['title'])
+        except Exception as e:
+            logger.error(f"Erro coordenadas ao tentar participar: {e}")
+            return ParticipationAttempt(
+                tab_id=tab_id,
+                attempt_number=attempt_number,
+                timestamp=datetime.now(),
+                result=ParticipationResult.FAILED,
+                error_message=str(e)
+            )
     
     async def navigate_to_lotteries(self, tab_id: int) -> bool:
         """
@@ -662,9 +690,16 @@ class KeydropAutomation:
         await asyncio.sleep(learn_time)
         await recorder.stop()
         if recorder.actions:
-            last = recorder.actions[-1]["selector"]
-            self.learner.set_selector(last)
-            logger.info(f"Selector aprendido: {last}")
+            last = recorder.actions[-1]
+            selector = last.get("selector")
+            x = last.get("x")
+            y = last.get("y")
+            if selector:
+                self.learner.set_selector(selector, tab_id=tab_id)
+                logger.info(f"Selector aprendido: {selector}")
+            if x is not None and y is not None:
+                self.learner.set_coordinates(tab_id, x, y)
+                logger.info(f"Coordenadas aprendidas: {x}, {y}")
             return True
         return False
     

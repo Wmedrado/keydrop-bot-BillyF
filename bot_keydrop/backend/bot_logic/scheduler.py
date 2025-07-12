@@ -100,7 +100,7 @@ class BotStatistics:
 class BotScheduler:
     """Agendador principal do bot"""
     
-    def __init__(self, browser_manager, automation_engine, config_manager):
+    def __init__(self, browser_manager, automation_engine, config_manager, proxy_manager=None):
         """
         Inicializa o agendador
         
@@ -112,6 +112,7 @@ class BotScheduler:
         self.browser_manager = browser_manager
         self.automation_engine = automation_engine
         self.config_manager = config_manager
+        self.proxy_manager = proxy_manager
         
         self.status = BotStatus.STOPPED
         self.tasks: Dict[str, ScheduledTask] = {}
@@ -145,7 +146,11 @@ class BotScheduler:
         self.retry_attempts = self.config.retry_attempts
         self.amateur_wait_time = self.config.amateur_lottery_wait_time
         self.action_delay = self.config.wait_time_between_actions
+        self.iteration_delay = self.config.iteration_delay
         self.tab_proxies = self.config.tab_proxies
+        self.proxy_timeout = self.config.proxy_timeout
+        if self.proxy_manager:
+            self.proxy_manager.timeout = self.proxy_timeout
         self.failure_threshold = self.config.failure_reschedule_threshold
         self.reschedule_delay = self.config.failure_reschedule_delay
 
@@ -322,7 +327,7 @@ class BotScheduler:
             logger.error(f"Erro ao resumir bot: {e}")
             return False
     
-    async def restart_tab(self, tab_id: int) -> bool:
+    async def restart_tab(self, tab_id: int, proxy: Optional[str] = None) -> bool:
         """
         Reinicia uma guia específica
         
@@ -343,7 +348,7 @@ class BotScheduler:
                 task.status = TaskStatus.CANCELLED
 
             # Reiniciar guia no navegador
-            success = await self.browser_manager.restart_tab(tab_id)
+            success = await self.browser_manager.restart_tab(tab_id, proxy=proxy)
 
             if success:
                 # Recriar tarefas para a guia
@@ -383,7 +388,12 @@ class BotScheduler:
         logger.info(f"Criando {self.num_tabs} guias e tarefas...")
         
         for tab_id in range(1, self.num_tabs + 1):
-            proxy = self.tab_proxies.get(tab_id)
+            proxy = None
+            if self.proxy_manager:
+                proxy = self.proxy_manager.get_proxy(tab_id)
+            else:
+                proxy = self.tab_proxies.get(tab_id)
+
             tab_info = await self.browser_manager.create_tab(tab_id, proxy=proxy)
             if tab_info:
                 self.statistics.active_tabs += 1
@@ -406,8 +416,8 @@ class BotScheduler:
         Args:
             tab_id: ID da guia
         """
-        # Calcular próxima execução (distribuir guias ao longo do tempo)
-        base_delay = (tab_id - 1) * (self.amateur_wait_time / self.num_tabs)
+        # Calcular próxima execução com base no delay de iteração configurado
+        base_delay = (tab_id - 1) * self.iteration_delay
         next_execution = datetime.now() + timedelta(seconds=base_delay)
         
         # Criar tarefa de participação
@@ -537,8 +547,15 @@ class BotScheduler:
 
                     if task.retry_count >= task.max_retries:
                         # Reiniciar guia após múltiplas falhas
-                        logger.warning(f"Reiniciando guia {task.tab_id} após {task.retry_count} falhas")
-                        await self.restart_tab(task.tab_id)
+                        logger.warning(
+                            f"Reiniciando guia {task.tab_id} após {task.retry_count} falhas"
+                        )
+                        new_proxy = None
+                        if self.proxy_manager:
+                            new_proxy = self.proxy_manager.report_failure(
+                                task.tab_id, task.error_message or ""
+                            )
+                        await self.restart_tab(task.tab_id, proxy=new_proxy)
                     else:
                         # Verificar falhas consecutivas para reagendar com atraso maior
                         fail_count = self.consecutive_failures.get(task.tab_id, 0)
@@ -619,7 +636,7 @@ class BotScheduler:
 
 
 # Função utilitária para criar instância do agendador
-def create_bot_scheduler(browser_manager, automation_engine, config_manager) -> BotScheduler:
+def create_bot_scheduler(browser_manager, automation_engine, config_manager, proxy_manager=None) -> BotScheduler:
     """
     Cria instância do agendador do bot
     
@@ -631,4 +648,4 @@ def create_bot_scheduler(browser_manager, automation_engine, config_manager) -> 
     Returns:
         Instância do agendador
     """
-    return BotScheduler(browser_manager, automation_engine, config_manager)
+    return BotScheduler(browser_manager, automation_engine, config_manager, proxy_manager)

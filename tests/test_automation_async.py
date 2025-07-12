@@ -126,15 +126,17 @@ async def test_learn_participation(mocker):
     automation = KeydropAutomation(browser_manager)
 
     recorder = mocker.Mock()
-    recorder.actions = [{"selector": "#mybutton"}]
+    recorder.actions = [{"selector": "#mybutton", "x": 10, "y": 20}]
     recorder.start = AsyncMock()
     recorder.stop = AsyncMock()
     mocker.patch('bot_keydrop.backend.learning.action_recorder.ActionRecorder', return_value=recorder)
     set_selector = mocker.patch.object(automation.learner, 'set_selector')
+    set_coords = mocker.patch.object(automation.learner, 'set_coordinates')
     mocker.patch('asyncio.sleep', AsyncMock())
 
     result = await automation.learn_participation(1, learn_time=0)
 
     assert result is True
-    set_selector.assert_called_once_with('#mybutton')
+    set_selector.assert_called_once_with('#mybutton', tab_id=1)
+    set_coords.assert_called_once_with(1, 10, 20)
 
