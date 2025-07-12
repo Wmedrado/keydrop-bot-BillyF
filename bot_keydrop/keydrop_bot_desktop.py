@@ -1,12 +1,17 @@
 """Desktop GUI for controlling Keydrop Bot."""
+
 # ruff: noqa
+# flake8: noqa
+# fmt: off
 
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext, filedialog
 import threading
 import os
 import json
+import sys
 from pathlib import Path
+from datetime import datetime
 import requests
 import time
 import shutil
@@ -38,7 +43,7 @@ class KeydropBotGUI:  # noqa: F811
         # Inicializar variáveis essenciais
         self.server_process = None
         self.server_running = False
-        self.base_path = Path(".")
+        self.base_path = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
         self.config_file = Path("config.json")
         # Inicializar estatísticas
         self.init_bot_stats()
@@ -85,7 +90,7 @@ class KeydropBotGUI:  # noqa: F811
         # Inicializar variáveis essenciais
         self.server_process = None
         self.server_running = False
-        self.base_path = Path(".")
+        self.base_path = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
         self.config_file = Path("config.json")
         # Inicializar estatísticas
         self.init_bot_stats()
@@ -161,7 +166,7 @@ class KeydropBotGUI:  # noqa: F811
         # Inicializar variáveis essenciais
         self.server_process = None
         self.server_running = False
-        self.base_path = Path(".")
+        self.base_path = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
         self.config_file = Path("config.json")
         # Inicializar estatísticas
         self.init_bot_stats()
@@ -230,14 +235,14 @@ class KeydropBotGUI:  # noqa: F811
                 'warning': '#ff9800',
                 'error': '#f44336'
             }
-            
+
             # Configurar janela principal
             self.root.configure(bg=self.dark_colors['bg'])
-            
+
             # Configurar estilo TTK
             style = ttk.Style()
             style.theme_use('clam')
-            
+
             # Estilos personalizados - 20% menores (80% do tamanho original)
             style.configure('Dark.TFrame', background=self.dark_colors['bg'])
             style.configure('Dark.TLabel', background=self.dark_colors['bg'], foreground=self.dark_colors['fg'])
@@ -249,9 +254,9 @@ class KeydropBotGUI:  # noqa: F811
             style.configure('Dark.TNotebook.Tab', background=self.dark_colors['button_bg'], foreground=self.dark_colors['fg'], padding=[20, 10])
             style.map('Dark.TNotebook.Tab', background=[('selected', self.dark_colors['accent'])])
             style.configure('Dark.TCheckbutton', background=self.dark_colors['bg'], foreground=self.dark_colors['fg'])
-            
+
             print("✅ Dark theme configurado com sucesso")
-            
+
         except Exception as e:
             print(f"⚠️ Erro ao configurar dark theme: {e}")
 
@@ -259,22 +264,21 @@ class KeydropBotGUI:  # noqa: F811
         """Configurar ícone da aplicação"""
         try:
             icon_paths = [
-                "bot-icone.ico",
-                os.path.join(os.getcwd(), "bot-icone.ico"),
-                os.path.expanduser("~/Desktop/Projeto do zero/bot_keydrop/bot-icone.ico")
+                self.base_path / "bot-icone.ico",
+                Path("bot-icone.ico"),
             ]
-            
+
             for icon_path in icon_paths:
-                if os.path.exists(icon_path):
+                if Path(icon_path).exists():
                     try:
-                        self.root.iconbitmap(icon_path)
+                        self.root.iconbitmap(str(icon_path))
                         print(f"✅ Ícone configurado: {icon_path}")
                         break
-                    except:
+                    except Exception:
                         continue
             else:
                 self.root.iconname("Keydrop Bot v3.0.0")
-                
+
         except Exception as e:
             print(f"⚠️ Erro na configuração do ícone: {e}")
 
@@ -283,18 +287,18 @@ class KeydropBotGUI:  # noqa: F811
         try:
             loading_frame = tk.Frame(self.root, bg=self.dark_colors['bg'])
             loading_frame.pack(fill=tk.BOTH, expand=True)
-            
-            tk.Label(loading_frame, text="🤖 Keydrop Bot Professional v3.0.0", 
-                    font=('Arial', 18, 'bold'), bg=self.dark_colors['bg'], 
+
+            tk.Label(loading_frame, text="🤖 Keydrop Bot Professional v3.0.0",
+                    font=('Arial', 18, 'bold'), bg=self.dark_colors['bg'],
                     fg=self.dark_colors['accent']).pack(pady=(100, 20))
-            
-            self.loading_status = tk.Label(loading_frame, text="🔄 Iniciando aplicação...", 
-                                         font=('Arial', 12), bg=self.dark_colors['bg'], 
+
+            self.loading_status = tk.Label(loading_frame, text="🔄 Iniciando aplicação...",
+                                         font=('Arial', 12), bg=self.dark_colors['bg'],
                                          fg=self.dark_colors['fg'])
             self.loading_status.pack(pady=10)
-            
+
             self.root.update()
-            
+
         except Exception as e:
             print(f"Erro ao criar interface de carregamento: {e}")
 
@@ -315,20 +319,20 @@ class KeydropBotGUI:  # noqa: F811
         try:
             for widget in self.root.winfo_children():
                 widget.destroy()
-            
+
             emergency_frame = tk.Frame(self.root, bg='#ffebee')
             emergency_frame.pack(fill=tk.BOTH, expand=True)
-            
-            tk.Label(emergency_frame, text="⚠️ Modo de Emergência", 
+
+            tk.Label(emergency_frame, text="⚠️ Modo de Emergência",
                     font=('Arial', 16, 'bold'), bg='#ffebee', fg='#c62828').pack(pady=20)
-            tk.Label(emergency_frame, text=f"Erro: {str(error)}", 
+            tk.Label(emergency_frame, text=f"Erro: {str(error)}",
                     font=('Arial', 10), bg='#ffebee', fg='#757575').pack(pady=10)
-            tk.Button(emergency_frame, text="❌ Fechar", 
-                     command=self.root.destroy, font=('Arial', 12), 
+            tk.Button(emergency_frame, text="❌ Fechar",
+                     command=self.root.destroy, font=('Arial', 12),
                      bg='#f44336', fg='white').pack(pady=5)
-            
+
             self.root.deiconify()
-            
+
         except Exception as e:
             print(f"Erro crítico: {e}")
 
@@ -337,14 +341,14 @@ class KeydropBotGUI:  # noqa: F811
         try:
             self.loading_status.config(text="⚙️ Configurando interface...")
             self.root.update()
-            
+
             # Limpar carregamento
             for widget in self.root.winfo_children():
                 widget.destroy()
-            
+
             # Criar interface principal
             self.setup_interface()
-            
+
         except Exception as e:
             error_msg = f"Erro ao configurar interface: {e}"
             self.log_message(f"❌ {error_msg}", "ERROR")
@@ -357,40 +361,40 @@ class KeydropBotGUI:  # noqa: F811
             # Header
             header = tk.Frame(self.root, bg=self.dark_colors['bg'])
             header.pack(fill='x', padx=15, pady=10)
-            
+
             tk.Label(header, text="🤖 Keydrop Bot Professional v3.0.0",
-                    font=('Arial', 18, 'bold'), bg=self.dark_colors['bg'], 
+                    font=('Arial', 18, 'bold'), bg=self.dark_colors['bg'],
                     fg=self.dark_colors['accent']).pack()
             # Nome do desenvolvedor removido conforme solicitado
-            
+
             # Notebook
             self.notebook = ttk.Notebook(self.root, style='Dark.TNotebook')
             self.notebook.pack(fill='both', expand=True, padx=15, pady=10)
-            
+
             # Criar abas
             self.create_control_tab()
             self.create_config_tab()
             self.create_stats_tab()
             self.create_logs_tab()
-            
+
             # Footer
             footer = tk.Frame(self.root, bg=self.dark_colors['bg'])
             footer.pack(fill='x', padx=15, pady=5)
-            
+
             self.status_label = tk.Label(footer, text="📱 Modo Desktop Nativo • Pronto para uso",
                                        bg=self.dark_colors['bg'], fg=self.dark_colors['success'],
                                        font=('Arial', 11, 'bold'))
             self.status_label.pack(side='left')
-            
+
             # Iniciar monitoramento
             self.root.after(1000, self.update_system_stats)
             self.root.after(2000, self.update_global_stats)
-            
+
             # Log inicial
             self.log_message("🎉 Keydrop Bot Professional v3.0.0 iniciado com sucesso!")
             self.log_message("📱 Modo: Aplicação Desktop Nativa com Dark Theme")
             self.log_message("🚀 Sistema pronto para automação Google Chrome")
-            
+
         except Exception as e:
             print(f"Erro ao configurar interface principal: {e}")
 
@@ -401,13 +405,13 @@ class KeydropBotGUI:  # noqa: F811
         self.notebook.add(control_frame, text="🎮 Controle")
 
         # Informações do App
-        info_frame = tk.LabelFrame(control_frame, text="📋 Keydrop Bot Professional v3.0.0", 
+        info_frame = tk.LabelFrame(control_frame, text="📋 Keydrop Bot Professional v3.0.0",
                                  bg=self.dark_colors['bg'], fg=self.dark_colors['accent'],
                                  font=('Arial', 12, 'bold'))
         info_frame.pack(fill=tk.X, padx=15, pady=10)
 
-        tk.Label(info_frame, text="🤖 Automação Profissional para Sorteios Keydrop", 
-                font=('Arial', 14, 'bold'), bg=self.dark_colors['bg'], 
+        tk.Label(info_frame, text="🤖 Automação Profissional para Sorteios Keydrop",
+                font=('Arial', 14, 'bold'), bg=self.dark_colors['bg'],
                 fg=self.dark_colors['accent']).pack(anchor=tk.W, padx=10, pady=5)
         tk.Label(info_frame, text="🌐 Google Chrome Exclusivo • Múltiplos Perfis • Multi-Instância",
                 font=('Arial', 12), bg=self.dark_colors['bg'],
@@ -415,57 +419,57 @@ class KeydropBotGUI:  # noqa: F811
         # Nome do desenvolvedor removido conforme solicitado
 
         # Controle de Automação
-        bot_frame = tk.LabelFrame(control_frame, text="🚀 Controle de Automação", 
+        bot_frame = tk.LabelFrame(control_frame, text="🚀 Controle de Automação",
                                 bg=self.dark_colors['bg'], fg=self.dark_colors['accent'],
                                 font=('Arial', 12, 'bold'))
         bot_frame.pack(fill=tk.X, padx=15, pady=10)
 
-        tk.Label(bot_frame, text="✨ Sistema de Multi-Bots com Perfis Independentes", 
-                bg=self.dark_colors['bg'], fg=self.dark_colors['success'], 
+        tk.Label(bot_frame, text="✨ Sistema de Multi-Bots com Perfis Independentes",
+                bg=self.dark_colors['bg'], fg=self.dark_colors['success'],
                 font=('Arial', 12, 'bold')).pack(anchor=tk.W, padx=10, pady=(10, 15))
 
         # Botões principais - 20% menores
         buttons_frame = tk.Frame(bot_frame, bg=self.dark_colors['bg'])
         buttons_frame.pack(fill=tk.X, pady=8, padx=8)  # Era 10/10, agora 8/8
 
-        tk.Button(buttons_frame, text="🚀 INICIAR AUTOMAÇÃO", 
+        tk.Button(buttons_frame, text="🚀 INICIAR AUTOMAÇÃO",
                  command=self.start_bot_direct, font=('Arial', 11, 'bold'),  # Era 14, agora 11
-                 bg=self.dark_colors['success'], fg='white', 
+                 bg=self.dark_colors['success'], fg='white',
                  relief='raised', bd=3).pack(side=tk.LEFT, padx=12, ipadx=16, ipady=8)  # Era 15/20/10, agora 12/16/8
 
-        tk.Button(buttons_frame, text="⏹️ PARAR AUTOMAÇÃO", 
+        tk.Button(buttons_frame, text="⏹️ PARAR AUTOMAÇÃO",
                  command=self.stop_bot_direct, font=('Arial', 11, 'bold'),
-                 bg=self.dark_colors['warning'], fg='white', 
+                 bg=self.dark_colors['warning'], fg='white',
                  relief='raised', bd=3).pack(side=tk.LEFT, padx=12, ipadx=16, ipady=8)
 
-        tk.Button(buttons_frame, text="🗑️ FECHAR GUIAS", 
+        tk.Button(buttons_frame, text="🗑️ FECHAR GUIAS",
                  command=self.force_close_tabs, font=('Arial', 11, 'bold'),
-                 bg=self.dark_colors['error'], fg='white', 
+                 bg=self.dark_colors['error'], fg='white',
                  relief='raised', bd=3).pack(side=tk.LEFT, padx=12, ipadx=12, ipady=8)  # Era 15/15/10, agora 12/12/8
 
-        tk.Button(buttons_frame, text="🔄 ATUALIZAR APP", 
+        tk.Button(buttons_frame, text="🔄 ATUALIZAR APP",
                  command=self.check_for_updates, font=('Arial', 11, 'bold'),
-                 bg=self.dark_colors['accent'], fg='white', 
+                 bg=self.dark_colors['accent'], fg='white',
                  relief='raised', bd=3).pack(side=tk.LEFT, padx=12, ipadx=12, ipady=8)
 
-        tk.Button(buttons_frame, text="🚨 EMERGÊNCIA", 
+        tk.Button(buttons_frame, text="🚨 EMERGÊNCIA",
                  command=self.emergency_stop_direct, font=('Arial', 11, 'bold'),
-                 bg=self.dark_colors['error'], fg='white', 
+                 bg=self.dark_colors['error'], fg='white',
                  relief='raised', bd=3).pack(side=tk.RIGHT, padx=12, ipadx=12, ipady=8)
 
         # NOVO: Botão para automação/teste completo Keydrop
-        tk.Button(buttons_frame, text="🧪 TESTE COMPLETO KEYDROP", 
+        tk.Button(buttons_frame, text="🧪 TESTE COMPLETO KEYDROP",
                  command=self.run_full_keydrop_test, font=('Arial', 11, 'bold'),
-                 bg=self.dark_colors['accent'], fg='white', 
+                 bg=self.dark_colors['accent'], fg='white',
                  relief='raised', bd=3).pack(side=tk.LEFT, padx=12, ipadx=12, ipady=8)
 
         # Status em tempo real - 20% menor
-        status_frame = tk.LabelFrame(control_frame, text="📊 Status em Tempo Real", 
+        status_frame = tk.LabelFrame(control_frame, text="📊 Status em Tempo Real",
                                    bg=self.dark_colors['bg'], fg=self.dark_colors['accent'],
                                    font=('Arial', 10, 'bold'))  # Era 12, agora 10
         status_frame.pack(fill=tk.BOTH, expand=True, padx=12, pady=8)  # Era 15/10, agora 12/8
 
-        self.status_text = scrolledtext.ScrolledText(status_frame, height=15, state=tk.DISABLED, 
+        self.status_text = scrolledtext.ScrolledText(status_frame, height=15, state=tk.DISABLED,
                                                    font=('Consolas', 10), bg=self.dark_colors['entry_bg'],  # Era 12, agora 10
                                                    fg=self.dark_colors['fg'], insertbackground=self.dark_colors['fg'],
                                                    selectbackground=self.dark_colors['select_bg'],
@@ -475,59 +479,59 @@ class KeydropBotGUI:  # noqa: F811
         """Criar aba de configurações"""
         config_frame = ttk.Frame(self.notebook, style='Dark.TFrame')
         self.notebook.add(config_frame, text="⚙️ Configurações")
-        
+
         # Configurações Básicas - 20% menores
-        basic_frame = tk.LabelFrame(config_frame, text="🔧 Configurações Básicas", 
+        basic_frame = tk.LabelFrame(config_frame, text="🔧 Configurações Básicas",
                                   bg=self.dark_colors['bg'], fg=self.dark_colors['accent'],
                                   font=('Arial', 10, 'bold'))  # Era 12, agora 10
         basic_frame.pack(fill=tk.X, padx=16, pady=12)  # Era 20/15, agora 16/12
-        
+
         # Grid de configurações
         config_grid = tk.Frame(basic_frame, bg=self.dark_colors['bg'])
         config_grid.pack(fill=tk.X, padx=16, pady=12)  # Era 20/15, agora 16/12
-        
+
         # Número de guias
-        tk.Label(config_grid, text="🤖 Número de Guias/Bots (1-100):", 
+        tk.Label(config_grid, text="🤖 Número de Guias/Bots (1-100):",
                 font=('Arial', 10, 'bold'), bg=self.dark_colors['bg'],  # Era 12, agora 10
                 fg=self.dark_colors['fg']).grid(row=0, column=0, sticky=tk.W, pady=6)  # Era 8, agora 6
         self.num_tabs_var = tk.StringVar(value="5")
         tk.Entry(config_grid, textvariable=self.num_tabs_var, width=15, font=('Arial', 10),  # Era 12, agora 10
                 bg=self.dark_colors['entry_bg'], fg=self.dark_colors['entry_fg'],
                 insertbackground=self.dark_colors['entry_fg']).grid(row=0, column=1, padx=12, pady=6)  # Era 15/8, agora 12/6
-        
+
         # Velocidade
-        tk.Label(config_grid, text="⚡ Velocidade de Execução (segundos):", 
-                font=('Arial', 10, 'bold'), bg=self.dark_colors['bg'], 
+        tk.Label(config_grid, text="⚡ Velocidade de Execução (segundos):",
+                font=('Arial', 10, 'bold'), bg=self.dark_colors['bg'],
                 fg=self.dark_colors['fg']).grid(row=1, column=0, sticky=tk.W, pady=6)
         self.speed_var = tk.StringVar(value="8.0")
         tk.Entry(config_grid, textvariable=self.speed_var, width=15, font=('Arial', 10),
                 bg=self.dark_colors['entry_bg'], fg=self.dark_colors['entry_fg'],
                 insertbackground=self.dark_colors['entry_fg']).grid(row=1, column=1, padx=12, pady=6)
-        
+
         # Retry
-        tk.Label(config_grid, text="🔄 Tentativas de Retry:", 
-                font=('Arial', 10, 'bold'), bg=self.dark_colors['bg'], 
+        tk.Label(config_grid, text="🔄 Tentativas de Retry:",
+                font=('Arial', 10, 'bold'), bg=self.dark_colors['bg'],
                 fg=self.dark_colors['fg']).grid(row=2, column=0, sticky=tk.W, pady=6)
         self.retry_var = tk.StringVar(value="5")
         tk.Entry(config_grid, textvariable=self.retry_var, width=15, font=('Arial', 10),
                 bg=self.dark_colors['entry_bg'], fg=self.dark_colors['entry_fg'],
                 insertbackground=self.dark_colors['entry_fg']).grid(row=2, column=1, padx=12, pady=6)
-        
+
         # Dica
-        tk.Label(config_grid, text="💡 Recomendado: 7-10 segundos para máxima eficiência", 
+        tk.Label(config_grid, text="💡 Recomendado: 7-10 segundos para máxima eficiência",
                 font=('Arial', 9), bg=self.dark_colors['bg'],  # Era 11, agora 9
                 fg=self.dark_colors['success']).grid(row=3, column=0, columnspan=2, sticky=tk.W, pady=(8, 0))  # Era 10, agora 8
-        
+
         # Modos de Operação - 20% menores
-        modes_frame = tk.LabelFrame(config_frame, text="🎯 Modos de Operação", 
+        modes_frame = tk.LabelFrame(config_frame, text="🎯 Modos de Operação",
                                   bg=self.dark_colors['bg'], fg=self.dark_colors['accent'],
                                   font=('Arial', 10, 'bold'))  # Era 12, agora 10
         modes_frame.pack(fill=tk.X, padx=16, pady=12)  # Era 20/15, agora 16/12
-        
+
         # Checkboxes
         modes_inner = tk.Frame(modes_frame, bg=self.dark_colors['bg'])
         modes_inner.pack(fill=tk.X, padx=16, pady=12)  # Era 20/15, agora 16/12
-        
+
         self.headless_var = tk.BooleanVar()
         tk.Checkbutton(modes_inner, text="🕶️ Modo Headless (invisível)",
                       variable=self.headless_var, bg=self.dark_colors['bg'],
@@ -544,146 +548,146 @@ class KeydropBotGUI:  # noqa: F811
             font=('Arial', 9),
             selectcolor=self.dark_colors['entry_bg']
         ).pack(anchor=tk.W, pady=4)
-        
+
         self.mini_window_var = tk.BooleanVar()
-        tk.Checkbutton(modes_inner, text="📱 Modo Mini (100x200px)", 
-                      variable=self.mini_window_var, bg=self.dark_colors['bg'], 
+        tk.Checkbutton(modes_inner, text="📱 Modo Mini (100x200px)",
+                      variable=self.mini_window_var, bg=self.dark_colors['bg'],
                       fg=self.dark_colors['fg'], font=('Arial', 9),
                       selectcolor=self.dark_colors['entry_bg']).pack(anchor=tk.W, pady=4)
-        
+
         self.login_tabs_var = tk.BooleanVar()
-        tk.Checkbutton(modes_inner, text="🔑 Abas de Login (Keydrop/Steam)", 
-                      variable=self.login_tabs_var, bg=self.dark_colors['bg'], 
+        tk.Checkbutton(modes_inner, text="🔑 Abas de Login (Keydrop/Steam)",
+                      variable=self.login_tabs_var, bg=self.dark_colors['bg'],
                       fg=self.dark_colors['fg'], font=('Arial', 9),
                       selectcolor=self.dark_colors['entry_bg']).pack(anchor=tk.W, pady=4)
-        
+
         # NOVO: Checkbox para sorteios contender (1h)
         self.contender_mode_var = tk.BooleanVar()
-        tk.Checkbutton(modes_inner, text="🏆 Participar Sorteios 1h (Contender)", 
-                      variable=self.contender_mode_var, bg=self.dark_colors['bg'], 
+        tk.Checkbutton(modes_inner, text="🏆 Participar Sorteios 1h (Contender)",
+                      variable=self.contender_mode_var, bg=self.dark_colors['bg'],
                       fg=self.dark_colors['fg'], font=('Arial', 9),
                       selectcolor=self.dark_colors['entry_bg']).pack(anchor=tk.W, pady=4)
-        
+
         # Descrições
-        tk.Label(modes_inner, text="• Headless: Bots funcionam em segundo plano (recomendado para muitos bots)", 
-                font=('Arial', 10), bg=self.dark_colors['bg'], 
+        tk.Label(modes_inner, text="• Headless: Bots funcionam em segundo plano (recomendado para muitos bots)",
+                font=('Arial', 10), bg=self.dark_colors['bg'],
                 fg=self.dark_colors['fg']).pack(anchor=tk.W, padx=20, pady=2)
-        tk.Label(modes_inner, text="• Mini: Janelas pequenas visíveis (bom para monitoramento)", 
-                font=('Arial', 10), bg=self.dark_colors['bg'], 
+        tk.Label(modes_inner, text="• Mini: Janelas pequenas visíveis (bom para monitoramento)",
+                font=('Arial', 10), bg=self.dark_colors['bg'],
                 fg=self.dark_colors['fg']).pack(anchor=tk.W, padx=20, pady=2)
-        tk.Label(modes_inner, text="• Login: Abre páginas de login para autenticação manual", 
-                font=('Arial', 10), bg=self.dark_colors['bg'], 
+        tk.Label(modes_inner, text="• Login: Abre páginas de login para autenticação manual",
+                font=('Arial', 10), bg=self.dark_colors['bg'],
                 fg=self.dark_colors['fg']).pack(anchor=tk.W, padx=20, pady=2)
-        tk.Label(modes_inner, text="• Contender: Participa de sorteios de 1h (aguarda 1h entre participações)", 
-                font=('Arial', 10), bg=self.dark_colors['bg'], 
+        tk.Label(modes_inner, text="• Contender: Participa de sorteios de 1h (aguarda 1h entre participações)",
+                font=('Arial', 10), bg=self.dark_colors['bg'],
                 fg=self.dark_colors['fg']).pack(anchor=tk.W, padx=20, pady=2)
-        
+
         # Discord
-        discord_frame = tk.LabelFrame(config_frame, text="🤖 Integração Discord", 
+        discord_frame = tk.LabelFrame(config_frame, text="🤖 Integração Discord",
                                     bg=self.dark_colors['bg'], fg=self.dark_colors['accent'],
                                     font=('Arial', 12, 'bold'))
         discord_frame.pack(fill=tk.X, padx=20, pady=15)
-        
+
         discord_inner = tk.Frame(discord_frame, bg=self.dark_colors['bg'])
         discord_inner.pack(fill=tk.X, padx=20, pady=15)
-        
-        tk.Label(discord_inner, text="🔗 Webhook URL (opcional):", 
-                font=('Arial', 12, 'bold'), bg=self.dark_colors['bg'], 
+
+        tk.Label(discord_inner, text="🔗 Webhook URL (opcional):",
+                font=('Arial', 12, 'bold'), bg=self.dark_colors['bg'],
                 fg=self.dark_colors['fg']).pack(anchor=tk.W)
-        
+
         self.discord_webhook_var = tk.StringVar()
-        tk.Entry(discord_inner, textvariable=self.discord_webhook_var, 
-                width=60, font=('Arial', 11), bg=self.dark_colors['entry_bg'], 
+        tk.Entry(discord_inner, textvariable=self.discord_webhook_var,
+                width=60, font=('Arial', 11), bg=self.dark_colors['entry_bg'],
                 fg=self.dark_colors['entry_fg'], insertbackground=self.dark_colors['entry_fg']).pack(fill=tk.X, pady=8)
-        
+
         self.discord_enabled_var = tk.BooleanVar()
-        tk.Checkbutton(discord_inner, text="📢 Habilitar Notificações Discord", 
-                      variable=self.discord_enabled_var, bg=self.dark_colors['bg'], 
+        tk.Checkbutton(discord_inner, text="📢 Habilitar Notificações Discord",
+                      variable=self.discord_enabled_var, bg=self.dark_colors['bg'],
                       fg=self.dark_colors['fg'], font=('Arial', 11),
                       selectcolor=self.dark_colors['entry_bg']).pack(anchor=tk.W, pady=5)
-        
+
         # Botões
         buttons_frame = tk.Frame(config_frame, bg=self.dark_colors['bg'])
         buttons_frame.pack(fill=tk.X, padx=20, pady=20)
-        
-        tk.Button(buttons_frame, text="💾 SALVAR CONFIGURAÇÕES", 
+
+        tk.Button(buttons_frame, text="💾 SALVAR CONFIGURAÇÕES",
                  command=self.save_config, font=('Arial', 12, 'bold'),
-                 bg=self.dark_colors['success'], fg='white', 
+                 bg=self.dark_colors['success'], fg='white',
                  relief='raised', bd=2).pack(side=tk.LEFT, padx=10, ipadx=10, ipady=5)
-        
-        tk.Button(buttons_frame, text="🔄 RECARREGAR", 
+
+        tk.Button(buttons_frame, text="🔄 RECARREGAR",
                  command=self.load_config, font=('Arial', 12, 'bold'),
-                 bg=self.dark_colors['accent'], fg='white', 
+                 bg=self.dark_colors['accent'], fg='white',
                  relief='raised', bd=2).pack(side=tk.LEFT, padx=10, ipadx=10, ipady=5)
-        
-        tk.Button(buttons_frame, text="🧹 LIMPAR CACHE", 
+
+        tk.Button(buttons_frame, text="🧹 LIMPAR CACHE",
                  command=self.clear_cache, font=('Arial', 12, 'bold'),
-                 bg=self.dark_colors['warning'], fg='white', 
+                 bg=self.dark_colors['warning'], fg='white',
                  relief='raised', bd=2).pack(side=tk.LEFT, padx=10, ipadx=10, ipady=5)
 
     def create_stats_tab(self):
         """Criar aba de estatísticas"""
         stats_frame = ttk.Frame(self.notebook, style='Dark.TFrame')
         self.notebook.add(stats_frame, text="📊 Estatísticas")
-        
+
         # Estatísticas Globais
-        global_frame = tk.LabelFrame(stats_frame, text="📈 Estatísticas Globais", 
+        global_frame = tk.LabelFrame(stats_frame, text="📈 Estatísticas Globais",
                                    bg=self.dark_colors['bg'], fg=self.dark_colors['accent'],
                                    font=('Arial', 12, 'bold'))
         global_frame.pack(fill=tk.X, padx=20, pady=15)
-        
+
         global_stats = tk.Frame(global_frame, bg=self.dark_colors['bg'])
         global_stats.pack(fill=tk.X, padx=20, pady=15)
-        
+
         # Primeira linha
-        self.total_bots_label = tk.Label(global_stats, text="🤖 Bots Ativos: 0", 
+        self.total_bots_label = tk.Label(global_stats, text="🤖 Bots Ativos: 0",
                                        font=('Arial', 14, 'bold'), bg=self.dark_colors['bg'],
                                        fg=self.dark_colors['accent'])
         self.total_bots_label.grid(row=0, column=0, sticky=tk.W, padx=(0, 30))
-        
-        self.total_raffles_label = tk.Label(global_stats, text="🎯 Total Sorteios: 0", 
+
+        self.total_raffles_label = tk.Label(global_stats, text="🎯 Total Sorteios: 0",
                                           font=('Arial', 14, 'bold'), bg=self.dark_colors['bg'],
                                           fg=self.dark_colors['success'])
         self.total_raffles_label.grid(row=0, column=1, sticky=tk.W, padx=(0, 30))
-        
-        self.total_errors_label = tk.Label(global_stats, text="⚠️ Total Erros: 0", 
+
+        self.total_errors_label = tk.Label(global_stats, text="⚠️ Total Erros: 0",
                                          font=('Arial', 14, 'bold'), bg=self.dark_colors['bg'],
                                          fg=self.dark_colors['error'])
         self.total_errors_label.grid(row=0, column=2, sticky=tk.W)
-        
+
         # Segunda linha
-        self.session_time_label = tk.Label(global_stats, text="⏱️ Tempo Sessão: 00:00:00", 
+        self.session_time_label = tk.Label(global_stats, text="⏱️ Tempo Sessão: 00:00:00",
                                          font=('Arial', 12), bg=self.dark_colors['bg'],
                                          fg=self.dark_colors['fg'])
         self.session_time_label.grid(row=1, column=0, sticky=tk.W, pady=(10, 0))
-        
-        self.network_usage_label = tk.Label(global_stats, text="🌐 Uso Rede: 0 MB", 
+
+        self.network_usage_label = tk.Label(global_stats, text="🌐 Uso Rede: 0 MB",
                                           font=('Arial', 12), bg=self.dark_colors['bg'],
                                           fg=self.dark_colors['fg'])
         self.network_usage_label.grid(row=1, column=1, sticky=tk.W, pady=(10, 0))
-        
-        self.total_profit_label = tk.Label(global_stats, text="💰 Lucro Total: $0.00", 
+
+        self.total_profit_label = tk.Label(global_stats, text="💰 Lucro Total: $0.00",
                                         font=('Arial', 12), bg=self.dark_colors['bg'],
                                         fg=self.dark_colors['success'])
         self.total_profit_label.grid(row=1, column=2, sticky=tk.W, pady=(10, 0))
-        
+
         # Gráfico de Performance
-        graph_frame = tk.LabelFrame(stats_frame, text="📊 Gráfico de Performance", 
+        graph_frame = tk.LabelFrame(stats_frame, text="📊 Gráfico de Performance",
                                   bg=self.dark_colors['bg'], fg=self.dark_colors['accent'],
                                   font=('Arial', 12, 'bold'))
         graph_frame.pack(fill=tk.X, padx=20, pady=15)
-        
+
         # Canvas para gráfico simples (sem matplotlib)
-        self.graph_canvas = tk.Canvas(graph_frame, width=600, height=200, 
+        self.graph_canvas = tk.Canvas(graph_frame, width=600, height=200,
                                     bg=self.dark_colors['entry_bg'])
         self.graph_canvas.pack(padx=20, pady=15)
-        
+
         # Detalhes dos Bots Individuais
-        bots_frame = tk.LabelFrame(stats_frame, text="🤖 Detalhes dos Bots Ativos", 
+        bots_frame = tk.LabelFrame(stats_frame, text="🤖 Detalhes dos Bots Ativos",
                                  bg=self.dark_colors['bg'], fg=self.dark_colors['accent'],
                                  font=('Arial', 12, 'bold'))
         bots_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=(0, 15))
-        
+
         # Área de rolagem para detalhes dos bots
         self.bots_details_text = scrolledtext.ScrolledText(bots_frame, height=10, state=tk.DISABLED,
                                                          font=('Consolas', 10), bg=self.dark_colors['entry_bg'],
@@ -691,27 +695,27 @@ class KeydropBotGUI:  # noqa: F811
                                                          selectbackground=self.dark_colors['select_bg'],
                                                          selectforeground=self.dark_colors['select_fg'])
         self.bots_details_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-        
+
         # Performance do Sistema
-        system_frame = tk.LabelFrame(stats_frame, text="💻 Performance do Sistema", 
+        system_frame = tk.LabelFrame(stats_frame, text="💻 Performance do Sistema",
                                    bg=self.dark_colors['bg'], fg=self.dark_colors['accent'],
                                    font=('Arial', 12, 'bold'))
         system_frame.pack(fill=tk.X, padx=20, pady=15)
-        
+
         system_stats = tk.Frame(system_frame, bg=self.dark_colors['bg'])
         system_stats.pack(fill=tk.X, padx=20, pady=15)
-        
-        self.cpu_label = tk.Label(system_stats, text="💾 CPU: 0%", 
+
+        self.cpu_label = tk.Label(system_stats, text="💾 CPU: 0%",
                                 font=('Arial', 12), bg=self.dark_colors['bg'],
                                 fg=self.dark_colors['fg'])
         self.cpu_label.grid(row=0, column=0, sticky=tk.W, padx=(0, 30))
-        
-        self.ram_label = tk.Label(system_stats, text="🧠 RAM: 0 MB", 
+
+        self.ram_label = tk.Label(system_stats, text="🧠 RAM: 0 MB",
                                 font=('Arial', 12), bg=self.dark_colors['bg'],
                                 fg=self.dark_colors['fg'])
         self.ram_label.grid(row=0, column=1, sticky=tk.W, padx=(0, 30))
-        
-        self.disk_label = tk.Label(system_stats, text="💿 Disco: 0 GB", 
+
+        self.disk_label = tk.Label(system_stats, text="💿 Disco: 0 GB",
                                  font=('Arial', 12), bg=self.dark_colors['bg'],
                                  fg=self.dark_colors['fg'])
         self.disk_label.grid(row=0, column=2, sticky=tk.W)
@@ -720,45 +724,45 @@ class KeydropBotGUI:  # noqa: F811
         """Criar aba de logs"""
         logs_frame = ttk.Frame(self.notebook, style='Dark.TFrame')
         self.notebook.add(logs_frame, text="📝 Logs")
-        
+
         # Header dos logs
-        logs_header = tk.LabelFrame(logs_frame, text="📊 Sistema de Logs Avançado", 
+        logs_header = tk.LabelFrame(logs_frame, text="📊 Sistema de Logs Avançado",
                                   bg=self.dark_colors['bg'], fg=self.dark_colors['accent'],
                                   font=('Arial', 12, 'bold'))
         logs_header.pack(fill=tk.X, padx=20, pady=15)
-        
+
         logs_header_inner = tk.Frame(logs_header, bg=self.dark_colors['bg'])
         logs_header_inner.pack(fill=tk.X, padx=20, pady=15)
-        
-        tk.Label(logs_header_inner, text="📜 Monitoramento em tempo real de todas as atividades do sistema", 
-                font=('Arial', 12), bg=self.dark_colors['bg'], 
+
+        tk.Label(logs_header_inner, text="📜 Monitoramento em tempo real de todas as atividades do sistema",
+                font=('Arial', 12), bg=self.dark_colors['bg'],
                 fg=self.dark_colors['fg']).pack(anchor=tk.W)
-        
+
         # Controles
         log_controls = tk.Frame(logs_header_inner, bg=self.dark_colors['bg'])
         log_controls.pack(fill=tk.X, pady=(10, 0))
-        
-        tk.Button(log_controls, text="🗑️ LIMPAR LOGS", 
+
+        tk.Button(log_controls, text="🗑️ LIMPAR LOGS",
                  command=self.clear_logs, font=('Arial', 12, 'bold'),
-                 bg=self.dark_colors['error'], fg='white', 
+                 bg=self.dark_colors['error'], fg='white',
                  relief='raised', bd=2).pack(side=tk.LEFT, padx=10, ipadx=10, ipady=5)
-        
-        tk.Button(log_controls, text="💾 SALVAR LOGS", 
+
+        tk.Button(log_controls, text="💾 SALVAR LOGS",
                  command=self.save_logs, font=('Arial', 12, 'bold'),
-                 bg=self.dark_colors['success'], fg='white', 
+                 bg=self.dark_colors['success'], fg='white',
                  relief='raised', bd=2).pack(side=tk.LEFT, padx=10, ipadx=10, ipady=5)
-        
-        tk.Button(log_controls, text="🔄 ATUALIZAR", 
+
+        tk.Button(log_controls, text="🔄 ATUALIZAR",
                  command=self.refresh_logs, font=('Arial', 12, 'bold'),
-                 bg=self.dark_colors['accent'], fg='white', 
+                 bg=self.dark_colors['accent'], fg='white',
                  relief='raised', bd=2).pack(side=tk.LEFT, padx=10, ipadx=10, ipady=5)
-        
+
         # Área de logs
-        logs_content = tk.LabelFrame(logs_frame, text="📋 Log de Atividades", 
+        logs_content = tk.LabelFrame(logs_frame, text="📋 Log de Atividades",
                                    bg=self.dark_colors['bg'], fg=self.dark_colors['accent'],
                                    font=('Arial', 12, 'bold'))
         logs_content.pack(fill=tk.BOTH, expand=True, padx=20, pady=(0, 15))
-        
+
         self.logs_text = scrolledtext.ScrolledText(logs_content, height=20, state=tk.DISABLED,
                                                  font=('Consolas', 11), bg=self.dark_colors['entry_bg'],
                                                  fg=self.dark_colors['fg'], insertbackground=self.dark_colors['fg'],
@@ -782,9 +786,9 @@ class KeydropBotGUI:  # noqa: F811
         """Adicionar mensagem aos logs"""
         timestamp = time.strftime("%H:%M:%S")
         log_entry = f"[{timestamp}] {level}: {message}\n"
-        
+
         print(f"LOG: {log_entry.strip()}")
-        
+
         try:
             if hasattr(self, 'logs_text') and self.logs_text:
                 self.logs_text.config(state=tk.NORMAL)
@@ -793,7 +797,7 @@ class KeydropBotGUI:  # noqa: F811
                 self.logs_text.config(state=tk.DISABLED)
         except Exception as e:
             print(f"Erro ao adicionar aos logs: {e}")
-        
+
         try:
             if hasattr(self, 'status_text') and self.status_text:
                 self.status_text.config(state=tk.NORMAL)
@@ -812,12 +816,12 @@ class KeydropBotGUI:  # noqa: F811
             total_errors = sum(bot.get('errors', 0) for bot in self.bot_stats.values())
             total_network = sum(bot.get('network_usage', 0) for bot in self.bot_stats.values())
             total_skins = sum(bot.get('skin_balance', 0.0) for bot in self.bot_stats.values())
-            
+
             session_duration = datetime.now() - self.global_stats['session_start_time']
             hours, remainder = divmod(int(session_duration.total_seconds()), 3600)
             minutes, seconds = divmod(remainder, 60)
             session_time = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
-            
+
             if hasattr(self, 'total_bots_label'):
                 self.total_bots_label.config(text=f"🤖 Bots Ativos: {self.total_bots_active}")
             if hasattr(self, 'total_raffles_label'):
@@ -830,9 +834,9 @@ class KeydropBotGUI:  # noqa: F811
                 self.network_usage_label.config(text=f"🌐 Uso Rede: {total_network} MB")
             if hasattr(self, 'total_profit_label'):
                 self.total_profit_label.config(text=f"💰 Lucro Total: ${total_skins:.2f}")
-            
+
             self.root.after(5000, self.update_global_stats)
-            
+
         except Exception as e:
             print(f"Erro ao atualizar estatísticas: {e}")
             self.root.after(10000, self.update_global_stats)
@@ -843,19 +847,19 @@ class KeydropBotGUI:  # noqa: F811
             cpu_percent = psutil.cpu_percent(interval=1)
             memory = psutil.virtual_memory()
             disk = psutil.disk_usage('/')
-            
+
             ram_used = memory.used / (1024**2)
             disk_free = disk.free / (1024**3)
-            
+
             if hasattr(self, 'cpu_label'):
                 self.cpu_label.config(text=f"💾 CPU: {cpu_percent:.1f}%")
             if hasattr(self, 'ram_label'):
                 self.ram_label.config(text=f"🧠 RAM: {ram_used:.0f} MB")
             if hasattr(self, 'disk_label'):
                 self.disk_label.config(text=f"💿 Disco: {disk_free:.1f} GB")
-            
+
             self.root.after(3000, self.update_system_stats)
-            
+
         except Exception as e:
             print(f"Erro ao atualizar sistema: {e}")
             self.root.after(5000, self.update_system_stats)
@@ -1092,10 +1096,10 @@ class KeydropBotGUI:  # noqa: F811
             result = messagebox.askyesno("Emergência", "Fechar TODOS os processos Chrome e drivers Selenium?")
             if result:
                 self.log_message("🚨 PARADA DE EMERGÊNCIA!", "WARNING")
-                
+
                 # Parar automação
                 self.automation_active = False
-                
+
                 # Fechar drivers Selenium
                 if hasattr(self, 'chrome_drivers'):
                     for bot_data in self.chrome_drivers:
@@ -1105,7 +1109,7 @@ class KeydropBotGUI:  # noqa: F811
                         except:
                             pass
                     self.chrome_drivers = []
-                
+
                 # Matar processos Chrome
                 killed = 0
                 for proc in psutil.process_iter(['pid', 'name']):
@@ -1115,11 +1119,11 @@ class KeydropBotGUI:  # noqa: F811
                             killed += 1
                     except:
                         pass
-                
+
                 self.bot_stats.clear()
                 self.total_bots_active = 0
                 self.log_message(f"🛑 {killed} processos Chrome finalizados!", "WARNING")
-                
+
         except Exception as e:
             self.log_message(f"❌ Erro: {e}", "ERROR")
 
@@ -1148,34 +1152,34 @@ class KeydropBotGUI:  # noqa: F811
         """Sistema robusto de atualização do app"""
         try:
             self.log_message("🔄 Verificando atualizações...", "INFO")
-            
+
             # Configurações da atualização
             current_version = "3.0.0"
-            
+
             # Thread para não travar a interface
             def update_thread():
                 try:
                     # Verificar versão mais recente
                     self.log_message("🌐 Consultando GitHub API...", "INFO")
-                    
+
                     # Simular verificação (substitua pela API real)
                     import random
                     has_update = random.choice([True, False])
                     new_version = "3.0.1" if has_update else current_version
-                    
+
                     if has_update:
                         self.log_message(f"🎉 Nova versão disponível: v{new_version}", "SUCCESS")
-                        
+
                         # Perguntar ao usuário
                         response = messagebox.askyesno(
-                            "Atualização Disponível", 
+                            "Atualização Disponível",
                             f"🎉 Nova versão disponível!\n\n"
                             f"📦 Versão Atual: v{current_version}\n"
                             f"🆕 Nova Versão: v{new_version}\n\n"
                             f"🔄 Deseja baixar e instalar agora?\n\n"
                             f"⚠️ O aplicativo será reiniciado após a instalação."
                         )
-                        
+
                         if response:
                             self.download_and_install_update(new_version)
                         else:
@@ -1183,23 +1187,23 @@ class KeydropBotGUI:  # noqa: F811
                     else:
                         self.log_message("✅ Aplicativo já está na versão mais recente", "SUCCESS")
                         messagebox.showinfo(
-                            "Sem Atualizações", 
+                            "Sem Atualizações",
                             f"✅ Você já possui a versão mais recente!\n\n"
                             f"📦 Versão Atual: v{current_version}\n"
                             f"🔍 Nenhuma atualização encontrada."
                         )
-                
+
                 except requests.exceptions.RequestException:
                     self.log_message("❌ Erro de conectividade ao verificar atualizações", "ERROR")
                     messagebox.showerror("Erro", "❌ Não foi possível verificar atualizações.\n\n🌐 Verifique sua conexão com a internet.")
-                
+
                 except Exception as e:
                     self.log_message(f"❌ Erro ao verificar atualizações: {e}", "ERROR")
                     messagebox.showerror("Erro", f"❌ Erro ao verificar atualizações:\n\n{e}")
-            
+
             # Executar em thread separada
             threading.Thread(target=update_thread, daemon=True).start()
-            
+
         except Exception as e:
             self.log_message(f"❌ Erro no sistema de atualização: {e}", "ERROR")
             messagebox.showerror("Erro", f"❌ Erro no sistema de atualização: {e}")
@@ -1208,32 +1212,32 @@ class KeydropBotGUI:  # noqa: F811
         """Baixar e instalar atualização"""
         try:
             self.log_message(f"📥 Baixando versão {version}...", "INFO")
-            
+
             # Simular download (implementar download real)
             import time
             for i in range(1, 6):
                 self.log_message(f"📥 Download em progresso... {i*20}%", "INFO")
                 time.sleep(1)
-            
+
             # Simular instalação
             self.log_message("🔧 Instalando atualização...", "INFO")
             time.sleep(2)
-            
+
             # Sucesso simulado
             self.log_message("✅ Atualização instalada com sucesso!", "SUCCESS")
-            
+
             response = messagebox.askyesno(
                 "Atualização Concluída",
                 f"✅ Atualização para v{version} instalada!\n\n"
                 f"🔄 É necessário reiniciar o aplicativo.\n\n"
                 f"🚀 Deseja reiniciar agora?"
             )
-            
+
             if response:
                 self.log_message("🔄 Reiniciando aplicativo...", "INFO")
                 self.root.quit()
                 # Aqui você pode adicionar código para reiniciar o app
-                
+
         except Exception as e:
             self.log_message(f"❌ Erro na instalação: {e}", "ERROR")
             messagebox.showerror("Erro", f"❌ Erro na instalação: {e}")
@@ -1256,13 +1260,13 @@ class KeydropBotGUI:  # noqa: F811
                 'discord_webhook': self.discord_webhook_var.get(),
                 'save_timestamp': datetime.now().isoformat()
             }
-            
+
             with open(self.config_file, 'w', encoding='utf-8') as f:
                 json.dump(config, f, indent=2, ensure_ascii=False)
-            
+
             self.log_message("✅ Configurações salvas com sucesso!", "SUCCESS")
             messagebox.showinfo("Sucesso", "✅ Configurações salvas com sucesso!")
-            
+
         except Exception as e:
             self.log_message(f"❌ Erro ao salvar configurações: {e}", "ERROR")
             messagebox.showerror("Erro", f"❌ Erro ao salvar configurações: {e}")
@@ -1273,7 +1277,7 @@ class KeydropBotGUI:  # noqa: F811
             if self.config_file.exists():
                 with open(self.config_file, 'r', encoding='utf-8') as f:
                     config = json.load(f)
-                
+
                 # Aplicar configurações carregadas
                 self.headless_var.set(config.get('headless_mode', False))
                 self.stealth_headless_var.set(config.get('stealth_headless_mode', False))
@@ -1282,13 +1286,13 @@ class KeydropBotGUI:  # noqa: F811
                 self.contender_mode_var.set(config.get('contender_mode', False))
                 self.discord_enabled_var.set(config.get('discord_enabled', False))
                 self.discord_webhook_var.set(config.get('discord_webhook', ''))
-                
+
                 self.log_message("✅ Configurações carregadas com sucesso!", "SUCCESS")
                 messagebox.showinfo("Sucesso", "✅ Configurações carregadas com sucesso!")
             else:
                 self.log_message("⚠️ Arquivo de configuração não encontrado", "WARNING")
                 messagebox.showwarning("Aviso", "⚠️ Arquivo de configuração não encontrado")
-                
+
         except Exception as e:
             self.log_message(f"❌ Erro ao carregar configurações: {e}", "ERROR")
             messagebox.showerror("Erro", f"❌ Erro ao carregar configurações: {e}")
@@ -1301,7 +1305,7 @@ class KeydropBotGUI:  # noqa: F811
                 Path("cache"),
                 Path("temp")
             ]
-            
+
             cleared_count = 0
             for cache_dir in cache_dirs:
                 if cache_dir.exists() and cache_dir.is_dir():
@@ -1315,10 +1319,10 @@ class KeydropBotGUI:  # noqa: F811
                                 cleared_count += 1
                     except:
                         continue
-            
+
             self.log_message(f"✅ Cache limpo! {cleared_count} itens removidos", "SUCCESS")
             messagebox.showinfo("Sucesso", f"✅ Cache limpo!\n{cleared_count} itens removidos")
-            
+
         except Exception as e:
             self.log_message(f"❌ Erro ao limpar cache: {e}", "ERROR")
             messagebox.showerror("Erro", f"❌ Erro ao limpar cache: {e}")
@@ -1339,20 +1343,20 @@ class KeydropBotGUI:  # noqa: F811
         try:
             if hasattr(self, 'logs_text'):
                 logs_content = self.logs_text.get(1.0, tk.END)
-                
+
                 filename = filedialog.asksaveasfilename(
                     defaultextension=".txt",
                     filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
                     title="Salvar Logs"
                 )
-                
+
                 if filename:
                     with open(filename, 'w', encoding='utf-8') as f:
                         f.write(logs_content)
-                    
+
                     self.log_message(f"✅ Logs salvos em: {filename}", "SUCCESS")
                     messagebox.showinfo("Sucesso", f"✅ Logs salvos com sucesso!\n{filename}")
-                    
+
         except Exception as e:
             self.log_message(f"❌ Erro ao salvar logs: {e}", "ERROR")
             messagebox.showerror("Erro", f"❌ Erro ao salvar logs: {e}")
@@ -1362,13 +1366,13 @@ class KeydropBotGUI:  # noqa: F811
         try:
             # Força atualização da interface
             self.root.update_idletasks()
-            
+
             # Rola para o final dos logs
             if hasattr(self, 'logs_text'):
                 self.logs_text.see(tk.END)
-            
+
             self.log_message("🔄 Logs atualizados", "INFO")
-            
+
         except Exception as e:
             self.log_message(f"❌ Erro ao atualizar logs: {e}", "ERROR")
 
@@ -1376,21 +1380,23 @@ def main():
     """Função principal"""
     try:
         print("🎯 Iniciando Keydrop Bot Professional v3.0.0...")
-        
+
         if os.name == 'nt':
             try:
                 import ctypes
                 ctypes.windll.shcore.SetProcessDpiAwareness(1)
             except:
                 pass
-        
+
         app = KeydropBotGUI()
         app.run()
-        
+
     except Exception as e:
         print(f"❌ Erro: {e}")
         import traceback
         traceback.print_exc()
+
+# fmt: on
 
 if __name__ == "__main__":
     main()
