@@ -126,6 +126,14 @@ Auxiliares de notificação ficam em `bot_keydrop/backend/notifications`:
 - **Windows**: notificações desktop via `win10toast`.
 - **Telegram**: envio simples de mensagens via API do Telegram.
 
+
 ## 🚀 Build Pipeline
 Execute `python ci/build_pipeline.py --snapshot` para rodar lint, testes e gerar `build/build_info.txt`.
 Use `launcher.py --watch` para iniciar o monitoramento em tempo real que grava `logs/live_monitor.html`.
+
+## 🚀 Integração Contínua
+
+O repositório possui um workflow do GitHub Actions que valida cada Pull Request.
+Ele instala as dependências, executa `flake8`, `black` e roda toda a suíte de testes com cobertura.
+Os relatórios são gerados em `tests/test_report.html` e `tests/coverage.txt`.
+
