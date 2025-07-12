@@ -42,13 +42,13 @@ class BotStarter:
         if requirements_file.exists():
             try:
                 # Check if FastAPI is available
-                import fastapi
+                import fastapi  # noqa: F401
                 print("✅ FastAPI disponível")
                 
-                import playwright
+                import playwright  # noqa: F401
                 print("✅ Playwright disponível")
                 
-                import psutil
+                import psutil  # noqa: F401
                 print("✅ psutil disponível")
                 
             except ImportError as e:

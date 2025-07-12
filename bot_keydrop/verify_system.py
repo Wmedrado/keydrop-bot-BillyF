@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import os
 import sys
-import subprocess
 import importlib.util
 from pathlib import Path
 from typing import List

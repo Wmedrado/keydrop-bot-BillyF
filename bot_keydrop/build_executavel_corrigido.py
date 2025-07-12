@@ -6,9 +6,7 @@ Gera executável com todas as correções aplicadas
 
 import PyInstaller.__main__
 import os
-import sys
 import shutil
-from pathlib import Path
 
 def build_executable():
     """Compilar executável corrigido"""

@@ -3,13 +3,11 @@ Módulo de integração com Discord
 Gerencia notificações via webhook do Discord
 """
 
-import asyncio
 import logging
 from datetime import datetime
 from typing import Dict, Any, Optional, List
 from dataclasses import dataclass
 from discord_webhook import DiscordWebhook, DiscordEmbed
-import json
 
 
 # Configuração de logging
