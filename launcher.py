@@ -6,6 +6,12 @@ import os
 from pathlib import Path
 import atexit
 
+# Early CLI handling for optional watch mode
+if "--watch" in sys.argv:
+    from bot_keydrop.live_monitor import watch
+    watch()
+    sys.exit(0)
+
 from bot_keydrop.system_safety import LockFile
 
 if os.getenv("MODO_DEBUG") == "1" or Path(sys.argv[0]).stem.endswith("_DEBUG"):

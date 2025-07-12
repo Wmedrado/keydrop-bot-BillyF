@@ -125,3 +125,7 @@ Distribuído sob a licença MIT. Consulte os arquivos de documentação das past
 Auxiliares de notificação ficam em `bot_keydrop/backend/notifications`:
 - **Windows**: notificações desktop via `win10toast`.
 - **Telegram**: envio simples de mensagens via API do Telegram.
+
+## 🚀 Build Pipeline
+Execute `python ci/build_pipeline.py --snapshot` para rodar lint, testes e gerar `build/build_info.txt`.
+Use `launcher.py --watch` para iniciar o monitoramento em tempo real que grava `logs/live_monitor.html`.
