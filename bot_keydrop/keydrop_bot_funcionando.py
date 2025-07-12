@@ -178,7 +178,7 @@ class KeydropBotGUI:
         
         ttk.Label(info_frame, text="🤖 Automação Profissional para Sorteios Keydrop", 
                  font=('Arial', 14, 'bold')).pack(anchor=tk.W)
-        ttk.Label(info_frame, text="🌐 Suporte Chrome/Edge • Múltiplos Perfis • Multi-Instância", 
+        ttk.Label(info_frame, text="🌐 Suporte Google Chrome • Múltiplos Perfis • Multi-Instância",
                  font=('Arial', 12)).pack(anchor=tk.W)
         
         # Controles
@@ -326,7 +326,7 @@ class KeydropBotGUI:
             self.log_message("🚀 Iniciando automação...", "INFO")
             
             if not SELENIUM_AVAILABLE:
-                self.log_message("⚠️ Selenium não disponível - modo Edge básico", "WARNING")
+                self.log_message("⚠️ Selenium não disponível - modo manual básico", "WARNING")
                 self.start_edge_mode()
                 return
             
@@ -351,9 +351,9 @@ class KeydropBotGUI:
             self.log_message(f"❌ Erro na automação: {e}", "ERROR")
     
     def start_edge_mode(self):
-        """Iniciar modo Edge básico"""
+        """Iniciar modo manual básico"""
         try:
-            self.log_message("🌐 Iniciando modo Edge básico...", "INFO")
+            self.log_message("🌐 Iniciando modo manual básico...", "INFO")
             
             # Abrir site do Keydrop
             import webbrowser
@@ -362,7 +362,7 @@ class KeydropBotGUI:
             self.log_message("✅ Site aberto - automação manual necessária", "SUCCESS")
             
         except Exception as e:
-            self.log_message(f"❌ Erro no modo Edge: {e}", "ERROR")
+            self.log_message(f"❌ Erro no modo manual: {e}", "ERROR")
     
     def stop_automation(self):
         """Parar automação"""

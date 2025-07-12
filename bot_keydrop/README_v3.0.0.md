@@ -10,7 +10,7 @@
 - **Botões Maiores**: Interface mais amigável
 - **Layout Limpo**: Remoção de informações desnecessárias
 
-#### 🚀 **Automação Microsoft Edge Avançada**
+#### 🚀 **Automação Google Chrome Avançada**
 - **Múltiplos Perfis**: Cada bot com cache e dados isolados
 - **3 Modos de Operação**:
   - 🕶️ **Headless**: Invisível, máxima performance
@@ -77,7 +77,7 @@
 ```
 - Vá para aba "🎮 Controle"
 - Clique "🚀 INICIAR AUTOMAÇÃO"
-- Aguarde abertura das janelas Edge
+ - Aguarde abertura das janelas Chrome
 - Monitore na aba "📊 Estatísticas"
 - Acompanhe logs na aba "📝 Logs"
 ```
@@ -93,7 +93,7 @@
 #### 5️⃣ **Parada**
 ```
 - "⏹️ PARAR AUTOMAÇÃO": Parada suave
-- "🚨 EMERGÊNCIA": Força fechamento de todos Edge
+ - "🚨 EMERGÊNCIA": Força fechamento de todos Chrome
 ```
 
 ### 💡 **Dicas de Uso**
@@ -119,7 +119,7 @@
 ### 🔧 **Especificações Técnicas**
 
 #### 📦 **Dependências**
-- Microsoft Edge (obrigatório)
+- Google Chrome (obrigatório)
 - Windows 10/11
 - 4GB RAM (mínimo)
 - Conexão com internet
@@ -152,7 +152,7 @@
 
 #### 💻 **Compatibilidade**
 - Windows 10/11 (testado)
-- Edge Chromium (obrigatório)
+ - Google Chrome (obrigatório)
 - Resolução mínima: 1024x768
 - Python 3.8+ (desenvolvimento)
 

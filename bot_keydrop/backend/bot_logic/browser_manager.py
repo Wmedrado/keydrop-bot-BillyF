@@ -127,7 +127,8 @@ class BrowserManager:
             if self.user_data_dir:
                 launch_options['user_data_dir'] = self.user_data_dir
             
-            # Iniciar navegador
+            # Iniciar navegador Google Chrome
+            launch_options["channel"] = "chrome"  # garantir uso do Chrome estável
             self.browser = await self.playwright.chromium.launch(**launch_options)
             self.is_running = True
             
