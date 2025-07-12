@@ -44,6 +44,8 @@ O script `startup.py` inicia o backend FastAPI na porta `8000` e um servidor
 HTTP simples para a interface web (porta `3000`). Após iniciado, a interface
 pode ser acessada em `http://localhost:3000` e a API em
 `http://localhost:8000`.
+Também é servido um painel opcional em `http://localhost:8000/ui` com
+informações resumidas, gráficos de CPU/RAM e controles básicos do bot.
 
 ### Produção ou Executável
 
