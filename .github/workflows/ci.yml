@@ -12,6 +12,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: Auto rebase AI branches
+        run: python ci/pre_pr_rebase.py
       - name: Validate PR description
         if: github.event_name == 'pull_request'
         env:
