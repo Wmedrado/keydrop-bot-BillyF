@@ -42,3 +42,9 @@ Cada nova funcionalidade ou ajuste relevante deve adicionar um bloco seguindo o 
 - **Afeta/Substitui:** remove `validate_pr.yml`, passo `Validate PR description` em `ci.yml` e checagem em `run_pipeline.sh`.
 - **Justificativa técnica:** simplifica o fluxo de CI, mantendo a recomendação do template sem impedir integrações úteis.
 - **Tipo:** melhoria
+
+## SonarCloud workflow refinement
+- **Motivo:** separar a análise estática em job dedicado para garantir falhas em PRs com problemas graves.
+- **Afeta/Substitui:** atualiza `.github/workflows/ci.yml` e documenta uso local no `README.md`.
+- **Justificativa técnica:** execução isolada do scanner padroniza a validação de qualidade e simplifica a manutenção.
+- **Tipo:** melhoria

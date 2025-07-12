@@ -7,7 +7,27 @@ on:
     branches: [ clean-main ]
 
 jobs:
+  static-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout do Código
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 📊 SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2
+        with:
+          projectKey: keydrop-bot
+          organization: your-org
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
   build:
+    needs: static-analysis
     runs-on: ubuntu-latest
     steps:
       - name: ⬇️ Checkout do Código
@@ -35,13 +55,6 @@ jobs:
       - name: ✅ Validar descrição do PR
         run: python ci/validate_pr_description.py
 
-      - name: 📊 SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@v2
-        with:
-          projectKey: your_project_key  # 🔁 Substitua pelo ID real
-          organization: your_organization_id  # 🔁 Substitua pelo ID real
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: 🧪 Rodar pipeline de testes
         run: bash ci/run_pipeline.sh

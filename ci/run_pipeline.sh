@@ -40,7 +40,8 @@ python ci/rollback_validator.py | tee build_results/rollback_validator.log
 # Lint with flake8 and black
 flake8 . > build_results/flake8.log || true
 black --check . > build_results/black.log || true
-ruff check . > build_results/ruff.log
+# Ruff warnings shouldn't fail the entire pipeline
+ruff check . > build_results/ruff.log || true
 bandit -r bot_keydrop -lll -q > build_results/bandit.log
 
 

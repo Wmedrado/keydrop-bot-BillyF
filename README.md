@@ -153,6 +153,9 @@ Auxiliares de notificação ficam em `bot_keydrop/backend/notifications`:
 Execute `python ci/build_pipeline.py --snapshot` para rodar lint, testes e gerar `build/build_info.txt`.
 Use `launcher.py --watch` para iniciar o monitoramento em tempo real que grava `logs/live_monitor.html`.
 
+## 🧪 Análise Estática
+Execute `sonar-scanner -Dsonar.projectKey=keydrop-bot -Dsonar.sources=bot_keydrop/,bot_keydrop/frontend/,bot_keydrop/system_safety/` para validar o código localmente.
+
 ## 🚀 Integração Contínua
 
 O repositório possui um workflow do GitHub Actions que valida cada Pull Request.
