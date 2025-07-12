@@ -7,3 +7,5 @@ existing business rules are not violated.
 
 Additional documentation is available for the premium feature implementation in
 `functions/premium.md`.
+Documentation for the Discord OAuth integration can be found in
+`functions/discord_oauth.md`.

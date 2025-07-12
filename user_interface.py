@@ -35,7 +35,9 @@ from cloud.firebase_client import (
     initialize_firebase,
     salvar_perfil,
     upload_foto_perfil,
+    salvar_discord_info,
 )
+from discord_oauth import oauth_login, add_vip_role
 
 logger = logging.getLogger(__name__)
 
@@ -134,6 +136,7 @@ class LoginFrame(ctk.CTkFrame):
         self.on_register = on_register
         self.email_var = ctk.StringVar()
         self.senha_var = ctk.StringVar()
+        self.discord_data: Optional[Dict[str, Any]] = None
         self._build()
 
     def _build(self) -> None:
@@ -142,6 +145,8 @@ class LoginFrame(ctk.CTkFrame):
 
         ctk.CTkLabel(self, text="Senha:").pack(pady=5)
         ctk.CTkEntry(self, textvariable=self.senha_var, show="*").pack(pady=5)
+
+        ctk.CTkButton(self, text="Entrar com Discord", command=self._login_discord).pack(pady=5)
 
         ctk.CTkButton(self, text="Entrar", command=self._handle_login).pack(pady=10)
         ctk.CTkButton(self, text="Cadastrar", command=self.on_register).pack()
@@ -154,9 +159,21 @@ class LoginFrame(ctk.CTkFrame):
             return
         try:
             user = autenticar_usuario(email, senha)
+            if self.discord_data:
+                user["discord"] = self.discord_data
             self.on_login(user)
         except Exception as exc:  # pragma: no cover - network errors
             messagebox.showerror("Falha no login", str(exc))
+
+    def _login_discord(self) -> None:
+        try:
+            info = oauth_login()
+            self.discord_data = info
+            if info.get("email"):
+                self.email_var.set(info["email"])
+            messagebox.showinfo("Discord", f"Conectado como {info['username']}")
+        except Exception as exc:  # pragma: no cover - network errors
+            messagebox.showerror("Discord", str(exc))
 
 
 class RegisterFrame(ctk.CTkFrame):
@@ -322,9 +339,10 @@ class StoreFrame(ctk.CTkFrame):
         },
     ]
 
-    def __init__(self, master: ctk.CTk, user_id: str, **kwargs):
+    def __init__(self, master: ctk.CTk, user_id: str, discord_data: Optional[Dict[str, Any]] = None, **kwargs):
         super().__init__(master, **kwargs)
         self.user_id = user_id
+        self.discord_data = discord_data
         self.cart: list[dict] = []
         self._build()
 
@@ -380,15 +398,16 @@ class StoreFrame(ctk.CTkFrame):
         if not self.cart:
             messagebox.showinfo("Carrinho", "Adicione itens ao carrinho primeiro.")
             return
-        PaymentWindow(self, self.user_id, self.cart, self.PIX_KEY)
+        PaymentWindow(self, self.user_id, self.cart, self.PIX_KEY, self.discord_data)
 
 
 class PaymentWindow(ctk.CTkToplevel):
-    def __init__(self, master: ctk.CTk, user_id: str, itens: list[dict], pix_key: str):
+    def __init__(self, master: ctk.CTk, user_id: str, itens: list[dict], pix_key: str, discord_data: Optional[Dict[str, Any]] = None):
         super().__init__(master)
         self.user_id = user_id
         self.itens = itens
         self.pix_key = pix_key
+        self.discord_data = discord_data
         self.title("Pagamento")
         self._build()
 
@@ -420,6 +439,21 @@ class PaymentWindow(ctk.CTkToplevel):
     def _confirm(self) -> None:
         try:
             registrar_compra(self.user_id, self.itens)
+            if self.discord_data and 'token' in self.discord_data:
+                try:
+                    add_vip_role(self.discord_data['id'], self.discord_data['token'])
+                    salvar_discord_info(
+                        self.user_id,
+                        {
+                            'discord_id': self.discord_data['id'],
+                            'username': self.discord_data['username'],
+                            'email': self.discord_data.get('email'),
+                            'vip_status': True,
+                            'guild_joined': True,
+                        },
+                    )
+                except Exception as exc:  # pragma: no cover - network errors
+                    logger.exception("Falha ao aplicar VIP - fallback manual: %s", exc)
         except Exception as exc:  # pragma: no cover - network errors
             messagebox.showerror("Erro", f"Falha ao registrar compra.\n{exc}")
         finally:

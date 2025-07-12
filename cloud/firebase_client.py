@@ -135,3 +135,10 @@ def registrar_compra(user_id: str, itens: List[Dict[str, Any]]) -> None:
     compra_ref.push(dados)
     logger.debug("Compra registrada para %s: %s", user_id, dados)
 
+
+def salvar_discord_info(user_id: str, info: Dict[str, Any]) -> None:
+    """Persist Discord-related information for a user."""
+    initialize_firebase()
+    ref = db.reference(f"users/{user_id}/discord")
+    ref.update(info)
+    logger.debug("Discord info salvo para %s: %s", user_id, info)
