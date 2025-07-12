@@ -3,10 +3,15 @@ import os
 import shutil
 import subprocess
 import sys
+import atexit
 from datetime import datetime
 from pathlib import Path
 
 from log_utils import setup_logger
+from bot_keydrop.system_safety.environment_checker import (
+    LockFile,
+    executando_no_diretorio_correto,
+)
 
 try:
     import importlib
@@ -20,6 +25,7 @@ CONFIG_PATH = BASE_DIR / "gerador_exe" / "build_config.json"
 BIN_DIR = BASE_DIR / "gerador_exe" / "binario_final"
 TEMP_DIR = BASE_DIR / "gerador_exe" / "temp"
 LOG_FILE = BASE_DIR / "logs" / "builder.log"
+LOCK_PATH = BASE_DIR / "temp" / "builder.lock"
 REQUIREMENTS_FILE = (
     BASE_DIR / "requirements.txt"
     if (BASE_DIR / "requirements.txt").exists()
@@ -30,6 +36,33 @@ logger = setup_logger("builder")
 
 error_count = 0
 warning_count = 0
+
+
+def acquire_builder_lock() -> "LockFile | None":
+    """Ensure only one instance of the builder is running."""
+    lock = LockFile(LOCK_PATH)
+    if not lock.acquire():
+        try:
+            pid = int(LOCK_PATH.read_text())
+            proc = psutil.Process(pid)
+            name = proc.name()
+        except Exception:
+            name = "PID " + LOCK_PATH.read_text().strip()
+        log_error(f"Outro processo do builder está em execução: {name}")
+        return None
+    return lock
+
+
+def get_version(config: dict) -> str:
+    version = "0.0.0"
+    version_file = config.get("version_file")
+    if version_file and (BASE_DIR / version_file).exists():
+        with open(BASE_DIR / version_file, "r", encoding="utf-8") as vf:
+            try:
+                version = json.load(vf).get("version", version)
+            except Exception:
+                pass
+    return version
 
 
 def log_error(message: str) -> None:
@@ -179,8 +212,10 @@ def check_port(port: int = 8000) -> bool:
     return True
 
 
-def build_executable(config: dict, version: str) -> Path:
-    exe_name = f"{config['output_name']}_v{version}.exe"
+def build_executable(config: dict, version: str, debug: bool, arch: str) -> Path:
+    """Build the executable using PyInstaller for the given mode and arch."""
+    mode = "debug" if debug else "release"
+    exe_name = f"{config['output_name'].lower()}_{mode}_{arch}_v{version}.exe"
     main_script = BASE_DIR / config.get("main_script", "")
     spec_file = config.get("spec_file")
 
@@ -204,6 +239,7 @@ def build_executable(config: dict, version: str) -> Path:
             exe_name,
         ]
     if not spec_file:
+
         if os.getenv("MODO_DEBUG") == "1" or os.getenv("MODO_SEGURO") == "1":
             cmd.remove("--noconsole")
             cmd.append("--console")
@@ -221,14 +257,17 @@ def build_executable(config: dict, version: str) -> Path:
                 )
 
         cmd.append(str(main_script))
+    dist_dir = BASE_DIR / "dist" / mode
+    dist_dir.mkdir(parents=True, exist_ok=True)
+    cmd.extend(["--distpath", str(dist_dir)])
     logger.info("Gerando executável...")
     result = subprocess.run(cmd, text=True, capture_output=True)
     if result.returncode != 0:
         log_error("Erro ao gerar executável:\n" + result.stdout + result.stderr)
         return Path()
-    dist_path = BASE_DIR / "dist" / exe_name
+    dist_path = dist_dir / exe_name
     if not dist_path.exists():
-        alt = next((p for p in (BASE_DIR / "dist").glob("*.exe")), None)
+        alt = next((p for p in dist_dir.glob("*.exe")), None)
         if alt:
             dist_path = alt
         else:
@@ -277,8 +316,7 @@ def package_build(exe_path: Path, version: str, config: dict) -> Path:
         return Path()
     return zip_path
 
-
-def perform_build(config: dict, version: str, debug: bool = False, safe: bool = False) -> Path:
+def perform_build(config: dict, version: str, debug: bool = False, safe: bool = False, arch: str = "x64") -> Path:
     """Compile and package the project for a single mode."""
     build_cfg = dict(config)
     if debug:
@@ -291,13 +329,13 @@ def perform_build(config: dict, version: str, debug: bool = False, safe: bool = 
         os.environ.pop("MODO_DEBUG", None)
         os.environ.pop("MODO_SEGURO", None)
 
-    exe = build_executable(build_cfg, version)
+    exe = build_executable(build_cfg, version, debug, arch)
     if not exe:
         return Path()
 
     zip_path = package_build(exe, version, build_cfg)
 
-    final_exe = BIN_DIR / f"{build_cfg['output_name']}.exe"
+    final_exe = BIN_DIR / exe.name
     try:
         shutil.copy2(exe, final_exe)
     except Exception as exc:
@@ -309,24 +347,30 @@ def perform_build(config: dict, version: str, debug: bool = False, safe: bool = 
 def main():
     start_time = datetime.now()
     config = load_config()
-    version = "0.0.0"
-    if (BASE_DIR / config.get("version_file", "")).exists():
-        with open(BASE_DIR / config["version_file"], "r", encoding="utf-8") as vf:
-            version = json.load(vf).get("version", version)
+    version = get_version(config)
     logger.info(f"Versão do build: {version}")
+
+    lock = acquire_builder_lock()
+    if not lock:
+        sys.exit(1)
+    atexit.register(lock.release)
+
+    if not executando_no_diretorio_correto():
+        log_error("Execute o builder a partir da raiz do projeto.")
+        sys.exit(1)
 
     if not check_required_files():
         log_error("Arquivos obrigatórios ausentes. Abortando build.")
-        return
+        sys.exit(1)
     if not validate_environment():
         log_error("Ambiente inválido.")
-        return
+        sys.exit(1)
     if not check_port(8000):
         log_error("Porta 8000 em uso. Abortando build.")
-        return
+        sys.exit(1)
     if not run_tests():
         log_error("Build cancelado devido a falhas nos testes.")
-        return
+        sys.exit(1)
 
     clean_previous_build()
 
