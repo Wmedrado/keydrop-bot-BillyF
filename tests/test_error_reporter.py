@@ -1,7 +1,13 @@
 from bot_keydrop.system_safety.error_reporter import ErrorReporter
 from bot_keydrop.system_safety.error_reporter import TEST_ENV_VAR
 
-# Updated to trigger auto review tests
+from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from bot_keydrop.system_safety.error_reporter import ErrorReporter, TEST_ENV_VAR
 
 import json
 
@@ -42,6 +48,7 @@ def test_pending_file_on_send_fail(tmp_path, monkeypatch):
     reporter = ErrorReporter(log_file=log, pending_file=pend)
 
     monkeypatch.setattr(reporter, "_send_discord", lambda info: False)
+    monkeypatch.delenv(TEST_ENV_VAR, raising=False)
 
     try:
         raise ValueError("fail")

@@ -152,3 +152,8 @@ Após os testes, um revisor automático avalia os logs e gera `build_results/aut
 Somente problemas encontrados nos arquivos modificados pelo PR contam como erro crítico.
 Se tais erros forem detectados, o PR é bloqueado; caso contrário, ele é aprovado automaticamente.
 Os relatórios são gerados em `tests/test_report.html` e `tests/coverage.txt`.
+
+Sempre que há merge para a branch `main`, o workflow também cria um ambiente de
+**staging**. O script `ci/run_staging_pipeline.sh` compila a imagem
+`staging_bot`, executa o bot por três minutos em modo debug e verifica os logs
+por erros críticos.
