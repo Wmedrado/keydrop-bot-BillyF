@@ -12,14 +12,23 @@ if "--watch" in sys.argv:
     watch()
     sys.exit(0)
 
-from bot_keydrop.system_safety import LockFile
+from bot_keydrop.system_safety import (
+    LockFile,
+    install_crash_debug,
+    send_log_to_discord,
+)
+import diagnostic
 
 if os.getenv("MODO_DEBUG") == "1" or Path(sys.argv[0]).stem.endswith("_DEBUG"):
     os.environ["MODO_DEBUG"] = "1"
+    install_crash_debug()
     try:
+        if not diagnostic.run_diagnostic():
+            messagebox.showerror("Diagn\u00f3stico", "Falha na verifica\u00e7\u00e3o do sistema")
+            sys.exit(1)
         import debug_tester
-
         debug_tester.main()
+        send_log_to_discord(Path("logs/bot_engine.log"))
     except Exception as exc:
         print(f"Falha ao executar debug_tester: {exc}")
 
@@ -123,6 +132,22 @@ for btn in (btn_gui, btn_api, btn_both):
 
 tt_label = ttk.Label(root, textvariable=tooltip_var, foreground="gray")
 tt_label.pack(pady=10)
+
+def open_logs(_event=None) -> None:
+    log = Path("logs/bot_engine.log")
+    if not log.exists():
+        messagebox.showinfo("Logs", f"Arquivo {log} nao encontrado")
+        return
+    try:
+        if os.name == "nt":
+            os.startfile(log)
+        else:
+            subprocess.Popen(["xdg-open", str(log)])
+    except Exception as exc:
+        messagebox.showerror("Erro", f"Falha ao abrir log: {exc}")
+
+if os.getenv("MODO_DEBUG") == "1":
+    root.bind("<F12>", open_logs)
 
 
 def bind_tip(widget: "tk.Widget", text: str) -> None:

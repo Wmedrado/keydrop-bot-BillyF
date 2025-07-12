@@ -239,11 +239,13 @@ def build_executable(config: dict, version: str, debug: bool, arch: str) -> Path
             exe_name,
         ]
     if not spec_file:
-        if debug:
+
+        if os.getenv("MODO_DEBUG") == "1" or os.getenv("MODO_SEGURO") == "1":
             cmd.remove("--noconsole")
             cmd.append("--console")
-            cmd.extend(["--add-data", "debug_tester.py;."])
-            logger.info("Modo debug ativado para o build")
+            if os.getenv("MODO_DEBUG") == "1":
+                cmd.extend(["--add-data", "debug_tester.py;."])
+                logger.info("Modo debug ativado para o build")
         icon = config.get("icon")
         if icon:
             icon_path = BASE_DIR / icon
@@ -314,14 +316,18 @@ def package_build(exe_path: Path, version: str, config: dict) -> Path:
         return Path()
     return zip_path
 
-
-def perform_build(config: dict, version: str, debug: bool = False, arch: str = "x64") -> Path:
-    """Compile and package the project for a single mode/arch."""
+def perform_build(config: dict, version: str, debug: bool = False, safe: bool = False, arch: str = "x64") -> Path:
+    """Compile and package the project for a single mode."""
     build_cfg = dict(config)
     if debug:
         os.environ["MODO_DEBUG"] = "1"
+        build_cfg["output_name"] = f"{config['output_name']}_DEBUG"
+    elif safe:
+        os.environ["MODO_SEGURO"] = "1"
+        build_cfg["output_name"] = f"{config['output_name']}_SAFE"
     else:
         os.environ.pop("MODO_DEBUG", None)
+        os.environ.pop("MODO_SEGURO", None)
 
     exe = build_executable(build_cfg, version, debug, arch)
     if not exe:
@@ -370,10 +376,15 @@ def main():
 
     normal_zip = perform_build(config, version, debug=False)
     debug_zip = perform_build(config, version, debug=True)
+    safe_zip = Path()
+    if os.getenv("MODO_SEGURO") == "1":
+        safe_zip = perform_build(config, version, safe=True)
 
     end_time = datetime.now()
     logger.info(f"Build normal: {normal_zip}")
     logger.info(f"Build debug: {debug_zip}")
+    if safe_zip:
+        logger.info(f"Build safe: {safe_zip}")
     logger.info(f"Início: {start_time}")
     logger.info(f"Fim: {end_time}")
     logger.info(f"✅ {error_count} erros")

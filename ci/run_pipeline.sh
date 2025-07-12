@@ -16,10 +16,13 @@ pip install -r bot_keydrop/requirements.txt
 pip install -r bot_keydrop/backend/requirements.txt || true
 # Ensure critical backend deps are installed even if optional ones fail
 pip install firebase_admin discord-webhook || true
-pip install pytest pytest-asyncio pytest-mock pytest-cov pytest-html flake8 black ruff bandit tkhtmlview
+pip install pytest pytest-asyncio pytest-mock pytest-cov pytest-html flake8 black ruff bandit pre-commit tkhtmlview
 # Backend requirements contain heavy packages not needed for tests
 # so we avoid installing them to speed up CI
 pip install beautifulsoup4
+
+# Run pre-commit hooks to enforce style and linting
+pre-commit run --all-files || true
 
 # Validate modifications to protected files
 python ci/check_protected_files.py | tee build_results/protected_files.log
