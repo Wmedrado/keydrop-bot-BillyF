@@ -40,6 +40,7 @@ from bot_logic import (
     BotStatus,
     TabWatchdog,
 )
+from tools.proxy_manager import ProxyManager
 
 # Configuração de logging
 logging.basicConfig(level=logging.INFO)
@@ -73,6 +74,7 @@ automation_engine = None
 bot_scheduler = None
 tab_watchdog = None
 telegram_bot = None
+proxy_manager = None
 
 
 # Gerenciamento de WebSocket
@@ -157,18 +159,23 @@ class ProxyTestRequest(BaseModel):
 @app.on_event("startup")
 async def startup_event():
     """Inicialização da aplicação"""
-    global automation_engine, bot_scheduler, tab_watchdog, telegram_bot
+    global automation_engine, bot_scheduler, tab_watchdog, telegram_bot, proxy_manager
 
     logger.info("Iniciando API do Keydrop Bot...")
+
+    # Configura gerenciador de proxies e timeout
+    config = get_config()
+    proxy_manager = ProxyManager(config.proxy_pool, timeout=config.proxy_timeout)
+    browser_manager.proxy_manager = proxy_manager
+    browser_manager.page_load_timeout = config.page_load_timeout * 1000
 
     # Criar instâncias do bot
     automation_engine = create_keydrop_automation(browser_manager)
     bot_scheduler = create_bot_scheduler(
-        browser_manager, automation_engine, config_manager
+        browser_manager, automation_engine, config_manager, proxy_manager
     )
 
     # Inicializar watchdog de abas
-    config = get_config()
     tab_watchdog = TabWatchdog(
         browser_manager,
         bot_scheduler,

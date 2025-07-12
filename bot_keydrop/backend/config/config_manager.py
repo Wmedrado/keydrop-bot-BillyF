@@ -105,6 +105,16 @@ class BotConfig(BaseModel):
         le=120,
         description="Timeout para carregamento de páginas (segundos)",
     )
+    proxy_pool: List[str] = Field(
+        default_factory=list,
+        description="Lista de proxies disponíveis para rotacao",
+    )
+    proxy_timeout: int = Field(
+        default=30,
+        ge=5,
+        le=120,
+        description="Timeout para conexoes via proxy (segundos)",
+    )
 
     # Reagendamento inteligente
     failure_reschedule_threshold: int = Field(
