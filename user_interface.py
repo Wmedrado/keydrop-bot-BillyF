@@ -18,6 +18,7 @@ import customtkinter as ctk
 from tkinter import messagebox, filedialog
 from PIL import Image, ImageTk
 from tkhtmlview import HTMLLabel
+from bot_keydrop.gui.utils import safe_load_image, safe_widget_call
 
 import pyrebase
 from firebase_admin import db
@@ -209,26 +210,12 @@ class ProfileFrame(ctk.CTkFrame):
         self.tempo_var.set(f"Tempo de uso: {data.get('tempo_total_min', 0)} min")
         self.bots_var.set(f"Bots simultâneos: {data.get('bots_ativos_max', 0)}")
         foto_url = data.get("foto_url")
-        photo = None
-        if foto_url:
-            try:
-                from urllib.request import urlopen
-
-                with urlopen(foto_url) as resp:
-                    img = Image.open(resp)
-                    img = img.resize((80, 80))
-                    photo = ImageTk.PhotoImage(img)
-            except Exception as exc:  # pragma: no cover - network errors
-                logger.exception("Failed to download avatar: %s", exc)
-        if photo is None and _PLACEHOLDER_IMAGE.exists():
-            try:
-                img = Image.open(_PLACEHOLDER_IMAGE)
-                img = img.resize((80, 80))
-                photo = ImageTk.PhotoImage(img)
-            except Exception as exc:  # pragma: no cover - pillow errors
-                logger.exception("Failed to load placeholder image: %s", exc)
-
-        self.img_container.configure(image=photo)
+        photo = safe_load_image(
+            foto_url or _PLACEHOLDER_IMAGE,
+            size=(80, 80),
+            placeholder=_PLACEHOLDER_IMAGE,
+        )
+        safe_widget_call(self.img_container.configure, image=photo)
         self.img_container.image = photo
 
     def upload_photo(self) -> None:
@@ -268,4 +255,4 @@ class RankingFrame(ctk.CTkFrame):
             highlight = "🔥" if idx == 1 else ("💰" if lucro > 500 else "")
             html.append(f"<li>{medal} {uid} - R$ {lucro:.2f} {highlight}</li>")
         html.append("</ol>")
-        self.html_label.set_html("".join(html))
+        safe_widget_call(self.html_label.set_html, "".join(html))
