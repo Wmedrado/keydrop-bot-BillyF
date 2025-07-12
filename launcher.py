@@ -104,7 +104,6 @@ elif selected_mode == "api":
         proc.wait()
 elif selected_mode == "both":
     run_both()
-=======
 import os
 import sys
 import time
