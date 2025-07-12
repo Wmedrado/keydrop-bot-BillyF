@@ -155,6 +155,10 @@ class WinningRequest(BaseModel):
 class ProxyTestRequest(BaseModel):
     proxy: str
 
+
+class MacroSaveRequest(BaseModel):
+    use_first: bool = False
+
 # Inicialização da aplicação
 @app.on_event("startup")
 async def startup_event():
@@ -758,6 +762,52 @@ async def teach_ai():
         return {"success": True}
     except Exception as e:
         logger.error(f"Erro no modo de ensino: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---------------------------------------------------------------------------
+# Macro recording endpoints
+# ---------------------------------------------------------------------------
+
+@app.post("/macros/{tab_id}/start")
+async def start_macro(tab_id: int):
+    try:
+        success = await browser_manager.start_macro_recording(tab_id)
+        return {"success": success}
+    except Exception as e:
+        logger.error(f"Erro ao iniciar macro: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/macros/{tab_id}/pause")
+async def pause_macro(tab_id: int):
+    try:
+        success = await browser_manager.pause_macro_recording(tab_id)
+        return {"success": success}
+    except Exception as e:
+        logger.error(f"Erro ao pausar macro: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/macros/{tab_id}/resume")
+async def resume_macro(tab_id: int):
+    try:
+        success = await browser_manager.resume_macro_recording(tab_id)
+        return {"success": success}
+    except Exception as e:
+        logger.error(f"Erro ao retomar macro: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/macros/{tab_id}/save")
+async def save_macro(tab_id: int, request: MacroSaveRequest):
+    try:
+        path = await browser_manager.save_macro(tab_id, request.use_first)
+        if not path:
+            raise Exception("Macro não encontrada")
+        return {"success": True, "path": str(path)}
+    except Exception as e:
+        logger.error(f"Erro ao salvar macro: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

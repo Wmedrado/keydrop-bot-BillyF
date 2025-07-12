@@ -546,3 +546,27 @@
     overflow-y: auto;
     font-family: monospace;
 }
+
+/* Contingency list and macro controls */
+.contingency-list {
+    list-style: none;
+    padding: 0;
+}
+
+.contingency-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+}
+
+.order-buttons button {
+    margin-left: 0.25rem;
+}
+
+.macro-controls {
+    margin-top: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}

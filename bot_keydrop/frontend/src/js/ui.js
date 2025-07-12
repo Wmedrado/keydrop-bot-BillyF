@@ -83,6 +83,9 @@ class UIManager {
 
         // Diagnostics buttons
         this.setupDiagnosticsEventListeners();
+
+        // Contingency panel
+        this.setupContingencyEventListeners();
     }
 
     /**
@@ -215,6 +218,29 @@ class UIManager {
                 if (proxy) this.runDiagnostic('proxy', { proxy });
             });
         }
+    }
+
+    setupContingencyEventListeners() {
+        const list = document.getElementById('contingencyList');
+        if (list) {
+            list.addEventListener('click', (e) => {
+                const li = e.target.closest('li');
+                if (!li) return;
+                if (e.target.classList.contains('up-btn') && li.previousElementSibling) {
+                    list.insertBefore(li, li.previousElementSibling);
+                } else if (e.target.classList.contains('down-btn') && li.nextElementSibling) {
+                    list.insertBefore(li.nextElementSibling, li);
+                }
+            });
+        }
+
+        const recBtn = document.getElementById('recordMacroBtn');
+        const pauseBtn = document.getElementById('pauseMacroBtn');
+        const saveBtn = document.getElementById('saveMacroBtn');
+
+        if (recBtn) recBtn.addEventListener('click', () => this.startMacro());
+        if (pauseBtn) pauseBtn.addEventListener('click', () => this.pauseMacro());
+        if (saveBtn) saveBtn.addEventListener('click', () => this.saveMacro());
     }
 
     /**
@@ -876,6 +902,34 @@ class UIManager {
 
         if (closeBtn) {
             closeBtn.onclick = () => { overlay.style.display = 'none'; };
+        }
+    }
+
+    async startMacro() {
+        try {
+            await window.apiClient.startMacro(1);
+            this.showNotification('Gravação iniciada', 'success');
+        } catch (err) {
+            this.showNotification('Erro ao iniciar gravação', 'error');
+        }
+    }
+
+    async pauseMacro() {
+        try {
+            await window.apiClient.pauseMacro(1);
+            this.showNotification('Gravação pausada', 'info');
+        } catch (err) {
+            this.showNotification('Erro ao pausar gravação', 'error');
+        }
+    }
+
+    async saveMacro() {
+        const useFirst = document.getElementById('useMacroFirst')?.checked || false;
+        try {
+            await window.apiClient.saveMacro(1, useFirst);
+            this.showNotification('Macro salva', 'success');
+        } catch (err) {
+            this.showNotification('Erro ao salvar macro', 'error');
         }
     }
 
