@@ -300,6 +300,10 @@ async def main():
     # Verify Python packages
     launcher.verify_python_dependencies()
 
+    from bot_keydrop.system_safety import run_dependency_check
+    if not run_dependency_check():
+        print("Algumas dependências estão ausentes ou incorretas. Revise a mensagem acima.")
+
     # Check dependencies
     launcher.check_chrome_installation()
     

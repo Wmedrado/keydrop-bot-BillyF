@@ -10,6 +10,7 @@ from .backups import backup_arquivo, restaurar_arquivo
 from .watchdog import ProcessWatchdog
 from .error_reporter import error_reporter, ErrorReporter
 from .diagnostic import diagnostic
+from .dependency_validator import run_dependency_check
 
 __all__ = [
     'verificar_conexao_internet',
@@ -24,4 +25,5 @@ __all__ = [
     'error_reporter',
     'ErrorReporter',
     'diagnostic',
+    'run_dependency_check',
 ]
