@@ -109,7 +109,8 @@ class KeydropBotManager:
             "telegram_bot_token": "",
             "telegram_chat_id": "",
             "auto_open_golden_cases": False,
-            "golden_case_price": 0
+            "golden_case_price": 0,
+            "dom_change_timeout": 5  # tempo máximo para aguardar mudança na página
         }
     
     def create_bot(self, bot_id, config):
@@ -447,17 +448,18 @@ class KeydropBot:
                 else:
                     time.sleep(3)
             
-            # Atualizar página para ver novos sorteios
-            self.driver.refresh()
-            if WebDriverWait:
-                try:
-                    WebDriverWait(self.driver, 10).until(
-                        lambda d: d.execute_script("return document.readyState") == "complete"
-                    )
-                except Exception:
-                    pass
-            else:
-                time.sleep(2)
+            # Atualizar página apenas se não houver alterações recentes na DOM
+            if not self.wait_for_dom_change():
+                self.driver.refresh()
+                if WebDriverWait:
+                    try:
+                        WebDriverWait(self.driver, 10).until(
+                            lambda d: d.execute_script("return document.readyState") == "complete"
+                        )
+                    except Exception:
+                        pass
+                else:
+                    time.sleep(2)
             
             # Fechar possíveis popups
             self.close_popups()
@@ -653,7 +655,28 @@ class KeydropBot:
                     
         except Exception as e:
             print(f"[Bot {self.bot_id}] Erro ao fechar popups: {e}")
-    
+
+    def wait_for_dom_change(self, selector="body", timeout=None):
+        """Aguardar alterações na DOM antes de atualizar a página"""
+        try:
+            if not self.driver:
+                return False
+
+            if timeout is None:
+                timeout = self.config.get("dom_change_timeout", 5)
+
+            script = "return document.querySelector(arguments[0]).innerHTML"
+            initial = self.driver.execute_script(script, selector)
+            end_time = time.time() + timeout
+            while time.time() < end_time:
+                time.sleep(1)
+                current = self.driver.execute_script(script, selector)
+                if current != initial:
+                    return True
+            return False
+        except Exception:
+            return False
+
     def handle_error(self, error):
         """Lidar com erros e implementar retry"""
         try:
