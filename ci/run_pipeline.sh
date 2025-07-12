@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
+trap 'python ci/notify_webhook.py FAILED || true' ERR
 mkdir -p build_results tests
+python ci/check_main_push.py
 
 # Install python dependencies
 pip install -r bot_keydrop/requirements.txt
@@ -63,3 +65,6 @@ python ci/auto_pr_review.py | tee build_results/auto_review.log
 python ci/branch_failure_manager.py --success | tee build_results/branch_failure.log
 
 echo "Build succeeded" > build_results/build_status.log
+python ci/auto_semver.py
+python ci/auto_update_docs.py
+python ci/notify_webhook.py SUCCESS || true

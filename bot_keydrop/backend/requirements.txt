@@ -13,3 +13,4 @@ httpx>=0.25.0
 python-telegram-bot==20.6
 win10toast>=0.2
 dearpygui>=1.10.0
+prometheus_client>=0.17.1
