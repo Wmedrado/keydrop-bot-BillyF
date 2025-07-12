@@ -9,6 +9,7 @@ persistence. The interface uses ``customtkinter`` for a modern look.
 from __future__ import annotations
 
 import json
+import logging
 from pathlib import Path
 from typing import Dict, Optional, Any
 
@@ -32,6 +33,10 @@ from cloud.firebase_client import (
 
 _FIREBASE_CONFIG = Path("firebase_config.json")
 _SESSION_FILE = Path("user_session.json")
+_PLACEHOLDER_IMAGE = Path(__file__).resolve().parent / "bot_keydrop" / "bot-icone.png"
+
+
+logger = logging.getLogger(__name__)
 
 
 def _load_pyrebase() -> pyrebase.pyrebase.Firebase:
@@ -196,6 +201,7 @@ class ProfileFrame(ctk.CTkFrame):
         self.tempo_var.set(f"Tempo de uso: {data.get('tempo_total_min', 0)} min")
         self.bots_var.set(f"Bots simultâneos: {data.get('bots_ativos_max', 0)}")
         foto_url = data.get("foto_url")
+        photo = None
         if foto_url:
             try:
                 from urllib.request import urlopen
@@ -204,10 +210,18 @@ class ProfileFrame(ctk.CTkFrame):
                     img = Image.open(resp)
                     img = img.resize((80, 80))
                     photo = ImageTk.PhotoImage(img)
-                    self.img_container.configure(image=photo)
-                    self.img_container.image = photo
-            except Exception:
-                self.img_container.configure(image=None)
+            except Exception as exc:  # pragma: no cover - network errors
+                logger.exception("Failed to download avatar: %s", exc)
+        if photo is None and _PLACEHOLDER_IMAGE.exists():
+            try:
+                img = Image.open(_PLACEHOLDER_IMAGE)
+                img = img.resize((80, 80))
+                photo = ImageTk.PhotoImage(img)
+            except Exception as exc:  # pragma: no cover - pillow errors
+                logger.exception("Failed to load placeholder image: %s", exc)
+
+        self.img_container.configure(image=photo)
+        self.img_container.image = photo
 
     def upload_photo(self) -> None:
         path = filedialog.askopenfilename(filetypes=[("Imagens", "*.png;*.jpg;*.jpeg")])
