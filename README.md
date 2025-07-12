@@ -1,4 +1,5 @@
 # 🤖 Keydrop Bot Professional
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=keydrop-bot-BillyF&metric=alert_status)](https://sonarcloud.io/dashboard?id=keydrop-bot-BillyF)
 
 Automatize suas participações em sorteios do Keydrop de forma prática! Esta versão utiliza um backend **FastAPI** com uma interface web leve em HTML/JavaScript.
 
@@ -157,3 +158,14 @@ Sempre que há merge para a branch `main`, o workflow também cria um ambiente d
 **staging**. O script `ci/run_staging_pipeline.sh` compila a imagem
 `staging_bot`, executa o bot por três minutos em modo debug e verifica os logs
 por erros críticos.
+
+### Análise estática com SonarCloud
+Um job dedicado roda o `SonarSource/sonarcloud-github-action` após a etapa de build.
+Configure o token em `Settings > Secrets and variables > Actions` com o nome `SONAR_TOKEN`.
+Para executar a análise localmente:
+
+```bash
+sonar-scanner -Dsonar.projectKey=keydrop-bot-BillyF \
+              -Dsonar.sources=bot_keydrop/,frontend/,system_safety/
+```
+
