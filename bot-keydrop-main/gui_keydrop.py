@@ -1102,7 +1102,12 @@ class KeyDropGUI:
                 self.ram_label.config(fg="#F04747")  # Vermelho
                 
             # Disco
-            disk = psutil.disk_usage('C:')
+            try:
+                # Usar volume C: no Windows e raiz do sistema nos demais
+                volume = 'C:' if os.name == 'nt' else '/'
+                disk = psutil.disk_usage(volume)
+            except Exception:
+                disk = psutil.disk_usage('/')
             disk_percent = disk.percent
             disk_used = disk.used / (1024**3)  # GB
             disk_total = disk.total / (1024**3)  # GB
