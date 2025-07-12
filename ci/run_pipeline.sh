@@ -8,11 +8,10 @@ pip install -r bot_keydrop/requirements.txt
 pip install -r bot_keydrop/backend/requirements.txt || true
 # Ensure critical backend deps are installed even if optional ones fail
 pip install firebase_admin discord-webhook || true
-pip install pytest pytest-asyncio pytest-mock pytest-cov pytest-html flake8 black
+pip install pytest pytest-asyncio pytest-mock pytest-cov pytest-html flake8 black ruff bandit tkhtmlview
 # Backend requirements contain heavy packages not needed for tests
 # so we avoid installing them to speed up CI
 pip install beautifulsoup4
-pip install pytest pytest-asyncio pytest-mock pytest-cov pytest-html flake8 black tkhtmlview
 
 # Validate modifications to protected files
 python ci/check_protected_files.py | tee build_results/protected_files.log
@@ -31,6 +30,8 @@ python ci/classify_pr_risk.py | tee build_results/pr_risk.log
 # Lint with flake8 and black
 flake8 . > build_results/flake8.log || true
 black --check . > build_results/black.log || true
+ruff . > build_results/ruff.log || true
+bandit -r bot_keydrop -lll -q > build_results/bandit.log || true
 
 
 # Semantic naming validation
