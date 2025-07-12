@@ -27,4 +27,5 @@
   "tab_proxies": {},
   "failure_reschedule_threshold": 2,
   "failure_reschedule_delay": 180
+  ,"accounts": []
 }

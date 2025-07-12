@@ -109,6 +109,15 @@ Depois de gerar o executável em `dist/KeydropBot_Professional.exe`, use o scrip
 `installer/KeydropBotInstaller.iss` com o Inno Setup para criar um instalador
 com ícone, atalhos e entrada em *Adicionar/Remover Programas*.
 
+## 🐳 Docker
+Com Docker instalado, é possível levantar rapidamente a API executando:
+
+```bash
+docker compose up --build
+```
+
+O serviço ficará acessível na porta `8000`.
+
 ## 📄 Licença
 Distribuído sob a licença MIT. Consulte os arquivos de documentação das pastas internas para mais detalhes.
 
