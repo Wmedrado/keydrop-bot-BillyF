@@ -3,6 +3,10 @@
 Keydrop Bot Professional v4.0.0 - Interface Gráfica Desktop
 Aplicativo desktop nativo com automação Chrome integrada para sorteios Keydrop
 Desenvolvido por William Medrado (wmedrado)
+
+Este módulo utiliza Selenium com **undetected-chromedriver** para minimizar a
+detecção automatizada. Está em nossos planos avaliar a migração para
+**Playwright** para maior performance e flexibilidade no futuro.
 """
 
 import tkinter as tk
@@ -19,6 +23,10 @@ import traceback
 from datetime import datetime, timedelta
 from pathlib import Path
 import psutil
+
+# Configuração de logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Selenium imports - Suporte Edge + Chrome + Firefox
 try:
@@ -41,6 +49,12 @@ try:
         SessionNotCreatedException
     )
     from webdriver_manager.chrome import ChromeDriverManager
+    try:
+        import undetected_chromedriver as uc
+        UNDETECTED_AVAILABLE = True
+    except ImportError:
+        uc = None
+        UNDETECTED_AVAILABLE = False
     from webdriver_manager.microsoft import EdgeChromiumDriverManager
     from webdriver_manager.firefox import GeckoDriverManager
     SELENIUM_AVAILABLE = True
@@ -81,7 +95,21 @@ class KeydropBotManager:
             "discord_webhook_url": "",
             "discord_notifications": False,
             "amateur_wait_time": 180,  # 3 minutos
-            "contender_wait_time": 300  # 5 minutos
+            "contender_wait_time": 300,  # 5 minutos
+            "proxy_enabled": False,
+            "proxy_host": "",
+            "proxy_port": 0,
+            "proxy_username": "",
+            "proxy_password": "",
+            "captcha_service": "",
+            "captcha_api_key": "",
+            "monitor_twitter": False,
+            "twitter_bearer_token": "",
+            "telegram_enabled": False,
+            "telegram_bot_token": "",
+            "telegram_chat_id": "",
+            "auto_open_golden_cases": False,
+            "golden_case_price": 0
         }
     
     def create_bot(self, bot_id, config):
@@ -122,6 +150,7 @@ class KeydropBot:
     def __init__(self, bot_id, config):
         self.bot_id = bot_id
         self.config = config
+        self.logger = logger
         self.driver = None
         self.running = False
         self.stats = {
@@ -166,7 +195,8 @@ class KeydropBot:
         # Adicionar Chrome se disponível  
         if ChromeOptions and ChromeService and ChromeDriverManager and webdriver:
             try:
-                browser_attempts.append(('chrome', 'Google Chrome', ChromeOptions, ChromeService, ChromeDriverManager, webdriver.Chrome))
+                chrome_driver = uc.Chrome if UNDETECTED_AVAILABLE else webdriver.Chrome
+                browser_attempts.append(('chrome', 'Google Chrome', ChromeOptions, ChromeService, ChromeDriverManager, chrome_driver))
             except AttributeError:
                 pass
         
@@ -200,8 +230,11 @@ class KeydropBot:
                 # Abordagem 1: webdriver-manager
                 try:
                     print(f"[Bot {self.bot_id}] Tentando {browser_name} com webdriver-manager...")
-                    service = ServiceClass(DriverManager().install())
-                    self.driver = WebDriverClass(service=service, options=options)
+                    if browser_type == 'chrome' and UNDETECTED_AVAILABLE and WebDriverClass is uc.Chrome:
+                        self.driver = WebDriverClass(options=options)
+                    else:
+                        service = ServiceClass(DriverManager().install())
+                        self.driver = WebDriverClass(service=service, options=options)
                     driver_created = True
                     print(f"[Bot {self.bot_id}] ✅ {browser_name} configurado com webdriver-manager")
                 except Exception as e1:
@@ -325,7 +358,14 @@ class KeydropBot:
                 os.makedirs("profiles", exist_ok=True)
             options.add_argument(f"--user-data-dir={profile_path}")
             print(f"[Bot {self.bot_id}] 📁 Perfil persistente: {profile_path}")
-        
+
+        # Proxy configuration
+        if self.config.get('proxy_enabled'):
+            proxy = self._build_proxy_string()
+            if proxy:
+                options.add_argument(f"--proxy-server={proxy}")
+                print(f"[Bot {self.bot_id}] 🔌 Proxy configurado: {proxy}")
+
         print(f"[Bot {self.bot_id}] ✅ Configurações aplicadas para {browser_type}")
     
     def run_automation_loop(self):
@@ -334,12 +374,25 @@ class KeydropBot:
             # Navegar para Keydrop
             if self.driver:
                 self.driver.get("https://key-drop.com/pt/")
-                time.sleep(3)
+                if WebDriverWait:
+                    try:
+                        WebDriverWait(self.driver, 10).until(
+                            lambda d: d.execute_script("return document.readyState") == "complete"
+                        )
+                    except Exception:
+                        pass
+                else:
+                    time.sleep(3)
             
             while self.running:
                 try:
                     self.stats['ultima_atividade'] = 'Procurando sorteios...'
-                    
+
+                    # Verificar códigos no Twitter
+                    codes = self.check_twitter_codes()
+                    for code in codes:
+                        self.send_telegram(f"Novo código encontrado: {code}")
+
                     # Procurar sorteios AMATEUR
                     if self.participate_in_giveaways("AMATEUR"):
                         self.stats['participacoes'] += 1
@@ -356,6 +409,9 @@ class KeydropBot:
                             self.stats['ultima_atividade'] = f'Aguardando {wait_time}s (CONTENDER)'
                             time.sleep(wait_time)
                     
+                    # Abrir golden case se configurado
+                    self.open_golden_case()
+
                     # Pequena pausa entre ciclos
                     time.sleep(self.config.get('execution_speed', 3.0))
                     
@@ -381,11 +437,27 @@ class KeydropBot:
             current_url = self.driver.current_url
             if "key-drop.com" not in current_url or "/giveaways" not in current_url:
                 self.driver.get("https://key-drop.com/pt/giveaways")
-                time.sleep(3)
+                if WebDriverWait:
+                    try:
+                        WebDriverWait(self.driver, 10).until(
+                            lambda d: d.execute_script("return document.readyState") == "complete"
+                        )
+                    except Exception:
+                        pass
+                else:
+                    time.sleep(3)
             
             # Atualizar página para ver novos sorteios
             self.driver.refresh()
-            time.sleep(2)
+            if WebDriverWait:
+                try:
+                    WebDriverWait(self.driver, 10).until(
+                        lambda d: d.execute_script("return document.readyState") == "complete"
+                    )
+                except Exception:
+                    pass
+            else:
+                time.sleep(2)
             
             # Fechar possíveis popups
             self.close_popups()
@@ -431,11 +503,22 @@ class KeydropBot:
                             if button.is_displayed() and button.is_enabled():
                                 # Scroll até o elemento
                                 self.driver.execute_script("arguments[0].scrollIntoView(true);", button)
-                                time.sleep(0.5)
-                                
-                                # Tentar clicar
+                                if WebDriverWait and EC:
+                                    try:
+                                        WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable(button))
+                                    except Exception:
+                                        pass
+                                else:
+                                    time.sleep(0.5)
+
                                 self.driver.execute_script("arguments[0].click();", button)
-                                time.sleep(1)
+                                if WebDriverWait:
+                                    try:
+                                        WebDriverWait(self.driver, 5).until_not(lambda d: button.is_displayed())
+                                    except Exception:
+                                        pass
+                                else:
+                                    time.sleep(1)
                                 
                                 print(f"[Bot {self.bot_id}] ✅ Participou de sorteio AMATEUR")
                                 self.stats['ultima_atividade'] = 'Participou de sorteio AMATEUR'
@@ -456,7 +539,8 @@ class KeydropBot:
             return participated
             
         except Exception as e:
-            print(f"[Bot {self.bot_id}] Erro em join_amateur_giveaways: {e}")
+            traceback.print_exc()
+            self.logger.error(f"[join_amateur_giveaways] Erro: {str(e)}")
             return False
     
     def join_contender_giveaways(self):
@@ -483,10 +567,22 @@ class KeydropBot:
                         try:
                             if button.is_displayed() and button.is_enabled():
                                 self.driver.execute_script("arguments[0].scrollIntoView(true);", button)
-                                time.sleep(0.5)
-                                
+                                if WebDriverWait and EC:
+                                    try:
+                                        WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable(button))
+                                    except Exception:
+                                        pass
+                                else:
+                                    time.sleep(0.5)
+
                                 self.driver.execute_script("arguments[0].click();", button)
-                                time.sleep(1)
+                                if WebDriverWait:
+                                    try:
+                                        WebDriverWait(self.driver, 5).until_not(lambda d: button.is_displayed())
+                                    except Exception:
+                                        pass
+                                else:
+                                    time.sleep(1)
                                 
                                 print(f"[Bot {self.bot_id}] ✅ Participou de sorteio CONTENDER")
                                 self.stats['ultima_atividade'] = 'Participou de sorteio CONTENDER'
@@ -522,7 +618,13 @@ class KeydropBot:
             
             actions = ActionChains(self.driver)
             actions.send_keys(Keys.ESCAPE).perform()
-            time.sleep(0.5)
+            if WebDriverWait:
+                try:
+                    WebDriverWait(self.driver, 2).until(lambda d: True)
+                except Exception:
+                    pass
+            else:
+                time.sleep(0.5)
             
             # Procurar e fechar modais específicos
             close_selectors = [
@@ -539,7 +641,13 @@ class KeydropBot:
                     for btn in close_buttons:
                         if btn.is_displayed():
                             btn.click()
-                            time.sleep(0.5)
+                            if WebDriverWait:
+                                try:
+                                    WebDriverWait(self.driver, 2).until_not(lambda d: btn.is_displayed())
+                                except Exception:
+                                    pass
+                            else:
+                                time.sleep(0.5)
                 except Exception:
                     continue
                     
@@ -562,7 +670,15 @@ class KeydropBot:
                     
                     # Tentar recarregar a página
                     self.driver.refresh()
-                    time.sleep(3)
+                    if WebDriverWait:
+                        try:
+                            WebDriverWait(self.driver, 10).until(
+                                lambda d: d.execute_script("return document.readyState") == "complete"
+                            )
+                        except Exception:
+                            pass
+                    else:
+                        time.sleep(3)
                     
                     # Se chegou aqui, deu certo
                     self.stats['ultima_atividade'] = 'Recuperado de erro'
@@ -570,7 +686,13 @@ class KeydropBot:
                     
                 except Exception as e:
                     print(f"[Bot {self.bot_id}] Tentativa {retry_count} falhou: {e}")
-                    time.sleep(5)
+                    if WebDriverWait:
+                        try:
+                            WebDriverWait(self.driver, 5).until(lambda d: True)
+                        except Exception:
+                            pass
+                    else:
+                        time.sleep(5)
             
             # Se esgotou tentativas, reiniciar driver
             if retry_count >= max_retries:
@@ -601,6 +723,56 @@ class KeydropBot:
                 self.driver.quit()
             except Exception as e:
                 print(f"[Bot {self.bot_id}] Erro ao fechar driver: {e}")
+
+    def _build_proxy_string(self):
+        host = self.config.get('proxy_host')
+        port = self.config.get('proxy_port')
+        if not host or not port:
+            return ""
+        user = self.config.get('proxy_username')
+        pwd = self.config.get('proxy_password')
+        if user and pwd:
+            return f"{user}:{pwd}@{host}:{port}"
+        return f"{host}:{port}"
+
+    def solve_captcha(self, image_path):
+        service = self.config.get('captcha_service')
+        api_key = self.config.get('captcha_api_key')
+        if not service or not api_key:
+            return None
+        # Placeholder for integration with captcha solving services
+        print(f"[Bot {self.bot_id}] Enviando captcha para {service}")
+        return None
+
+    def send_telegram(self, message):
+        if not self.config.get('telegram_enabled'):
+            return
+        token = self.config.get('telegram_bot_token')
+        chat_id = self.config.get('telegram_chat_id')
+        if not token or not chat_id:
+            return
+        url = f"https://api.telegram.org/bot{token}/sendMessage"
+        try:
+            requests.post(url, data={"chat_id": chat_id, "text": message})
+        except Exception as e:
+            print(f"[Bot {self.bot_id}] Erro ao enviar Telegram: {e}")
+
+    def check_twitter_codes(self):
+        if not self.config.get('monitor_twitter'):
+            return []
+        bearer = self.config.get('twitter_bearer_token')
+        if not bearer:
+            return []
+        # Placeholder for Twitter API polling
+        print(f"[Bot {self.bot_id}] Verificando códigos no Twitter")
+        return []
+
+    def open_golden_case(self):
+        if not self.config.get('auto_open_golden_cases'):
+            return
+        price = self.config.get('golden_case_price', 0)
+        # Placeholder for automation to open golden case
+        print(f"[Bot {self.bot_id}] Abrindo golden case quando ouro >= {price}")
 
 class KeydropBotGUI:
     """Interface gráfica principal"""
@@ -770,8 +942,80 @@ class KeydropBotGUI:
         tk.Entry(discord_frame, textvariable=self.discord_webhook_var, width=60).pack(fill='x', pady=2)
         
         self.discord_enabled_var = tk.BooleanVar(value=self.config['discord_notifications'])
-        tk.Checkbutton(discord_frame, text="Habilitar Notificações Discord", 
+        tk.Checkbutton(discord_frame, text="Habilitar Notificações Discord",
                       variable=self.discord_enabled_var).pack(anchor='w', pady=2)
+
+        # Proxy
+        proxy_frame = ttk.LabelFrame(config_frame, text="Proxy", padding=10)
+        proxy_frame.pack(fill='x', padx=10, pady=5)
+
+        self.proxy_enabled_var = tk.BooleanVar(value=self.config.get('proxy_enabled', False))
+        tk.Checkbutton(proxy_frame, text="Usar Proxy", variable=self.proxy_enabled_var).pack(anchor='w', pady=2)
+
+        tk.Label(proxy_frame, text="Host:").pack(anchor='w')
+        self.proxy_host_var = tk.StringVar(value=self.config.get('proxy_host', ''))
+        tk.Entry(proxy_frame, textvariable=self.proxy_host_var, width=40).pack(fill='x', pady=2)
+
+        tk.Label(proxy_frame, text="Porta:").pack(anchor='w')
+        self.proxy_port_var = tk.StringVar(value=str(self.config.get('proxy_port', 0)))
+        tk.Entry(proxy_frame, textvariable=self.proxy_port_var, width=10).pack(anchor='w', pady=2)
+
+        tk.Label(proxy_frame, text="Usuário:").pack(anchor='w')
+        self.proxy_user_var = tk.StringVar(value=self.config.get('proxy_username', ''))
+        tk.Entry(proxy_frame, textvariable=self.proxy_user_var, width=30).pack(fill='x', pady=2)
+
+        tk.Label(proxy_frame, text="Senha:").pack(anchor='w')
+        self.proxy_pass_var = tk.StringVar(value=self.config.get('proxy_password', ''))
+        tk.Entry(proxy_frame, textvariable=self.proxy_pass_var, width=30, show='*').pack(fill='x', pady=2)
+
+        # Captcha
+        captcha_frame = ttk.LabelFrame(config_frame, text="Serviço de Captcha", padding=10)
+        captcha_frame.pack(fill='x', padx=10, pady=5)
+
+        tk.Label(captcha_frame, text="Serviço:").pack(anchor='w')
+        self.captcha_service_var = tk.StringVar(value=self.config.get('captcha_service', ''))
+        tk.Entry(captcha_frame, textvariable=self.captcha_service_var, width=30).pack(fill='x', pady=2)
+
+        tk.Label(captcha_frame, text="API Key:").pack(anchor='w')
+        self.captcha_key_var = tk.StringVar(value=self.config.get('captcha_api_key', ''))
+        tk.Entry(captcha_frame, textvariable=self.captcha_key_var, width=60).pack(fill='x', pady=2)
+
+        # Telegram
+        telegram_frame = ttk.LabelFrame(config_frame, text="Telegram", padding=10)
+        telegram_frame.pack(fill='x', padx=10, pady=5)
+
+        self.telegram_enabled_var = tk.BooleanVar(value=self.config.get('telegram_enabled', False))
+        tk.Checkbutton(telegram_frame, text="Enviar notificações", variable=self.telegram_enabled_var).pack(anchor='w', pady=2)
+
+        tk.Label(telegram_frame, text="Bot Token:").pack(anchor='w')
+        self.telegram_token_var = tk.StringVar(value=self.config.get('telegram_bot_token', ''))
+        tk.Entry(telegram_frame, textvariable=self.telegram_token_var, width=60).pack(fill='x', pady=2)
+
+        tk.Label(telegram_frame, text="Chat ID:").pack(anchor='w')
+        self.telegram_chat_var = tk.StringVar(value=self.config.get('telegram_chat_id', ''))
+        tk.Entry(telegram_frame, textvariable=self.telegram_chat_var, width=30).pack(fill='x', pady=2)
+
+        # Golden Case
+        golden_frame = ttk.LabelFrame(config_frame, text="Abertura de Golden Case", padding=10)
+        golden_frame.pack(fill='x', padx=10, pady=5)
+
+        self.auto_golden_var = tk.BooleanVar(value=self.config.get('auto_open_golden_cases', False))
+        tk.Checkbutton(golden_frame, text="Abrir automaticamente", variable=self.auto_golden_var).pack(anchor='w', pady=2)
+
+        tk.Label(golden_frame, text="Preço alvo:").pack(anchor='w')
+        self.golden_price_var = tk.StringVar(value=str(self.config.get('golden_case_price', 0)))
+        tk.Entry(golden_frame, textvariable=self.golden_price_var, width=10).pack(anchor='w', pady=2)
+
+        # Twitter Codes
+        twitter_frame = ttk.LabelFrame(config_frame, text="Monitorar Twitter", padding=10)
+        twitter_frame.pack(fill='x', padx=10, pady=5)
+
+        self.twitter_monitor_var = tk.BooleanVar(value=self.config.get('monitor_twitter', False))
+        tk.Checkbutton(twitter_frame, text="Obter códigos dourados", variable=self.twitter_monitor_var).pack(anchor='w', pady=2)
+
+        tk.Label(twitter_frame, text="Bearer Token:").pack(anchor='w')
+        self.twitter_token_var = tk.StringVar(value=self.config.get('twitter_bearer_token', ''))
+        tk.Entry(twitter_frame, textvariable=self.twitter_token_var, width=60).pack(fill='x', pady=2)
         
         # Botões de configuração
         buttons_frame = tk.Frame(config_frame)
@@ -834,6 +1078,20 @@ class KeydropBotGUI:
         # Área de logs
         self.logs_text = scrolledtext.ScrolledText(logs_frame, height=25, state='disabled')
         self.logs_text.pack(fill='both', expand=True, padx=10, pady=5)
+
+        # Configurar cores para níveis de log
+        self.setup_log_tags()
+
+    def setup_log_tags(self):
+        """Configurar tags de cor para cada nível de log"""
+        try:
+            self.logs_text.tag_config('INFO', foreground='#3498db')
+            self.logs_text.tag_config('DEBUG', foreground='#95a5a6')
+            self.logs_text.tag_config('ERROR', foreground='#e74c3c')
+            self.logs_text.tag_config('WARNING', foreground='#f39c12')
+            self.logs_text.tag_config('SUCCESS', foreground='#27ae60')
+        except Exception:
+            pass
     
     def start_bots(self):
         """Iniciar bots"""
@@ -890,7 +1148,21 @@ class KeydropBotGUI:
                 "mini_window_mode": self.mini_window_var.get(),
                 "enable_login_tabs": self.login_tabs_var.get(),
                 "discord_webhook_url": self.discord_webhook_var.get(),
-                "discord_notifications": self.discord_enabled_var.get()
+                "discord_notifications": self.discord_enabled_var.get(),
+                "proxy_enabled": self.proxy_enabled_var.get(),
+                "proxy_host": self.proxy_host_var.get(),
+                "proxy_port": int(self.proxy_port_var.get() or 0),
+                "proxy_username": self.proxy_user_var.get(),
+                "proxy_password": self.proxy_pass_var.get(),
+                "captcha_service": self.captcha_service_var.get(),
+                "captcha_api_key": self.captcha_key_var.get(),
+                "telegram_enabled": self.telegram_enabled_var.get(),
+                "telegram_bot_token": self.telegram_token_var.get(),
+                "telegram_chat_id": self.telegram_chat_var.get(),
+                "auto_open_golden_cases": self.auto_golden_var.get(),
+                "golden_case_price": float(self.golden_price_var.get() or 0),
+                "monitor_twitter": self.twitter_monitor_var.get(),
+                "twitter_bearer_token": self.twitter_token_var.get()
             })
             
             # Salvar em arquivo
@@ -919,7 +1191,21 @@ class KeydropBotGUI:
                 self.login_tabs_var.set(self.config['enable_login_tabs'])
                 self.discord_webhook_var.set(self.config['discord_webhook_url'])
                 self.discord_enabled_var.set(self.config['discord_notifications'])
-                
+                self.proxy_enabled_var.set(self.config.get('proxy_enabled', False))
+                self.proxy_host_var.set(self.config.get('proxy_host', ''))
+                self.proxy_port_var.set(str(self.config.get('proxy_port', 0)))
+                self.proxy_user_var.set(self.config.get('proxy_username', ''))
+                self.proxy_pass_var.set(self.config.get('proxy_password', ''))
+                self.captcha_service_var.set(self.config.get('captcha_service', ''))
+                self.captcha_key_var.set(self.config.get('captcha_api_key', ''))
+                self.telegram_enabled_var.set(self.config.get('telegram_enabled', False))
+                self.telegram_token_var.set(self.config.get('telegram_bot_token', ''))
+                self.telegram_chat_var.set(self.config.get('telegram_chat_id', ''))
+                self.auto_golden_var.set(self.config.get('auto_open_golden_cases', False))
+                self.golden_price_var.set(str(self.config.get('golden_case_price', 0)))
+                self.twitter_monitor_var.set(self.config.get('monitor_twitter', False))
+                self.twitter_token_var.set(self.config.get('twitter_bearer_token', ''))
+
                 self.log_message("✅ Configurações carregadas!", "SUCCESS")
             else:
                 self.log_message("ℹ️ Usando configurações padrão", "INFO")
@@ -979,6 +1265,16 @@ class KeydropBotGUI:
         self.salvar_logs_em_arquivo()
         self.root.destroy()
     
+    def append_log(self, text, level="INFO"):
+        """Inserir texto nos logs com cores por nível"""
+        try:
+            self.logs_text.config(state='normal')
+            self.logs_text.insert('end', text, level)
+            self.logs_text.see('end')
+            self.logs_text.config(state='disabled')
+        except Exception:
+            pass
+          
     def log_message(self, message, level="INFO"):
         """Adicionar mensagem aos logs"""
         timestamp = datetime.now().strftime("%H:%M:%S")
@@ -988,13 +1284,7 @@ class KeydropBotGUI:
         print(log_entry.strip())
         
         # Interface
-        try:
-            self.logs_text.config(state='normal')
-            self.logs_text.insert('end', log_entry)
-            self.logs_text.see('end')
-            self.logs_text.config(state='disabled')
-        except Exception:
-            pass
+        self.append_log(log_entry, level)
     
     def update_system_stats(self):
         """Atualizar estatísticas do sistema"""

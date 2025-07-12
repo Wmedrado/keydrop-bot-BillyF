@@ -2,30 +2,8 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">                        <button class="control-btn start-btn" id="startBtn">
-                            <span class="btn-icon">▶️</span>
-                            Iniciar Bot
-                        </button>
-                        <button class="control-btn stop-btn" id="stopBtn">
-                            <span class="btn-icon">⏹️</span>
-                            Parar Bot
-                        </button>
-                        <button class="control-btn cache-btn" id="clearCacheBtn">
-                            <span class="btn-icon">🧹</span>
-                            Limpar Cache
-                        </button>
-                        <button class="control-btn update-btn" id="checkUpdateBtn">
-                            <span class="btn-icon">🔍</span>
-                            Verificar Atualizações
-                        </button>
-                        <button class="control-btn save-btn modified" id="saveConfigBtn">
-                            <span class="btn-icon">💾</span>
-                            Salvar Configuração
-                        </button>
-                        <button class="control-btn reset-btn" id="resetConfigBtn">
-                            <span class="btn-icon">🔄</span>
-                            Resetar Configuração
-                        </button>rop Bot Professional v2.1.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keydrop Bot Professional v2.1.0</title>
     <link rel="stylesheet" href="src/styles/main.css">
     <link rel="stylesheet" href="src/styles/components.css">
     <link rel="stylesheet" href="src/styles/tabs.css">
@@ -71,6 +49,10 @@
             <button class="tab-button" data-tab="reports">
                 <span class="tab-icon">📋</span>
                 Relatórios
+            </button>
+            <button class="tab-button" data-tab="proxies">
+                <span class="tab-icon">🔌</span>
+                Proxies
             </button>
         </nav>
 
@@ -380,6 +362,14 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Proxies Tab -->
+            <div class="tab-content" id="proxies">
+                <div class="proxies-grid">
+                    <div id="proxyList"></div>
+                    <p class="form-help">Defina os proxies por guia. Deixe em branco para não usar proxy.</p>
                 </div>
             </div>
         </main>
