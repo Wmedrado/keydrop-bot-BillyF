@@ -92,6 +92,7 @@ class ConfigUpdateRequest(BaseModel):
     headless_mode: Optional[bool] = None
     mini_window_mode: Optional[bool] = None
     enable_login_tabs: Optional[bool] = None
+    tab_proxies: Optional[Dict[int, str]] = None
     discord_webhook_url: Optional[str] = None
     discord_notifications: Optional[bool] = None
 
