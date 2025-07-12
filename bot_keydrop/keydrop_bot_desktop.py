@@ -38,12 +38,12 @@ class KeydropBotGUI:  # noqa: F811
         self.root.geometry("880x640")
         # Configurar Dark Mode PRIMEIRO
         self.setup_dark_theme()
-        # Configurar ícone
-        self.setup_icon()
         # Inicializar variáveis essenciais
         self.server_process = None
         self.server_running = False
         self.base_path = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
+        # Configurar ícone
+        self.setup_icon()
         self.config_file = Path("config.json")
         # Inicializar estatísticas
         self.init_bot_stats()
@@ -85,12 +85,12 @@ class KeydropBotGUI:  # noqa: F811
         self.root.geometry("880x640")
         # Configurar Dark Mode PRIMEIRO
         self.setup_dark_theme()
-        # Configurar ícone
-        self.setup_icon()
         # Inicializar variáveis essenciais
         self.server_process = None
         self.server_running = False
         self.base_path = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
+        # Configurar ícone
+        self.setup_icon()
         self.config_file = Path("config.json")
         # Inicializar estatísticas
         self.init_bot_stats()
@@ -161,12 +161,12 @@ class KeydropBotGUI:  # noqa: F811
         self.root.geometry("880x640")
         # Configurar Dark Mode PRIMEIRO
         self.setup_dark_theme()
-        # Configurar ícone
-        self.setup_icon()
         # Inicializar variáveis essenciais
         self.server_process = None
         self.server_running = False
         self.base_path = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
+        # Configurar ícone
+        self.setup_icon()
         self.config_file = Path("config.json")
         # Inicializar estatísticas
         self.init_bot_stats()
