@@ -11,12 +11,19 @@ import time
 import threading
 import signal
 from pathlib import Path
+import atexit
+
+from bot_keydrop.system_safety import LockFile
 
 # Configuration
 BACKEND_DIR = Path(__file__).parent / "backend"
 FRONTEND_DIR = Path(__file__).parent / "frontend"
 BACKEND_PORT = 8000
 FRONTEND_PORT = 3000
+
+lock = LockFile()
+atexit.register(lock.release)
+
 
 class BotStarter:
     def __init__(self):
@@ -27,10 +34,11 @@ class BotStarter:
     def check_dependencies(self):
         """Check if all dependencies are available"""
         print("🔍 Verificando dependências...")
-        
+
         # Check Python
         try:
             import sys
+
             python_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
             print(f"✅ Python {python_version}")
         except Exception as e:
@@ -43,14 +51,17 @@ class BotStarter:
             try:
                 # Check if FastAPI is available
                 import fastapi
+
                 print("✅ FastAPI disponível")
-                
+
                 import playwright
+
                 print("✅ Playwright disponível")
-                
+
                 import psutil
+
                 print("✅ psutil disponível")
-                
+
             except ImportError as e:
                 print(f"❌ Dependência não encontrada: {e}")
                 print("💡 Execute: pip install -r backend/requirements.txt")
@@ -61,33 +72,35 @@ class BotStarter:
     def start_backend(self):
         """Start the backend FastAPI server"""
         print("🚀 Iniciando backend...")
-        
+
         try:
             os.chdir(BACKEND_DIR)
-            
+
             # Command to start FastAPI with uvicorn
             cmd = [
-                sys.executable, "-m", "uvicorn", 
-                "main:app", 
-                "--host", "localhost", 
-                "--port", str(BACKEND_PORT),
+                sys.executable,
+                "-m",
+                "uvicorn",
+                "main:app",
+                "--host",
+                "localhost",
+                "--port",
+                str(BACKEND_PORT),
                 "--reload",
-                "--log-level", "info"
+                "--log-level",
+                "info",
             ]
-            
+
             self.backend_process = subprocess.Popen(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True
+                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
             )
-            
+
             print(f"✅ Backend iniciado na porta {BACKEND_PORT}")
             print(f"📡 API: http://localhost:{BACKEND_PORT}")
             print(f"📚 Docs: http://localhost:{BACKEND_PORT}/docs")
-            
+
             return True
-            
+
         except Exception as e:
             print(f"❌ Erro ao iniciar backend: {e}")
             return False
@@ -95,25 +108,22 @@ class BotStarter:
     def start_frontend(self):
         """Start the frontend development server"""
         print("🎨 Iniciando frontend...")
-        
+
         try:
             os.chdir(FRONTEND_DIR)
-            
+
             # Command to start simple HTTP server
             cmd = [sys.executable, "-m", "http.server", str(FRONTEND_PORT)]
-            
+
             self.frontend_process = subprocess.Popen(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True
+                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
             )
-            
+
             print(f"✅ Frontend iniciado na porta {FRONTEND_PORT}")
             print(f"🌐 Interface: http://localhost:{FRONTEND_PORT}")
-            
+
             return True
-            
+
         except Exception as e:
             print(f"❌ Erro ao iniciar frontend: {e}")
             return False
@@ -121,20 +131,22 @@ class BotStarter:
     def wait_for_backend(self, max_retries=30):
         """Wait for backend to be ready"""
         print("⏳ Aguardando backend ficar disponível...")
-        
+
         import urllib.request
         import urllib.error
-        
+
         for i in range(max_retries):
             try:
-                urllib.request.urlopen(f"http://localhost:{BACKEND_PORT}/health", timeout=1)
+                urllib.request.urlopen(
+                    f"http://localhost:{BACKEND_PORT}/health", timeout=1
+                )
                 print("✅ Backend está pronto!")
                 return True
             except (urllib.error.URLError, ConnectionRefusedError):
                 time.sleep(1)
                 if i % 5 == 0:
                     print(f"⏳ Tentativa {i+1}/{max_retries}...")
-        
+
         print("❌ Backend não ficou disponível a tempo")
         return False
 
@@ -142,6 +154,7 @@ class BotStarter:
         """Open the frontend in the default browser"""
         try:
             import webbrowser
+
             time.sleep(2)  # Wait a bit for servers to stabilize
             webbrowser.open(f"http://localhost:{FRONTEND_PORT}")
             print("🌐 Interface aberta no navegador")
@@ -152,13 +165,13 @@ class BotStarter:
         """Monitor backend and frontend processes"""
         while self.running:
             time.sleep(5)
-            
+
             # Check backend
             if self.backend_process and self.backend_process.poll() is not None:
                 print("❌ Backend parou inesperadamente")
                 self.running = False
                 break
-            
+
             # Check frontend
             if self.frontend_process and self.frontend_process.poll() is not None:
                 print("❌ Frontend parou inesperadamente")
@@ -168,9 +181,9 @@ class BotStarter:
     def stop_all(self):
         """Stop all processes"""
         print("\n🛑 Parando serviços...")
-        
+
         self.running = False
-        
+
         if self.backend_process:
             try:
                 self.backend_process.terminate()
@@ -181,7 +194,7 @@ class BotStarter:
                 print("🔥 Backend forçado a parar")
             except Exception as e:
                 print(f"⚠️ Erro ao parar backend: {e}")
-        
+
         if self.frontend_process:
             try:
                 self.frontend_process.terminate()
@@ -204,42 +217,42 @@ class BotStarter:
         # Setup signal handlers
         signal.signal(signal.SIGINT, self.signal_handler)
         signal.signal(signal.SIGTERM, self.signal_handler)
-        
+
         print("🚀 Keydrop Bot Professional - Startup")
         print("=" * 50)
-        
+
         # Check dependencies
         if not self.check_dependencies():
             print("❌ Dependências não atendidas. Abortando...")
             return False
-        
+
         # Start backend
         if not self.start_backend():
             print("❌ Falha ao iniciar backend. Abortando...")
             return False
-        
+
         # Wait for backend to be ready
         if not self.wait_for_backend():
             print("❌ Backend não ficou pronto. Abortando...")
             self.stop_all()
             return False
-        
+
         # Start frontend
         if not self.start_frontend():
             print("❌ Falha ao iniciar frontend. Parando backend...")
             self.stop_all()
             return False
-        
+
         # Open browser
         browser_thread = threading.Thread(target=self.open_browser)
         browser_thread.daemon = True
         browser_thread.start()
-        
+
         # Start monitoring
         monitor_thread = threading.Thread(target=self.monitor_processes)
         monitor_thread.daemon = True
         monitor_thread.start()
-        
+
         print("\n✅ Todos os serviços iniciados com sucesso!")
         print("=" * 50)
         print(f"🔗 Backend API: http://localhost:{BACKEND_PORT}")
@@ -248,7 +261,7 @@ class BotStarter:
         print("=" * 50)
         print("💡 Pressione Ctrl+C para parar todos os serviços")
         print()
-        
+
         try:
             # Keep main thread alive
             while self.running:
@@ -257,12 +270,13 @@ class BotStarter:
             pass
         finally:
             self.stop_all()
-        
+
         return True
+
 
 def main():
     """Main entry point"""
-    if len(sys.argv) > 1 and sys.argv[1] in ['-h', '--help']:
+    if len(sys.argv) > 1 and sys.argv[1] in ["-h", "--help"]:
         print("Keydrop Bot Professional - Startup Script")
         print()
         print("Uso: python startup.py")
@@ -278,15 +292,22 @@ def main():
         print(f"- Backend: {BACKEND_PORT}")
         print(f"- Frontend: {FRONTEND_PORT}")
         return
-    
+
+    if not lock.acquire():
+        print("O Keydrop Bot já está em execução!")
+        return
+
     starter = BotStarter()
     success = starter.run()
-    
+
     if success:
         print("👋 Keydrop Bot Professional encerrado com sucesso")
     else:
         print("❌ Keydrop Bot Professional encerrado com erros")
         sys.exit(1)
+
+    lock.release()
+
 
 if __name__ == "__main__":
     main()
