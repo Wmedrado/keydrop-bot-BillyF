@@ -20,5 +20,7 @@
   "page_load_timeout": 30,
   "max_memory_usage_mb": 2048,
   "enable_cache_clearing": true,
-  "tab_proxies": {}
+  "tab_proxies": {},
+  "failure_reschedule_threshold": 2,
+  "failure_reschedule_delay": 180
 }

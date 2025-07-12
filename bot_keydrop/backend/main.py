@@ -16,6 +16,7 @@ from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 from pydantic import BaseModel
 import uvicorn
+import httpx
 
 # Importar módulos do bot
 from config import ConfigManager, BotConfig, get_config, save_config
@@ -123,6 +124,10 @@ class CacheControlRequest(BaseModel):
 class WinningRequest(BaseModel):
     amount: float
     lottery_type: str
+
+
+class ProxyTestRequest(BaseModel):
+    proxy: str
 
 # Inicialização da aplicação
 @app.on_event("startup")
@@ -527,6 +532,73 @@ async def test_discord_notification():
         
     except Exception as e:
         logger.error(f"Erro ao testar Discord: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Diagnostic endpoints
+@app.get("/diagnostics/keydrop")
+async def diagnostics_keydrop():
+    """Teste de conexão com o site Keydrop"""
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get(get_config().keydrop_url)
+        return {"success": resp.status_code == 200, "status_code": resp.status_code}
+    except Exception as e:
+        logger.error(f"Erro no diagnóstico Keydrop: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/diagnostics/login")
+async def diagnostics_login():
+    """Teste rápido de abertura da página de login"""
+    started = False
+    try:
+        if not browser_manager.is_running:
+            started = await browser_manager.start_browser(headless=True)
+        tab = await browser_manager.create_tab(-100, automation_engine.URLS['keydrop_main'])
+        await asyncio.sleep(5)
+        await browser_manager.close_tab(-100)
+        if started:
+            await browser_manager.stop_browser()
+        return {"success": True, "message": "Página de login aberta"}
+    except Exception as e:
+        logger.error(f"Erro no diagnóstico de login: {e}")
+        if started:
+            await browser_manager.stop_browser()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/diagnostics/notification")
+async def diagnostics_notification():
+    """Teste de envio de notificação Discord"""
+    try:
+        success = await send_discord_notification(
+            "🧪 Teste de Notificação",
+            "Diagnóstico de integrações do Keydrop Bot",
+            "info"
+        )
+        return {"success": success, "message": "Notificação enviada" if success else "Falha ao enviar"}
+    except Exception as e:
+        logger.error(f"Erro no diagnóstico de notificação: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/diagnostics/proxy")
+async def diagnostics_proxy(request: ProxyTestRequest):
+    """Teste de abertura de aba utilizando proxy"""
+    started = False
+    try:
+        if not browser_manager.is_running:
+            started = await browser_manager.start_browser(headless=True)
+        tab = await browser_manager.create_tab(-101, automation_engine.URLS['keydrop_main'], proxy=request.proxy)
+        await asyncio.sleep(5)
+        await browser_manager.close_tab(-101)
+        if started:
+            await browser_manager.stop_browser()
+        return {"success": True, "message": "Aba aberta com proxy"}
+    except Exception as e:
+        logger.error(f"Erro no diagnóstico de proxy: {e}")
+        if started:
+            await browser_manager.stop_browser()
         raise HTTPException(status_code=500, detail=str(e))
 
 # Endpoint to teach the bot participation sequence
