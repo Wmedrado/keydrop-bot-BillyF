@@ -10,7 +10,7 @@ detecção automatizada. Está em nossos planos avaliar a migração para
 """
 
 import tkinter as tk
-from tkinter import ttk, messagebox, scrolledtext, filedialog
+from tkinter import ttk, messagebox, scrolledtext, filedialog, TclError
 import threading
 import subprocess
 import sys
@@ -813,17 +813,43 @@ class KeydropBot:
 
 class KeydropBotGUI:
     """Interface gráfica principal"""
-    
+
     def __init__(self):
+        self.headless = False
         self.setup_window()
         self.bot_manager = KeydropBotManager()
         self.config = self.bot_manager.config
-        self.setup_interface()
+        if not self.headless:
+            self.setup_interface()
         self.start_monitoring()
         
     def setup_window(self):
         """Configurar janela principal"""
-        self.root = tk.Tk()
+        try:
+            self.root = tk.Tk()
+        except TclError:
+            class DummyTk:
+                def title(self, *a, **k):
+                    pass
+                def geometry(self, *a, **k):
+                    pass
+                def protocol(self, *a, **k):
+                    pass
+                def iconbitmap(self, *a, **k):
+                    pass
+                def update_idletasks(self):
+                    pass
+                def winfo_screenwidth(self):
+                    return 1000
+                def winfo_screenheight(self):
+                    return 800
+                def winfo_exists(self):
+                    return True
+                def destroy(self):
+                    pass
+            self.root = DummyTk()
+            self.headless = True
+            return
         self.root.title("Keydrop Bot Professional v4.0.0")
         self.root.geometry("1000x800")
 
