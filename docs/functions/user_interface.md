@@ -19,8 +19,9 @@ Firebase for persistence.
 - `sincronizar_perfil(user_id: str, nome: str, lucro_total: float, tempo_total_min: int, bots_ativos_max: int) -> None`
   Persist profile metrics and update ranking using functions from
   `cloud/firebase_client.py`.
-- `discord_oauth_login() -> Dict[str, str]`
-  Helper defined in `discord_oauth.py` used by `LoginFrame` to allow login via Discord.
+- `login_via_discord() -> Dict[str, Any]`
+  Perform OAuth login with Discord, create the user in Firebase if needed and
+  return the authentication data with Discord info attached.
 
 Additional Tkinter `Frame` subclasses (`LoginFrame`, `RegisterFrame`,
 `ProfileFrame`, `RankingFrame`, `StoreFrame`) implement the GUI components for
