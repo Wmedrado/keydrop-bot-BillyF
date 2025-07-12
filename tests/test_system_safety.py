@@ -21,6 +21,18 @@ def test_validar_permissoes(tmp_path):
     assert validar_permissoes([tmp_path])
 
 
+def test_validar_permissoes_cria_diretorios(tmp_path):
+    dirs = [
+        tmp_path / "logs",
+        tmp_path / "data",
+        tmp_path / "profiles",
+        tmp_path / "__cache__",
+    ]
+    assert validar_permissoes(dirs)
+    for d in dirs:
+        assert d.exists()
+
+
 def test_backup_and_restore(tmp_path):
     p = tmp_path / "test.json"
     p.write_text("data")

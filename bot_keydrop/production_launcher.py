@@ -144,6 +144,8 @@ class ProductionLauncher:
             self.base_path / "profiles",
             self.base_path / "resources",
             self.base_path / "logs",
+            self.base_path / "data",
+            self.base_path / "__cache__",
         ]
         
         for dir_path in required_dirs:
@@ -275,7 +277,7 @@ async def main():
         print("Ambiente incompatível: Este bot foi projetado para Windows 10+ com Python 3.10+.")
         return
 
-    if not validar_permissoes(["logs", "data", "profiles"]):
+    if not validar_permissoes(["logs", "data", "profiles", "__cache__"]):
         print("Erro de permissão: execute o bot como administrador ou verifique as pastas.")
         return
 
