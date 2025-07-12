@@ -84,6 +84,7 @@ if "tkinter" not in sys.modules:
     tk.Text = Dummy
     tk.StringVar = DummyStringVar
     tk.Entry = Dummy
+    tk.TclError = Exception
     tk.BooleanVar = DummyStringVar
     tk.Checkbutton = Dummy
     tk.font = types.SimpleNamespace(Font=lambda *a, **k: None)
