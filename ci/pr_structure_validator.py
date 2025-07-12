@@ -8,12 +8,12 @@ import time
 
 # Required headings in the PR template
 HEADINGS = [
-    "### 🌐 Objetivo da alteração",
-    "### 📂 Arquivos principais alterados",
-    "### 🔍 Impacto em outros módulos",
+    "### 🧠 Objetivo da alteração",
+    "### 📍 Arquivos principais alterados",
+    "### 🔁 Impacto em outros módulos",
     "### 🧪 Testes existentes cobrem essa lógica?",
-    "### 🔒 Algum risco de segurança?",
-    "### ✅ Justificativa no history_of_decisions.md",
+    "### 🔐 Algum risco de segurança?",
+    "### ✅ Justificativa no history_of_decisions.md?",
 ]
 
 # Mapping from headings to required checkboxes (kept for future extension)
