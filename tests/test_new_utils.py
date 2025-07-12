@@ -113,6 +113,7 @@ def test_browser_fallback(tmp_path, monkeypatch):
         [],
         raising=False,
     )
+    monkeypatch.setattr("shutil.which", lambda *_args, **_kw: None)
     assert launch_browser_with_fallback(str(fake)) is None
 
 
