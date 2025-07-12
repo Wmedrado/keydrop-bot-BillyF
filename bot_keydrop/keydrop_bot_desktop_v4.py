@@ -831,6 +831,20 @@ class KeydropBotGUI:
         # Área de logs
         self.logs_text = scrolledtext.ScrolledText(logs_frame, height=25, state='disabled')
         self.logs_text.pack(fill='both', expand=True, padx=10, pady=5)
+
+        # Configurar cores para níveis de log
+        self.setup_log_tags()
+
+    def setup_log_tags(self):
+        """Configurar tags de cor para cada nível de log"""
+        try:
+            self.logs_text.tag_config('INFO', foreground='#3498db')
+            self.logs_text.tag_config('DEBUG', foreground='#95a5a6')
+            self.logs_text.tag_config('ERROR', foreground='#e74c3c')
+            self.logs_text.tag_config('WARNING', foreground='#f39c12')
+            self.logs_text.tag_config('SUCCESS', foreground='#27ae60')
+        except Exception:
+            pass
     
     def start_bots(self):
         """Iniciar bots"""
@@ -957,7 +971,17 @@ class KeydropBotGUI:
                 self.log_message(f"📄 Logs salvos: {filename}", "SUCCESS")
         except Exception as e:
             self.log_message(f"❌ Erro ao salvar logs: {e}", "ERROR")
-    
+
+    def append_log(self, text, level="INFO"):
+        """Inserir texto nos logs com cores por nível"""
+        try:
+            self.logs_text.config(state='normal')
+            self.logs_text.insert('end', text, level)
+            self.logs_text.see('end')
+            self.logs_text.config(state='disabled')
+        except Exception:
+            pass
+
     def log_message(self, message, level="INFO"):
         """Adicionar mensagem aos logs"""
         timestamp = datetime.now().strftime("%H:%M:%S")
@@ -967,13 +991,7 @@ class KeydropBotGUI:
         print(log_entry.strip())
         
         # Interface
-        try:
-            self.logs_text.config(state='normal')
-            self.logs_text.insert('end', log_entry)
-            self.logs_text.see('end')
-            self.logs_text.config(state='disabled')
-        except Exception:
-            pass
+        self.append_log(log_entry, level)
     
     def update_system_stats(self):
         """Atualizar estatísticas do sistema"""
