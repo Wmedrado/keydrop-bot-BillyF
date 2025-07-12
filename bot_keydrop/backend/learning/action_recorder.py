@@ -33,14 +33,14 @@ class ActionRecorder:
                     return path.join(' > ');
                 }
                 document.addEventListener('click', e => {
-                    window.recordAction(getPath(e.target));
+                    window.recordAction({selector: getPath(e.target), x: e.clientX, y: e.clientY});
                 }, {capture:true});
             })();
             """
         )
 
-    async def _record_action(self, selector: str):
-        self.actions.append({"selector": selector, "timestamp": time.time()})
+    async def _record_action(self, info):
+        self.actions.append({"selector": info.get("selector"), "x": info.get("x"), "y": info.get("y"), "timestamp": time.time()})
 
     async def stop(self):
         """Stop recording and save actions."""
