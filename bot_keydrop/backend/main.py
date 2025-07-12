@@ -23,9 +23,11 @@ from bot_logic import (
     browser_manager, create_keydrop_automation, create_bot_scheduler,
     BotStatus, ParticipationResult
 )
+from utils.logging_utils import setup_logging
+from utils.reporting import start_daily_export_task
 
-# Configuração de logging
-logging.basicConfig(level=logging.INFO)
+# Configuração de logging com arquivos rotativos
+log_file = setup_logging()
 logger = logging.getLogger(__name__)
 
 # Criar aplicação FastAPI
@@ -49,6 +51,7 @@ config_manager = ConfigManager()
 system_monitor = SystemMonitor()
 automation_engine = None
 bot_scheduler = None
+daily_export_task = None
 
 # Gerenciamento de WebSocket
 class ConnectionManager:
@@ -114,7 +117,7 @@ class WinningRequest(BaseModel):
 @app.on_event("startup")
 async def startup_event():
     """Inicialização da aplicação"""
-    global automation_engine, bot_scheduler
+    global automation_engine, bot_scheduler, daily_export_task
     
     logger.info("Iniciando API do Keydrop Bot...")
     
@@ -133,6 +136,8 @@ async def startup_event():
     
     # Iniciar monitoramento de sistema
     asyncio.create_task(start_monitoring_loop())
+    # Iniciar tarefa de exportação diária de relatórios
+    daily_export_task = start_daily_export_task(automation_engine)
     
     logger.info("API iniciada com sucesso")
 
@@ -147,6 +152,8 @@ async def shutdown_event():
     
     # Parar monitoramento
     stop_system_monitoring()
+    if daily_export_task:
+        daily_export_task.cancel()
     
     logger.info("API encerrada")
 

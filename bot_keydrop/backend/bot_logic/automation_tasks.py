@@ -460,7 +460,10 @@ class KeydropAutomation:
                 element = await page.query_selector(selector)
                 if element and await element.is_visible():
                     return True
-            
+
+            return False
+        except Exception as e:
+            logger.debug(f"Erro ao verificar sucesso da participação: {e}")
             return False
 
     async def _attempt_participation_js(self, page, lottery: Dict[str, Any], tab_id: int, attempt_number: int) -> ParticipationAttempt:
@@ -532,9 +535,6 @@ class KeydropAutomation:
             logger.error(f"Erro imagem ao tentar participar: {e}")
             return ParticipationAttempt(tab_id=tab_id, attempt_number=attempt_number, timestamp=datetime.now(), result=ParticipationResult.FAILED, error_message=str(e))
             
-        except Exception as e:
-            logger.debug(f"Erro ao verificar sucesso da participação: {e}")
-            return False
     
     async def navigate_to_lotteries(self, tab_id: int) -> bool:
         """

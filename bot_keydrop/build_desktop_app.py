@@ -416,7 +416,7 @@ def main():
             print("1. Execute 'Iniciar_Bot_Desktop.bat'")
             print("2. Interface gráfica abrirá")
             print("3. Clique 'Iniciar Servidor' quando quiser usar")
-    print("4. Configure e controle tudo pela interface")  # Mantido: Instruções claras
+            print("4. Configure e controle tudo pela interface")  # Mantido: Instruções claras
         else:
             print("\n❌ Falha no build")
             sys.exit(1)
