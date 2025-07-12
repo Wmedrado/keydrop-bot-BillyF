@@ -15,19 +15,27 @@ import httpx
 from pathlib import Path
 import importlib.util
 
-# Configuration
+from bot_keydrop.system_safety.environment_checker import (
+    verificar_conexao_internet,
+    ambiente_compativel,
+    LockFile,
+)
+from bot_keydrop.system_safety.permissions_validator import validar_permissoes
+from bot_keydrop.system_safety.backups import backup_arquivo
+from bot_keydrop.system_safety.watchdog import ProcessWatchdog
+
 BACKEND_PORT = 8000
 FRONTEND_URL = f"http://localhost:{BACKEND_PORT}"
+lock = LockFile()
 
 class ProductionLauncher:
     def __init__(self):
-        self.is_executable = getattr(sys, 'frozen', False)
+        self.is_executable = getattr(sys, "frozen", False)
         # Handle PyInstaller temp directory
-        if self.is_executable and hasattr(sys, '_MEIPASS'):
+        if self.is_executable and hasattr(sys, "_MEIPASS"):
             self.base_path = Path(sys._MEIPASS)
         else:
             self.base_path = Path(__file__).parent
-        
     def show_startup_banner(self):
         """Show startup banner"""
         print("🔥" * 60)
@@ -252,7 +260,32 @@ class ProductionLauncher:
 async def main():
     """Main launcher function"""
     launcher = ProductionLauncher()
-    
+
+    if not lock.acquire():
+        print("O Keydrop Bot já está em execução!")
+        return
+
+    if not ambiente_compativel():
+        print("Ambiente incompatível: Este bot foi projetado para Windows 10+ com Python 3.10+.")
+        return
+
+    if not validar_permissoes(["logs", "data", "profiles"]):
+        print("Erro de permissão: execute o bot como administrador ou verifique as pastas.")
+        return
+
+    if not verificar_conexao_internet():
+        print("Sem conexão com a internet. Tentando novamente em alguns segundos...")
+        for _ in range(5):
+            time.sleep(5)
+            if verificar_conexao_internet():
+                break
+        else:
+            print("Conexão indisponível. Abortando execução.")
+            return
+
+    watchdog = ProcessWatchdog()
+    watchdog.start()
+
     # Show banner
     launcher.show_startup_banner()
 
@@ -264,6 +297,9 @@ async def main():
     
     # Setup directories
     launcher.setup_directories()
+
+    for cfg_name in ("bot_config.json", "user_session.json", "firebase_credentials.json"):
+        backup_arquivo(Path(cfg_name))
     
     # Start backend
     if not launcher.start_backend_server():
@@ -282,7 +318,11 @@ async def main():
     launcher.show_instructions()
     
     # Main loop
-    await launcher.main_loop()
+    try:
+        await launcher.main_loop()
+    finally:
+        watchdog.stop()
+        lock.release()
 
 if __name__ == "__main__":
     try:
@@ -290,3 +330,7 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("\n🛑 Parando aplicação...")
         print("👋 Obrigado por usar Keydrop Bot Professional!")
+        try:
+            lock.release()
+        except Exception:
+            pass
