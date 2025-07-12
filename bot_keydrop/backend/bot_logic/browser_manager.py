@@ -12,6 +12,7 @@ from datetime import datetime
 from pathlib import Path
 import json
 import gc
+import uuid
 from playwright.async_api import async_playwright, Browser, BrowserContext, Page, Playwright
 
 # Configuração de logging
@@ -56,6 +57,7 @@ class BrowserManager:
         self.tabs: Dict[int, TabInfo] = {}
         self.contexts: Dict[int, BrowserContext] = {}  # Contexts por tab_id
         self.user_profiles_dir = Path("profiles")  # Diretório base para perfis
+        self.tab_profiles: Dict[int, Path] = {}
         self.macro_dir = Path("macros")
         self.is_running = False
         self.headless_mode = False
@@ -108,7 +110,6 @@ class BrowserManager:
             
             # Configurar argumentos do navegador
             browser_args = [
-                '--no-sandbox',
                 '--disable-dev-shm-usage',
                 '--disable-gpu',
                 '--disable-extensions',
@@ -164,7 +165,9 @@ class BrowserManager:
         Returns:
             Caminho do perfil
         """
-        return self.user_profiles_dir / f"bot_{tab_id}"
+        if tab_id not in self.tab_profiles:
+            self.tab_profiles[tab_id] = self.user_profiles_dir / str(uuid.uuid4())
+        return self.tab_profiles[tab_id]
     
     def _create_user_profile(self, tab_id: int) -> Path:
         """
