@@ -1,4 +1,9 @@
-"""Rate limiter utilities."""
+"""Rate limiter utilities.
+
+This module exposes :class:`RateLimiter`, a simple sliding-window limiter used
+across the project. It keeps track of calls per arbitrary key (such as a user
+or task name) and rejects new ones when the limit is exceeded.
+"""
 
 from __future__ import annotations
 
@@ -8,7 +13,21 @@ from typing import Deque, Dict
 
 
 class RateLimiter:
-    """Limit the number of actions per period for multiple keys."""
+    """Limit the number of actions per key within a period.
+
+    Parameters
+    ----------
+    max_calls:
+        Maximum number of allowed calls during ``period`` seconds.
+    period:
+        Size of the sliding time window in seconds.
+
+    Examples
+    --------
+    >>> rl = RateLimiter(2, 5)
+    >>> if rl.allow("user"):
+    ...     print("allowed")
+    """
 
     def __init__(self, max_calls: int, period: float):
         self.max_calls = max_calls

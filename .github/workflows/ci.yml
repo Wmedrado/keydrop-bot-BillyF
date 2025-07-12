@@ -32,6 +32,8 @@ jobs:
           bandit -r .
 
       - name: ✅ Validar descrição do PR
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
         run: python ci/validate_pr_description.py
 
       - name: SonarCloud Scan

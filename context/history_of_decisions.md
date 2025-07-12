@@ -55,6 +55,7 @@ Cada nova funcionalidade ou ajuste relevante deve adicionar um bloco seguindo o 
 - **Justificativa técnica:** reduz custo computacional, registra histórico individual e previne vazamento de credenciais.
 - **Tipo:** melhoria
 
+
 ## Ajuste de integracao SonarCloud
 - **Motivo:** Corrigir configuracoes invalidas do workflow e do projeto.
 - **Afeta/Substitui:** `sonar-project.properties` e `.github/workflows/ci.yml`.
@@ -67,3 +68,10 @@ Cada nova funcionalidade ou ajuste relevante deve adicionar um bloco seguindo o 
 - **Afeta/Substitui:** instala dependencias ausentes como beautifulsoup4.
 - **Justificativa tecnica:** Prevencao de falhas de importacao e cobertura completa no CI.
 - **Tipo:** manutencao
+
+## Verificação de duplicidade do RateLimiter
+- **Motivo:** confirmar se havia múltiplas implementações da classe `RateLimiter`.
+- **Afeta/Substitui:** documentação do `RateLimiter`.
+- **Justificativa técnica:** apenas `bot_keydrop.system_safety.rate_limiter` existe; atualizada documentação para deixar claro.
+- **Tipo:** melhoria
+
