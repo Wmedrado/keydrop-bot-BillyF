@@ -107,3 +107,30 @@ def test_timestamp_in_brasilia_timezone(tmp_path):
     )
     now_brt = datetime.now(ZoneInfo("America/Sao_Paulo"))
     assert abs((now_brt - ts).total_seconds()) < 5
+
+
+def test_error_deduplication(tmp_path, monkeypatch):
+    log = tmp_path / "err.log"
+    db = tmp_path / "db.json"
+    reporter = ErrorReporter(log_file=log, db_file=db)
+    calls = []
+    monkeypatch.setattr(reporter, "_send_discord", lambda info: calls.append(info) or True)
+    monkeypatch.delenv(TEST_ENV_VAR, raising=False)
+    monkeypatch.delenv(IS_TEST_ENV_VAR, raising=False)
+
+    def boom():
+        raise ValueError("test")
+
+    try:
+        boom()
+    except Exception as exc:
+        reporter.capture_exception(exc)
+    try:
+        boom()
+    except Exception as exc:
+        reporter.capture_exception(exc)
+
+    data = json.loads(db.read_text())
+    key = next(iter(data["errors"]))
+    assert data["errors"][key]["count"] == 2
+    assert len(calls) == 1
