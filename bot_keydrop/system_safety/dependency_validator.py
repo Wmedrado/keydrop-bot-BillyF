@@ -49,11 +49,12 @@ def _check_webdriver():
     return False
 
 
-def _check_browsers():
+def _check_browsers() -> str | None:
+    """Return first available browser executable or ``None``."""
     for path in BROWSER_PATHS:
         if os.path.exists(path):
-            return True
-    return False
+            return path
+    return None
 
 
 def _check_dirs():
@@ -72,7 +73,8 @@ def run_dependency_check():
         issues.append("Bibliotecas ausentes: " + ", ".join(libs_missing))
     if not _check_webdriver():
         issues.append("WebDriver nao encontrado")
-    if not _check_browsers():
+    browser = _check_browsers()
+    if not browser:
         issues.append("Navegador compativel nao encontrado")
     dirs_missing = _check_dirs()
     if dirs_missing:
@@ -88,4 +90,11 @@ def run_dependency_check():
         except Exception:
             pass
         return False
+    if browser:
+        logger.info("Navegador detectado: %s", browser)
     return True
+
+
+def get_available_browser() -> str | None:
+    """Return path to available browser, trying fallbacks."""
+    return _check_browsers()

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# flake8: noqa
 """User interface modules for Keydrop Bot.
 
 This file defines Tkinter frames for user login, registration,
@@ -16,6 +17,7 @@ from typing import Dict, Optional, Any
 
 import customtkinter as ctk
 from tkinter import messagebox, filedialog
+
 # Pillow is required for tkhtmlview but direct imports aren't needed here
 from tkhtmlview import HTMLLabel
 from bot_keydrop.gui.utils import safe_load_image, safe_widget_call
@@ -48,8 +50,9 @@ logger = logging.getLogger(__name__)
 
 _FIREBASE_CONFIG = Path("firebase_config.json")
 _SESSION_FILE = Path("user_session.json")
-_PLACEHOLDER_IMAGE = Path(__file__).resolve().parent / "bot_keydrop" / "bot-icone.png"
-
+_PLACEHOLDER_IMAGE = (
+    Path(__file__).resolve().parent / "bot_keydrop" / "bot-icone.png"
+)  # noqa: E501
 
 
 def _load_pyrebase() -> "pyrebase.pyrebase.Firebase":
@@ -67,7 +70,9 @@ def _load_pyrebase() -> "pyrebase.pyrebase.Firebase":
     try:
         import pyrebase  # type: ignore
     except Exception as exc:
-        raise ImportError("pyrebase is required for Firebase features") from exc
+        raise ImportError(
+            "pyrebase is required for Firebase features"
+        ) from exc  # noqa: E501
 
     if pyrebase is None:
         raise ImportError("pyrebase is required for Firebase operations")
@@ -102,9 +107,47 @@ def registrar_usuario(email: str, senha: str) -> Dict[str, Any]:
     return user
 
 
+def login_via_discord() -> Dict[str, Any]:
+    """Authenticate or create a Firebase user using Discord OAuth."""
+    info = oauth_login()
+    if not info.get("email"):
+        raise RuntimeError("Discord nao retornou email")
+    try:
+        from firebase_admin import auth  # type: ignore
+    except Exception as exc:  # pragma: no cover - optional dependency
+        raise ImportError(
+            "firebase_admin is required for auth operations"
+        ) from exc  # noqa: E501
+
+    initialize_firebase()
+    try:
+        record = auth.get_user_by_email(info["email"])
+    except Exception:
+        record = auth.create_user(uid=info["id"], email=info["email"])
+
+    token_bytes = auth.create_custom_token(record.uid)
+    token = (
+        token_bytes.decode() if isinstance(token_bytes, bytes) else token_bytes
+    )  # noqa: E501
+    firebase = _load_pyrebase()
+    user = firebase.auth().sign_in_with_custom_token(token)
+    _save_session(user)
+    salvar_discord_info(
+        record.uid,
+        {
+            "discord_id": info["id"],
+            "username": info["username"],
+            "email": info.get("email"),
+        },
+    )
+    user["discord"] = info
+    return user
+
+
 def carregar_dados_usuario(user_id: str) -> Optional[Dict[str, Any]]:
     """Load a user's profile data from Firebase."""
     from firebase_admin import db  # type: ignore
+
     if db is None:
         raise ImportError("firebase_admin is required for database operations")
 
@@ -128,6 +171,7 @@ def sincronizar_perfil(
 # Tkinter frames
 # ---------------------------------------------------------------------------
 
+
 class LoginFrame(ctk.CTkFrame):
     """Tela de login com campos de email e senha."""
 
@@ -147,12 +191,24 @@ class LoginFrame(ctk.CTkFrame):
         ctk.CTkLabel(self, text="Senha:").pack(pady=5)
         ctk.CTkEntry(self, textvariable=self.senha_var, show="*").pack(pady=5)
 
-        ctk.CTkButton(self, text="Entrar com Discord", command=self._login_discord).pack(pady=5)
-
-        ctk.CTkButton(self, text="Entrar", command=self._handle_login).pack(pady=10)
-        ctk.CTkButton(self, text="Cadastrar", command=self.on_register).pack()
         ctk.CTkButton(
-            self, text="Esqueci minha senha", command=self._open_reset
+            self, text="Entrar com Discord", command=self._login_discord
+        ).pack(pady=5)
+
+        ctk.CTkButton(
+            self,
+            text="Entrar",
+            command=self._handle_login,
+        ).pack(pady=10)
+        ctk.CTkButton(
+            self,
+            text="Cadastrar",
+            command=self.on_register,
+        ).pack()
+        ctk.CTkButton(
+            self,
+            text="Esqueci minha senha",
+            command=self._open_reset,
         ).pack(pady=5)
 
     def _handle_login(self) -> None:
@@ -174,14 +230,11 @@ class LoginFrame(ctk.CTkFrame):
 
     def _login_discord(self) -> None:
         try:
-            info = oauth_login()
-            self.discord_data = info
-            if info.get("email"):
-                self.email_var.set(info["email"])
-            messagebox.showinfo("Discord", f"Conectado como {info['username']}")
+            user = login_via_discord()
+            self.discord_data = user.get("discord")
+            self.on_login(user)
         except Exception as exc:  # pragma: no cover - network errors
             messagebox.showerror("Discord", str(exc))
-
 
 
 class RegisterFrame(ctk.CTkFrame):
@@ -197,10 +250,28 @@ class RegisterFrame(ctk.CTkFrame):
 
     def _build(self) -> None:
         ctk.CTkLabel(self, text="Cadastro").pack(pady=5)
-        ctk.CTkEntry(self, textvariable=self.email_var, placeholder_text="Email").pack(pady=5)
-        ctk.CTkEntry(self, textvariable=self.pass_var, placeholder_text="Senha", show="*").pack(pady=5)
-        ctk.CTkEntry(self, textvariable=self.confirm_var, placeholder_text="Confirmar Senha", show="*").pack(pady=5)
-        ctk.CTkButton(self, text="Registrar", command=self._do_register).pack(pady=10)
+        ctk.CTkEntry(
+            self,
+            textvariable=self.email_var,
+            placeholder_text="Email",
+        ).pack(pady=5)
+        ctk.CTkEntry(
+            self,
+            textvariable=self.pass_var,
+            placeholder_text="Senha",
+            show="*",
+        ).pack(pady=5)
+        ctk.CTkEntry(
+            self,
+            textvariable=self.confirm_var,
+            placeholder_text="Confirmar Senha",
+            show="*",
+        ).pack(pady=5)
+        ctk.CTkButton(
+            self,
+            text="Registrar",
+            command=self._do_register,
+        ).pack(pady=10)
 
     def _do_register(self) -> None:
         email = self.email_var.get().strip()
@@ -237,43 +308,66 @@ class ProfileFrame(ctk.CTkFrame):
         self.tempo_var = ctk.StringVar()
         self.bots_var = ctk.StringVar()
 
-        ctk.CTkLabel(self, textvariable=self.name_var, font=("Arial", 16)).pack(pady=4)
+        ctk.CTkLabel(
+            self,
+            textvariable=self.name_var,
+            font=("Arial", 16),
+        ).pack(pady=4)
         self.img_container.pack(pady=4)
         ctk.CTkLabel(self, textvariable=self.lucro_var).pack()
         ctk.CTkLabel(self, textvariable=self.tempo_var).pack()
         ctk.CTkLabel(self, textvariable=self.bots_var).pack()
-        ctk.CTkButton(self, text="Atualizar", command=self.refresh).pack(pady=10)
-        ctk.CTkButton(self, text="Enviar Foto", command=self.upload_photo).pack()
+        ctk.CTkButton(
+            self,
+            text="Atualizar",
+            command=self.refresh,
+        ).pack(pady=10)
+        ctk.CTkButton(
+            self,
+            text="Enviar Foto",
+            command=self.upload_photo,
+        ).pack()
 
     def refresh(self) -> None:
         try:
             data = carregar_dados_usuario(self.user_id) or {}
         except Exception as e:
             logger.exception("Erro ao carregar dados do usuário")
-            messagebox.showerror("Erro", f"Falha ao carregar dados do perfil.\n{e}")
+            messagebox.showerror(
+                "Erro", f"Falha ao carregar dados do perfil.\n{e}"
+            )  # noqa: E501
             return
         self.data = data
         self.name_var.set(data.get("nome", "-"))
         self.lucro_var.set(f"Lucro total: R$ {data.get('lucro_total', 0):.2f}")
-        self.tempo_var.set(f"Tempo de uso: {data.get('tempo_total_min', 0)} min")
-        self.bots_var.set(f"Bots simultâneos: {data.get('bots_ativos_max', 0)}")
+        self.tempo_var.set(
+            f"Tempo de uso: {data.get('tempo_total_min', 0)} min"
+        )  # noqa: E501
+        self.bots_var.set(
+            f"Bots simultâneos: {data.get('bots_ativos_max', 0)}"
+        )  # noqa: E501
         foto_url = data.get("foto_url")
         photo = safe_load_image(
             foto_url or _PLACEHOLDER_IMAGE,
             size=(80, 80),
             placeholder=_PLACEHOLDER_IMAGE,
         )
-        safe_widget_call(self.img_container.configure, image=photo)
+        safe_widget_call(self.img_container.configure, image=photo)  # noqa: E501
         self.img_container.image = photo
 
     def upload_photo(self) -> None:
-        path = filedialog.askopenfilename(filetypes=[("Imagens", "*.png;*.jpg;*.jpeg")])
+        path = filedialog.askopenfilename(
+            filetypes=[("Imagens", "*.png;*.jpg;*.jpeg")]
+        )  # noqa: E501
         if not path:
             return
+
         def worker() -> None:
             try:
                 url = upload_foto_perfil(self.user_id, path)
-                self.img_container.after(0, lambda: self._on_upload_success(url))
+                self.img_container.after(
+                    0, lambda: self._on_upload_success(url)
+                )  # noqa: E501
             except Exception as exc:  # pragma: no cover - network errors
                 logger.exception("Falha ao enviar foto de perfil")
                 self.img_container.after(
@@ -304,32 +398,37 @@ class RankingFrame(ctk.CTkFrame):
 
             from firebase_admin import db  # type: ignore
 
-
             if db is None:
                 raise ImportError("firebase_admin is required for database operations")
 
             initialize_firebase()
             ref = db.reference("rankings/top_lucro")
-            ranking = ref.order_by_value().limit_to_last(10).get() or {}
+            ranking = ref.order_by_value().limit_to_last(10).get() or {}  # noqa: E501
         except Exception as e:
             logger.exception("Erro ao obter ranking do Firebase")
             messagebox.showerror("Erro", f"Falha ao carregar ranking.\n{e}")
             return
-        sorted_items = sorted(ranking.items(), key=lambda x: x[1], reverse=True)
+        sorted_items = sorted(
+            ranking.items(), key=lambda x: x[1], reverse=True
+        )  # noqa: E501
         html = ["<h3>Ranking Global</h3><ol>"]
         for idx, (uid, lucro) in enumerate(sorted_items, start=1):
-            medal = "🥇" if idx == 1 else ("🥈" if idx == 2 else ("🥉" if idx == 3 else ""))
+            medal = (
+                "🥇" if idx == 1 else ("🥈" if idx == 2 else ("🥉" if idx == 3 else ""))
+            )
             highlight = "🔥" if idx == 1 else ("💰" if lucro > 500 else "")
             html.append(f"<li>{medal} {uid} - R$ {lucro:.2f} {highlight}</li>")
         html.append("</ol>")
-        safe_widget_call(self.html_label.set_html, "".join(html))
+        safe_widget_call(self.html_label.set_html, "".join(html))  # noqa: E501
 
 
 class StoreFrame(ctk.CTkFrame):
     """Loja de recursos premium."""
 
     PIX_KEY = (
-        "00020126360014BR.GOV.BCB.PIX0114+55199875533535204000053039865802BR5925William Franck Medrado Ba6009SAO PAULO62140510i2Xyt24EJY63040EB7"
+        "00020126360014BR.GOV.BCB.PIX0114+55199875533535204000053039865802BR5925"  # noqa: E501
+        "William Franck Medrado "
+        "Ba6009SAO PAULO62140510i2Xyt24EJY63040EB7"
     )
 
     PRODUCTS = [
@@ -347,7 +446,13 @@ class StoreFrame(ctk.CTkFrame):
         },
     ]
 
-    def __init__(self, master: ctk.CTk, user_id: str, discord_data: Optional[Dict[str, Any]] = None, **kwargs):
+    def __init__(
+        self,
+        master: ctk.CTk,
+        user_id: str,
+        discord_data: Optional[Dict[str, Any]] = None,
+        **kwargs,
+    ):
         super().__init__(master, **kwargs)
         self.user_id = user_id
         self.discord_data = discord_data
@@ -398,7 +503,12 @@ class StoreFrame(ctk.CTkFrame):
             row = ctk.CTkFrame(self.cart_list)
             row.pack(fill="x")
             ctk.CTkLabel(row, text=item["nome"]).pack(side="left")
-            ctk.CTkButton(row, text="Remover", width=60, command=lambda i=idx: self._remove_item(i)).pack(side="right")
+            ctk.CTkButton(
+                row,
+                text="Remover",
+                width=60,
+                command=lambda i=idx: self._remove_item(i),
+            ).pack(side="right")
             total += item["preco"]
         self.total_var.set(f"Total: R$ {total:.2f}")
 
@@ -410,7 +520,14 @@ class StoreFrame(ctk.CTkFrame):
 
 
 class PaymentWindow(ctk.CTkToplevel):
-    def __init__(self, master: ctk.CTk, user_id: str, itens: list[dict], pix_key: str, discord_data: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self,
+        master: ctk.CTk,
+        user_id: str,
+        itens: list[dict],
+        pix_key: str,
+        discord_data: Optional[Dict[str, Any]] = None,
+    ):
         super().__init__(master)
         self.user_id = user_id
         self.itens = itens
@@ -426,7 +543,11 @@ class PaymentWindow(ctk.CTkToplevel):
         entry.configure(state="readonly")
         entry.pack(pady=5)
 
-        btn_copy = ctk.CTkButton(self, text="Copiar", command=lambda: self.clipboard_append(self.pix_key))
+        btn_copy = ctk.CTkButton(
+            self,
+            text="Copiar",
+            command=lambda: self.clipboard_append(self.pix_key),
+        )
         btn_copy.pack()
 
         try:
@@ -447,17 +568,17 @@ class PaymentWindow(ctk.CTkToplevel):
     def _confirm(self) -> None:
         try:
             registrar_compra(self.user_id, self.itens)
-            if self.discord_data and 'token' in self.discord_data:
+            if self.discord_data and "token" in self.discord_data:
                 try:
-                    add_vip_role(self.discord_data['id'], self.discord_data['token'])
+                    add_vip_role(self.discord_data["id"], self.discord_data["token"])
                     salvar_discord_info(
                         self.user_id,
                         {
-                            'discord_id': self.discord_data['id'],
-                            'username': self.discord_data['username'],
-                            'email': self.discord_data.get('email'),
-                            'vip_status': True,
-                            'guild_joined': True,
+                            "discord_id": self.discord_data["id"],
+                            "username": self.discord_data["username"],
+                            "email": self.discord_data.get("email"),
+                            "vip_status": True,
+                            "guild_joined": True,
                         },
                     )
                 except Exception as exc:  # pragma: no cover - network errors
@@ -468,7 +589,7 @@ class PaymentWindow(ctk.CTkToplevel):
             messagebox.showinfo(
                 "Pagamento",
                 "Compra em validação, será liberado em até 10 minutos.",
-            )
+            )  # noqa: E501
             self.destroy()
 
 
@@ -535,4 +656,3 @@ class NewPasswordWindow(ctk.CTkToplevel):
             messagebox.showerror("Erro", str(exc))
         except Exception as exc:  # pragma: no cover - network errors, fallback
             messagebox.showerror("Erro", f"Falha ao redefinir senha.\n{exc}")
-
