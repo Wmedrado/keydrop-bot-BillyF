@@ -65,36 +65,39 @@ class ApiClient {
      * Bot Control
      */
     async startBot() {
-        return await this.request('/control/start', {
-            method: 'POST'
+        return await this.request('/bot/control', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'start' })
         });
     }
 
     async stopBot() {
-        return await this.request('/control/stop', {
-            method: 'POST'
+        return await this.request('/bot/control', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'stop' })
         });
     }
 
     async emergencyStop() {
-        return await this.request('/control/emergency-stop', {
-            method: 'POST'
+        return await this.request('/bot/control', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'emergency_stop' })
         });
     }
 
     async getStatus() {
-        return await this.request('/control/status');
+        return await this.request('/bot/status');
     }
 
     /**
      * Statistics
      */
     async getStats() {
-        return await this.request('/stats');
+        return await this.request('/stats/participation');
     }
 
     async getDetailedStats() {
-        return await this.request('/stats/detailed');
+        return await this.request('/stats/participation/history');
     }
 
     async resetStats() {
@@ -128,11 +131,11 @@ class ApiClient {
      * System Monitoring
      */
     async getSystemInfo() {
-        return await this.request('/system');
+        return await this.request('/stats/system');
     }
 
     async getBrowserInstances() {
-        return await this.request('/system/browsers');
+        return await this.request('/bot/tabs');
     }
 
     async teachAI() {
@@ -188,7 +191,7 @@ class ApiClient {
      * Handle incoming WebSocket messages
      */
     handleWebSocketMessage(data) {
-        const { type, payload } = data;
+        const { type, data: payload } = data;
         
         switch (type) {
             case 'bot_status':
@@ -197,7 +200,7 @@ class ApiClient {
             case 'stats_update':
                 this.emit('stats:update', payload);
                 break;
-            case 'system_info':
+            case 'system_metrics':
                 this.emit('system:info', payload);
                 break;
             case 'browser_status':
@@ -222,7 +225,7 @@ class ApiClient {
      */
     sendWebSocketMessage(type, payload = {}) {
         if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
-            this.websocket.send(JSON.stringify({ type, payload }));
+            this.websocket.send(JSON.stringify({ type, data: payload }));
         } else {
             console.warn('WebSocket not connected');
         }
