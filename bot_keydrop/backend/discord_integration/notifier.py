@@ -11,6 +11,8 @@ from dataclasses import dataclass
 from discord_webhook import DiscordWebhook, DiscordEmbed
 import json
 
+from ..notifications.notification_worker import OfflineNotificationQueue
+
 # Configuração de logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -440,6 +442,11 @@ class DiscordNotifier:
 # Instância global do notificador
 discord_notifier = DiscordNotifier()
 
+
+async def send_discord_notification_now(title: str, description: str, notification_type: str = 'info', **kwargs) -> bool:
+    """Send a Discord notification immediately."""
+    return await discord_notifier.send_custom_notification(title, description, notification_type, **kwargs)
+
 async def send_discord_notification(title: str, description: str, notification_type: str = 'info', **kwargs) -> bool:
     """
     Função utilitária para enviar notificação
@@ -451,9 +458,22 @@ async def send_discord_notification(title: str, description: str, notification_t
         **kwargs: Argumentos adicionais
         
     Returns:
-        True se enviou com sucesso
+        True se mensagem foi adicionada à fila
     """
-    return await discord_notifier.send_custom_notification(title, description, notification_type, **kwargs)
+    critical = kwargs.pop('critical', False)
+    notification = {
+        "type": "discord",
+        "data": {
+            "title": title,
+            "description": description,
+            "notification_type": notification_type,
+            "kwargs": kwargs,
+        },
+        "critical": critical,
+        "retries": 0,
+    }
+    OfflineNotificationQueue.enqueue(notification, priority=critical)
+    return True
 
 def configure_discord_webhook(webhook_url: Optional[str]) -> None:
     """
