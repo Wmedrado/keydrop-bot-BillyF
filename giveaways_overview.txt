@@ -1,0 +1,11 @@
+Durante a inspeção do repositório keydrop-bot-v3 e a tentativa de acessar o site https://key-drop.com/pt/giveaways/list, pude observar algumas informações relevantes sobre os modelos de sorteios "amateur" e "contender".
+
+1. **Site com acesso dinâmico**: a página de giveaways utiliza scripts e possivelmente verificações automatizadas, dificultando a extração direta do conteúdo via ferramentas de linha de comando.
+2. **Amateur**: conforme os requisitos do bot, sorteios desse tipo ocorrem a cada 3 minutos. O bot procura por botões de participação e registra a última vez em que participou. Esse modo é indicado para sorteios rápidos e frequentes.
+3. **Contender**: sorteios com intervalo maior, em torno de 1 hora. O modo CONTENDER tem documentação dedicada e executa verificações específicas, buscando itens marcados como "Contender" ou semelhantes. Há verificação de login e retry em caso de falhas.
+4. **Diferenças principais**:
+   - Frequência: Amateur (3min) vs Contender (1h)
+   - Processo de busca e participação diferenciado no código do bot
+   - Contender possui módulo/execução próprio descrito em `README_CONTENDER.md`.
+
+Essas informações foram extraídas principalmente dos arquivos de requisitos e documentação presentes no repositório.
