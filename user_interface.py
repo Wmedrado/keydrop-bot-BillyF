@@ -16,7 +16,7 @@ from typing import Dict, Optional, Any
 
 import customtkinter as ctk
 from tkinter import messagebox, filedialog
-from PIL import Image, ImageTk
+# Pillow is required for tkhtmlview but direct imports aren't needed here
 from tkhtmlview import HTMLLabel
 from bot_keydrop.gui.utils import safe_load_image, safe_widget_call
 
@@ -225,7 +225,12 @@ class ProfileFrame(ctk.CTkFrame):
                 self.img_container.after(0, lambda: self._on_upload_success(url))
             except Exception as exc:  # pragma: no cover - network errors
                 logger.exception("Falha ao enviar foto de perfil")
-                self.img_container.after(0, lambda: messagebox.showerror("Erro", f"Falha ao enviar foto.\n{exc}"))
+                self.img_container.after(
+                    0,
+                    lambda exc=exc: messagebox.showerror(
+                        "Erro", f"Falha ao enviar foto.\n{exc}"
+                    ),
+                )
 
         threading.Thread(target=worker, daemon=True).start()
 
