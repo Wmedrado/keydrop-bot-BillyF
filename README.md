@@ -125,3 +125,9 @@ Distribuído sob a licença MIT. Consulte os arquivos de documentação das past
 Auxiliares de notificação ficam em `bot_keydrop/backend/notifications`:
 - **Windows**: notificações desktop via `win10toast`.
 - **Telegram**: envio simples de mensagens via API do Telegram.
+
+## 🚀 Integração Contínua
+
+O repositório possui um workflow do GitHub Actions que valida cada Pull Request.
+Ele instala as dependências, executa `flake8`, `black` e roda toda a suíte de testes com cobertura.
+Os relatórios são gerados em `tests/test_report.html` e `tests/coverage.txt`.
