@@ -7,6 +7,7 @@ import asyncio
 import logging
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
+from .macro_recorder import MacroRecorder
 from datetime import datetime
 from pathlib import Path
 import json
@@ -29,6 +30,7 @@ class TabInfo:
     error_count: int = 0
     participation_count: int = 0
     proxy: str = ""
+    macro_recorder: Optional[MacroRecorder] = None
     
     def to_dict(self) -> Dict[str, Any]:
         """Converte para dicionário"""
@@ -53,6 +55,7 @@ class BrowserManager:
         self.tabs: Dict[int, TabInfo] = {}
         self.contexts: Dict[int, BrowserContext] = {}  # Contexts por tab_id
         self.user_profiles_dir = Path("profiles")  # Diretório base para perfis
+        self.macro_dir = Path("macros")
         self.is_running = False
         self.headless_mode = False
         self.mini_window_mode = False
@@ -65,9 +68,10 @@ class BrowserManager:
         # Configurações do navegador
         self.default_viewport = {'width': 1280, 'height': 720}
         self.mini_viewport = {'width': 200, 'height': 300}
-        
+
         # Criar diretório de perfis se não existir
         self.user_profiles_dir.mkdir(exist_ok=True)
+        self.macro_dir.mkdir(exist_ok=True)
         
         logger.info("Browser Manager inicializado com suporte a perfis distintos")
     
@@ -702,6 +706,40 @@ class BrowserManager:
         """
         tab_info = self.tabs.get(tab_id)
         return tab_info is not None and tab_info.status in ['ready', 'waiting']
+
+    # ------------------------------------------------------------------
+    # Macro recording utilities
+    # ------------------------------------------------------------------
+    async def start_macro_recording(self, tab_id: int) -> bool:
+        tab = self.get_tab_info(tab_id)
+        if not tab or not tab.page:
+            return False
+        tab.macro_recorder = MacroRecorder(tab.page)
+        await tab.macro_recorder.start()
+        return True
+
+    async def pause_macro_recording(self, tab_id: int) -> bool:
+        tab = self.get_tab_info(tab_id)
+        if tab and tab.macro_recorder:
+            await tab.macro_recorder.pause()
+            return True
+        return False
+
+    async def resume_macro_recording(self, tab_id: int) -> bool:
+        tab = self.get_tab_info(tab_id)
+        if tab and tab.macro_recorder:
+            await tab.macro_recorder.resume()
+            return True
+        return False
+
+    async def save_macro(self, tab_id: int, use_first: bool = False) -> Optional[Path]:
+        tab = self.get_tab_info(tab_id)
+        if not tab or not tab.macro_recorder:
+            return None
+        await tab.macro_recorder.stop()
+        path = self.macro_dir / f"participation_macro_{tab_id}.json"
+        tab.macro_recorder.save(path)
+        return path
 
 
 # Instância global do gerenciador de navegador

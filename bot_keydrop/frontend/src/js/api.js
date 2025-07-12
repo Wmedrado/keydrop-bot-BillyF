@@ -161,6 +161,26 @@ class ApiClient {
         });
     }
 
+    /* Macro recording */
+    async startMacro(tabId) {
+        return await this.request(`/macros/${tabId}/start`, { method: 'POST' });
+    }
+
+    async pauseMacro(tabId) {
+        return await this.request(`/macros/${tabId}/pause`, { method: 'POST' });
+    }
+
+    async resumeMacro(tabId) {
+        return await this.request(`/macros/${tabId}/resume`, { method: 'POST' });
+    }
+
+    async saveMacro(tabId, useFirst = false) {
+        return await this.request(`/macros/${tabId}/save`, {
+            method: 'POST',
+            body: JSON.stringify({ use_first: useFirst })
+        });
+    }
+
     /**
      * WebSocket Connection Management
      */
