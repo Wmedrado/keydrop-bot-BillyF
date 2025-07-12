@@ -11,6 +11,7 @@ from .watchdog import ProcessWatchdog
 from .error_reporter import error_reporter, ErrorReporter
 from .diagnostic import diagnostic
 from .dependency_validator import run_dependency_check
+from .crash_tracker import log_last_line
 
 __all__ = [
     'verificar_conexao_internet',
@@ -26,4 +27,5 @@ __all__ = [
     'ErrorReporter',
     'diagnostic',
     'run_dependency_check',
+    'log_last_line',
 ]

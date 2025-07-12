@@ -18,3 +18,8 @@ Cada nova funcionalidade ou ajuste relevante deve adicionar um bloco seguindo o 
 - **Justificativa técnica:** Facilita auditoria e impede regressões não justificadas.
 - **Tipo:** melhoria
 Este arquivo documenta justificativas para alterações em arquivos críticos. Sempre descreva abaixo a razão de qualquer mudança nesses arquivos.
+## Resilience utilities and CI checks
+- **Motivo:** Aumentar confiabilidade e qualidade do código.
+- **Afeta/Substitui:** novos scripts em `ci/` e utilitários em `bot_keydrop`.
+- **Justificativa técnica:** Implementa detecção de TODO/FIXME, verificação de `__str__`/`__repr__`, registro de última linha em caso de crash e utilitários de resiliência.
+- **Tipo:** melhoria

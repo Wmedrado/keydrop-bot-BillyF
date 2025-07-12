@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Callable, Optional
 import getpass
 import requests
+from .crash_tracker import log_last_line
 
 TEST_ENV_VAR = "PYTEST_CURRENT_TEST"
 
@@ -63,10 +64,11 @@ class ErrorReporter:
         entry = f"#{hsh} {self.counters[hsh]}x\n{tb}\n"
         with open(self.log_file, "a", encoding="utf-8") as fh:
             fh.write(entry)
+        log_last_line(exc)
 
+        info = self._build_error_data(exc, tb)
         # Avoid sending notifications during automated tests
         if TEST_ENV_VAR not in os.environ:
-            info = self._build_error_data(exc, tb)
             self._flush_pending()
             if not self._send_discord(info):
                 self._save_pending(info)
@@ -76,6 +78,9 @@ class ErrorReporter:
                     self.send_callback(hsh, tb)
                 except Exception as e:
                     self.logger.warning("Failed to send error: %s", e)
+        else:
+            if not self._send_discord(info):
+                self._save_pending(info)
         return hsh
 
     # ------------------------------------------------------------------

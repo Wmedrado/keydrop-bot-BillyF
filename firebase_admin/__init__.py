@@ -42,3 +42,5 @@ class _Storage:
         return _Bucket()
 
 storage = _Storage()
+
+from . import auth

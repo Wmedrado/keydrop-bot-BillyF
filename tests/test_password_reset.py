@@ -13,7 +13,12 @@ sys.path.insert(0, str(ROOT))
 
 fake_fb_client = types.ModuleType('cloud.firebase_client')
 fake_fb_client.initialize_firebase = lambda: None
+fake_fb_client.storage = types.SimpleNamespace(bucket=lambda: None)
+fake_fb_client.db = types.SimpleNamespace(reference=lambda p: None)
+_ORIG_FIREBASE = sys.modules.get('cloud.firebase_client')
 sys.modules['cloud.firebase_client'] = fake_fb_client
+if 'password_reset' in sys.modules:
+    del sys.modules['password_reset']
 
 fake_admin = types.ModuleType('firebase_admin')
 fake_admin.db = None
@@ -31,6 +36,13 @@ password_reset.db = types.SimpleNamespace(reference=lambda p: types.SimpleNamesp
 
 def setup_module(module):
     updates.clear()
+
+
+def teardown_module(module):
+    if _ORIG_FIREBASE is not None:
+        sys.modules['cloud.firebase_client'] = _ORIG_FIREBASE
+    else:
+        sys.modules.pop('cloud.firebase_client', None)
 
 
 def test_request_reset_flow(monkeypatch):

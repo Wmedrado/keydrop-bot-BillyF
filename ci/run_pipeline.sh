@@ -17,6 +17,12 @@ pip install pytest pytest-asyncio pytest-mock pytest-cov pytest-html flake8 blac
 # Validate modifications to protected files
 python ci/check_protected_files.py | tee build_results/protected_files.log
 
+# Scan for TODO and FIXME comments
+python ci/check_todo_fixme.py | tee build_results/todo_scan.log
+
+# Ensure classes implement __str__ and __repr__
+python ci/check_str_repr.py | tee build_results/str_repr.log
+
 
 # Validate pull request structure
 python ci/check_pr_structure.py | tee build_results/pr_structure.log
@@ -54,5 +60,12 @@ pytest --html=tests/test_report.html --self-contained-html --cov=bot_keydrop --c
 python ci/check_regression_intelligence.py | tee build_results/regression_check.log
 # Automated PR review
 python ci/auto_pr_review.py | tee build_results/auto_review.log
+
+# Generate PR comment and changelog
+python ci/pr_commenter.py
+python ci/pr_changelog_generator.py
+
+# Rollback on repeated failures
+python ci/auto_rollback.py || true
 
 echo "Build succeeded" > build_results/build_status.log
