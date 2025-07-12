@@ -1,4 +1,5 @@
 # 🤖 Keydrop Bot Professional
+[![Sonar Quality Gate](https://sonarcloud.io/api/project_badges/quality_gate?project=keydrop-bot)](https://sonarcloud.io/summary/new_code?id=keydrop-bot)
 
 Automatize suas participações em sorteios do Keydrop de forma prática! Esta versão utiliza um backend **FastAPI** com uma interface web leve em HTML/JavaScript.
 

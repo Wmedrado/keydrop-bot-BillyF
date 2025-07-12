@@ -7,30 +7,49 @@ from pathlib import Path
 
 import pytest
 
-# Prepare dummy firebase and cloud modules before importing
+# Ensure repository root is importable
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-fake_fb_client = types.ModuleType('cloud.firebase_client')
-fake_fb_client.initialize_firebase = lambda: None
-sys.modules['cloud.firebase_client'] = fake_fb_client
-
-fake_admin = types.ModuleType('firebase_admin')
-fake_admin.db = None
-fake_admin.auth = types.SimpleNamespace(
-    get_user_by_email=lambda e: types.SimpleNamespace(uid='u1'),
-    update_user=lambda uid, password: updates.append((uid, password))
-)
-sys.modules['firebase_admin'] = fake_admin
-
 updates = []
 
-password_reset = importlib.import_module('password_reset')
-password_reset.db = types.SimpleNamespace(reference=lambda p: types.SimpleNamespace(delete=lambda: None))
+
+@pytest.fixture(autouse=True)
+def stub_firebase(monkeypatch):
+    """Provide minimal firebase modules for the tests."""
+    fake_fb_client = types.ModuleType("cloud.firebase_client")
+    fake_fb_client.initialize_firebase = lambda: None
+    monkeypatch.setitem(sys.modules, "cloud.firebase_client", fake_fb_client)
+
+    fake_admin = types.ModuleType("firebase_admin")
+    fake_admin.db = None
+    fake_admin.auth = types.SimpleNamespace(
+        get_user_by_email=lambda e: types.SimpleNamespace(uid="u1"),
+        update_user=lambda uid, password: updates.append((uid, password)),
+    )
+    monkeypatch.setitem(sys.modules, "firebase_admin", fake_admin)
+
+    global password_reset
+    if "password_reset" in sys.modules:
+        password_reset = importlib.reload(sys.modules["password_reset"])
+    else:
+        password_reset = importlib.import_module("password_reset")
+    password_reset.db = types.SimpleNamespace(
+        reference=lambda p: types.SimpleNamespace(delete=lambda: None)
+    )
+    yield
+    monkeypatch.delenv("PYTEST_CURRENT_TEST", raising=False)
+    for mod in ["firebase_admin", "cloud.firebase_client", "password_reset"]:
+        sys.modules.pop(mod, None)
 
 
 def setup_module(module):
     updates.clear()
+
+
+def teardown_module(module):
+    sys.modules.pop('firebase_admin', None)
+    sys.modules.pop('cloud.firebase_client', None)
 
 
 def test_request_reset_flow(monkeypatch):
