@@ -617,6 +617,9 @@ class KeydropBotGUI:
         self.root = tk.Tk()
         self.root.title("Keydrop Bot Professional v4.0.0")
         self.root.geometry("1000x800")
+
+        # Exportar logs quando a janela for fechada
+        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
         
         # Configurar ícone
         self.setup_icon()
@@ -1083,9 +1086,6 @@ Bot {bot_id}:
 
         if not SELENIUM_AVAILABLE:
             self.log_message("⚠️ ATENÇÃO: Selenium não disponível. Instale as dependências.", "WARNING")
-
-        # Exportar logs ao fechar a janela
-        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
 
         self.root.mainloop()
 
