@@ -20,6 +20,10 @@ from datetime import datetime, timedelta
 from pathlib import Path
 import psutil
 
+# Configuração de logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # Selenium imports - Suporte Edge + Chrome + Firefox
 try:
     from selenium import webdriver
@@ -122,6 +126,7 @@ class KeydropBot:
     def __init__(self, bot_id, config):
         self.bot_id = bot_id
         self.config = config
+        self.logger = logger
         self.driver = None
         self.running = False
         self.stats = {
@@ -456,7 +461,8 @@ class KeydropBot:
             return participated
             
         except Exception as e:
-            print(f"[Bot {self.bot_id}] Erro em join_amateur_giveaways: {e}")
+            traceback.print_exc()
+            self.logger.error(f"[join_amateur_giveaways] Erro: {str(e)}")
             return False
     
     def join_contender_giveaways(self):
