@@ -11,6 +11,7 @@ from collections import deque
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
+from ..learning.learner import ParticipationLearner
 
 # Configuração de logging
 logging.basicConfig(level=logging.INFO)
@@ -106,8 +107,9 @@ class KeydropAutomation:
         self.winnings_history: List[WinningRecord] = []
         self.max_history_size = 1000
         self.participation_history: Deque[ParticipationAttempt] = deque(maxlen=self.max_history_size)
-        
+
         logger.info("Automação Keydrop inicializada")
+        self.learner = ParticipationLearner()
     
     async def participate_in_lottery(self, tab_id: int, max_retries: int = 3) -> ParticipationAttempt:
         """
@@ -172,15 +174,14 @@ class KeydropAutomation:
                 
                 # Tentar participar do primeiro sorteio encontrado
                 for lottery in lotteries:
-                    result = await self._attempt_participation(page, lottery, tab_id, attempt_number)
-                    
+                    result = await self._try_participation_methods(page, lottery, tab_id, attempt_number)
+
                     if result.result == ParticipationResult.SUCCESS:
                         tab_info.participation_count += 1
                         tab_info.status = 'waiting'
                         self._add_to_history(result)
                         return result
                     elif result.result == ParticipationResult.ALREADY_PARTICIPATED:
-                        # Continuar para próximo sorteio
                         continue
                 
                 # Se chegou aqui, não conseguiu participar de nenhum sorteio
@@ -293,6 +294,29 @@ class KeydropAutomation:
             logger.debug(f"Erro ao extrair informações do sorteio: {e}")
         
         return info
+
+    async def _try_participation_methods(self, page, lottery: Dict[str, Any], tab_id: int, attempt_number: int) -> ParticipationAttempt:
+        """Try multiple participation strategies and record results."""
+        methods = ["css", "js", "image"]
+        best = self.learner.best_method()
+        if best in methods:
+            methods.remove(best)
+            methods.insert(0, best)
+
+        for method in methods:
+            if method == "css":
+                result = await self._attempt_participation(page, lottery, tab_id, attempt_number)
+            elif method == "js":
+                result = await self._attempt_participation_js(page, lottery, tab_id, attempt_number)
+            else:
+                result = await self._attempt_participation_image(page, lottery, tab_id, attempt_number)
+
+            self.learner.record_result(method, result.result == ParticipationResult.SUCCESS)
+
+            if result.result == ParticipationResult.SUCCESS:
+                return result
+
+        return result
     
     async def _attempt_participation(self, page, lottery: Dict[str, Any], tab_id: int, attempt_number: int) -> ParticipationAttempt:
         """
@@ -425,6 +449,75 @@ class KeydropAutomation:
                     return True
             
             return False
+
+    async def _attempt_participation_js(self, page, lottery: Dict[str, Any], tab_id: int, attempt_number: int) -> ParticipationAttempt:
+        """Alternative participation using direct JavaScript calls."""
+        try:
+            link = lottery['link']
+            lottery_info = lottery['info']
+
+            await page.evaluate('(el) => el.click()', link)
+            await page.wait_for_load_state('domcontentloaded', timeout=15000)
+            join_button = await page.query_selector(self.SELECTORS['join_button'])
+            if not join_button:
+                await page.go_back()
+                return ParticipationAttempt(
+                    tab_id=tab_id,
+                    attempt_number=attempt_number,
+                    timestamp=datetime.now(),
+                    result=ParticipationResult.BUTTON_NOT_FOUND,
+                    lottery_type=lottery_info['type'],
+                    lottery_title=lottery_info['title']
+                )
+            await page.evaluate('(el) => el.click()', join_button)
+            await asyncio.sleep(2)
+            success = await self._verify_participation_success(page, join_button)
+            await page.go_back()
+            result = ParticipationResult.SUCCESS if success else ParticipationResult.FAILED
+            return ParticipationAttempt(
+                tab_id=tab_id,
+                attempt_number=attempt_number,
+                timestamp=datetime.now(),
+                result=result,
+                lottery_type=lottery_info['type'],
+                lottery_title=lottery_info['title']
+            )
+        except Exception as e:
+            logger.error(f"Erro JS ao tentar participar: {e}")
+            return ParticipationAttempt(
+                tab_id=tab_id,
+                attempt_number=attempt_number,
+                timestamp=datetime.now(),
+                result=ParticipationResult.FAILED,
+                error_message=str(e)
+            )
+
+    async def _attempt_participation_image(self, page, lottery: Dict[str, Any], tab_id: int, attempt_number: int) -> ParticipationAttempt:
+        """Fallback participation using image recognition."""
+        try:
+            import cv2
+            from pathlib import Path
+            screenshot_path = Path(Path.cwd() / f"screen_{tab_id}.png")
+            await page.screenshot(path=str(screenshot_path))
+            template_path = Path(__file__).parent / 'participar_button.png'
+            if not template_path.exists():
+                return ParticipationAttempt(tab_id=tab_id, attempt_number=attempt_number, timestamp=datetime.now(), result=ParticipationResult.FAILED, error_message='template_not_found')
+            img = cv2.imread(str(screenshot_path))
+            templ = cv2.imread(str(template_path))
+            res = cv2.matchTemplate(img, templ, cv2.TM_CCOEFF_NORMED)
+            _, max_val, _, max_loc = cv2.minMaxLoc(res)
+            if max_val >= 0.8:
+                x, y = max_loc
+                await page.mouse.click(x + templ.shape[1] / 2, y + templ.shape[0] / 2)
+                await asyncio.sleep(2)
+                success = await self._verify_participation_success(page, None)
+                await page.go_back()
+                result = ParticipationResult.SUCCESS if success else ParticipationResult.FAILED
+                return ParticipationAttempt(tab_id, attempt_number, datetime.now(), result, lottery_type=lottery['info']['type'], lottery_title=lottery['info']['title'])
+            return ParticipationAttempt(tab_id=tab_id, attempt_number=attempt_number, timestamp=datetime.now(), result=ParticipationResult.BUTTON_NOT_FOUND, error_message='button_not_found_image')
+        except Exception as e:
+            logger.error(f"Erro imagem ao tentar participar: {e}")
+            return ParticipationAttempt(tab_id=tab_id, attempt_number=attempt_number, timestamp=datetime.now(), result=ParticipationResult.FAILED, error_message=str(e))
             
         except Exception as e:
             logger.debug(f"Erro ao verificar sucesso da participação: {e}")
@@ -503,6 +596,24 @@ class KeydropAutomation:
             attempt: Tentativa de participação
         """
         self.participation_history.append(attempt)
+
+    async def learn_participation(self, tab_id: int, learn_time: int = 30) -> bool:
+        """Record user actions on the page to learn a custom selector."""
+        tab_info = self.browser_manager.get_tab_info(tab_id)
+        if not tab_info or not tab_info.page:
+            return False
+        from ..learning.action_recorder import ActionRecorder
+        recorder = ActionRecorder()
+        await recorder.start(tab_info.page)
+        logger.info("Modo de aprendizado iniciado")
+        await asyncio.sleep(learn_time)
+        await recorder.stop()
+        if recorder.actions:
+            last = recorder.actions[-1]["selector"]
+            self.learner.set_selector(last)
+            logger.info(f"Selector aprendido: {last}")
+            return True
+        return False
     
     def get_participation_stats(self, hours: int = 24) -> Dict[str, Any]:
         """

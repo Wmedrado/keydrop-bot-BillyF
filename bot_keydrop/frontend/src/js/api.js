@@ -135,6 +135,10 @@ class ApiClient {
         return await this.request('/system/browsers');
     }
 
+    async teachAI() {
+        return await this.request('/learning/teach', { method: 'POST' });
+    }
+
     /**
      * WebSocket Connection Management
      */

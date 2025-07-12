@@ -124,6 +124,7 @@ class UIManager {
         const checkUpdateBtn = document.getElementById('checkUpdateBtn');
         const saveConfigBtn = document.getElementById('saveConfigBtn');
         const resetConfigBtn = document.getElementById('resetConfigBtn');
+        const teachAIBtn = document.getElementById('teachAIBtn');
 
         if (startBtn) {
             startBtn.addEventListener('click', async () => {
@@ -158,6 +159,12 @@ class UIManager {
         if (resetConfigBtn) {
             resetConfigBtn.addEventListener('click', async () => {
                 await this.resetConfig();
+            });
+        }
+
+        if (teachAIBtn) {
+            teachAIBtn.addEventListener('click', () => {
+                this.showTeachAIModal();
             });
         }
     }
@@ -780,6 +787,34 @@ class UIManager {
         oscillator.connect(this.audioContext.destination);
         oscillator.start();
         oscillator.stop(this.audioContext.currentTime + duration / 1000);
+    }
+
+    showTeachAIModal() {
+        const overlay = document.getElementById('modalOverlay');
+        const title = document.getElementById('modalTitle');
+        const body = document.getElementById('modalBody');
+        const footer = document.getElementById('modalFooter');
+        const closeBtn = document.getElementById('modalClose');
+        if (!overlay) return;
+
+        title.textContent = 'Ensinar IA';
+        body.innerHTML = '<p>Após clicar em iniciar, uma guia será aberta.</p><p>Realize manualmente a participação do sorteio e feche a janela para finalizar.</p>';
+        footer.innerHTML = '<button id="startTeachAI">Iniciar</button>';
+        overlay.style.display = 'block';
+
+        document.getElementById('startTeachAI').addEventListener('click', async () => {
+            overlay.style.display = 'none';
+            try {
+                await window.apiClient.teachAI();
+                this.showNotification('Modo de ensino concluído', 'success');
+            } catch (err) {
+                this.showNotification('Erro no modo de ensino', 'error');
+            }
+        });
+
+        if (closeBtn) {
+            closeBtn.onclick = () => { overlay.style.display = 'none'; };
+        }
     }
 
     renderProxyInputs() {
