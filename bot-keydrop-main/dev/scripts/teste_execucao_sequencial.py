@@ -118,7 +118,7 @@ def test_priority_system():
     print("📊 Sistema de prioridades funcionando corretamente!")
 
 if __name__ == "__main__":
-    print("🚀 TESTES DE VALIDAÇÃO - KeyDrop Bot v2.0.2")
+    print("🚀 TESTES DE VALIDAÇÃO - KeyDrop Bot v4.0.0")
     print("=" * 60)
     
     test_sequential_execution()

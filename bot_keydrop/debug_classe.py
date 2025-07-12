@@ -35,7 +35,7 @@ try:
             
             # Teste 2: Configurações básicas
             print("DEBUG: Aplicando configurações básicas...")
-            self.root.title("Keydrop Bot Professional v2.1.0")
+            self.root.title("Keydrop Bot Professional v4.0.0")
             self.root.geometry("900x700")
             self.root.resizable(True, True)
             print("DEBUG: Configurações básicas OK")

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Validação Final - Sistema de Retry Avançado v2.0.9
+Validação Final - Sistema de Retry Avançado v4.0.0
 Testa todas as funcionalidades implementadas
 """
 
@@ -204,7 +204,7 @@ def test_version_update():
         with open('version.json', 'r', encoding='utf-8') as f:
             version_info = json.load(f)
         
-        if version_info.get('version') != '2.0.9':
+        if version_info.get('version') != '4.0.0':
             raise ValueError(f"Versão incorreta: {version_info.get('version')}")
         
         # Verificar se as novas features estão listadas
@@ -233,7 +233,7 @@ def test_documentation():
     try:
         docs_to_check = [
             'docs/SISTEMA_RETRY_AVANCADO.md',
-            'RELEASE_NOTES_v2.0.9.md',
+            'RELEASE_NOTES_v4.0.0.md',
             'dev/scripts/test_retry_system.py'
         ]
         
@@ -250,7 +250,7 @@ def test_documentation():
 
 def run_validation():
     """Executa validação completa"""
-    print("🚀 Iniciando Validação Final - Sistema de Retry Avançado v2.0.9")
+    print("🚀 Iniciando Validação Final - Sistema de Retry Avançado v4.0.0")
     print("=" * 70)
     
     tests = [

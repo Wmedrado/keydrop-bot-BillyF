@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Interface moderna melhorada v2.0.8 - KeyDrop Bot Professional Edition
+Interface moderna melhorada v4.0.0 - KeyDrop Bot Professional Edition
 Seções bem divididas, mais leve e com melhor organização
 """
 
@@ -51,7 +51,7 @@ class ModernKeyDropInterface:
         
         # Janela principal
         self.root = ctk.CTk()
-        self.root.title("KeyDrop Bot Professional Edition v2.1.0")
+        self.root.title("KeyDrop Bot Professional Edition v4.0.0")
         self.root.geometry("1400x900")
         self.root.minsize(1200, 700)
         

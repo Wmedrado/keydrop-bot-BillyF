@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Teste rápido da automação Keydrop Bot v3.0.0
+Teste rápido da automação Keydrop Bot v4.0.0
 """
 
 import sys
@@ -82,7 +82,7 @@ def test_dependencies():
         return False
 
 def main():
-    print("🤖 Keydrop Bot Professional v3.0.0 - Teste de Sistema")
+    print("🤖 Keydrop Bot Professional v4.0.0 - Teste de Sistema")
     print("=" * 60)
     print()
     
@@ -109,7 +109,7 @@ def main():
     
     if passed == total:
         print("🎉 SISTEMA PRONTO PARA AUTOMAÇÃO COMPLETA!")
-        print("✅ Execute KeydropBot_v3.0.0_AUTO.exe")
+        print("✅ Execute KeydropBot_v4.0.0_AUTO.exe")
         print("✅ Configure suas preferências")
         print("✅ Marque 'Participar Sorteios 1h' se desejar")
         print("✅ Clique em 'INICIAR AUTOMAÇÃO'")

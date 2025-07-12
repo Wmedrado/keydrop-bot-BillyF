@@ -1,5 +1,5 @@
 """
-Teste do Sistema de Atualização v2.0.6
+Teste do Sistema de Atualização v4.0.0
 ======================================
 
 Testa se o sistema de atualização está funcionando corretamente.
@@ -26,7 +26,7 @@ def test_update_check():
     update_manager = ImprovedUpdateManager(
         repo_owner="wmedrado",
         repo_name="bot-keydrop", 
-        current_version="2.0.5"  # Versão anterior para testar
+        current_version="4.0.0"  # Versão para testar
     )
     
     print(f"📋 Versão atual configurada: {update_manager.current_version}")
@@ -74,11 +74,11 @@ def test_version_comparison():
     
     # Casos de teste
     test_cases = [
-        ("2.0.6", "2.0.5", True),   # Nova versão disponível
-        ("2.0.5", "2.0.6", False),  # Versão atual é mais nova
-        ("2.0.6", "2.0.6", False),  # Versões iguais
-        ("2.1.0", "2.0.6", True),   # Versão minor nova
-        ("3.0.0", "2.0.6", True),   # Versão major nova
+        ("4.0.1", "4.0.0", True),   # Nova versão disponível
+        ("4.0.0", "4.0.1", False),  # Versão atual é mais nova
+        ("4.0.0", "4.0.0", False),  # Versões iguais
+        ("4.1.0", "4.0.0", True),   # Versão minor nova
+        ("5.0.0", "4.0.0", True),   # Versão major nova
     ]
     
     all_passed = True
@@ -111,7 +111,7 @@ def test_token_detection():
 
 def main():
     """Função principal do teste"""
-    print("🧪 TESTE DO SISTEMA DE ATUALIZAÇÃO v2.0.6")
+    print("🧪 TESTE DO SISTEMA DE ATUALIZAÇÃO v4.0.0")
     print("=" * 60)
     print(f"📅 Data: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 60)
@@ -157,7 +157,7 @@ def main():
     
     if passed == total:
         print("🎉 SISTEMA DE ATUALIZAÇÃO FUNCIONANDO PERFEITAMENTE!")
-        print("🚀 Usuários podem atualizar automaticamente para v2.0.6!")
+        print("🚀 Usuários podem atualizar automaticamente para v4.0.0!")
         return True
     else:
         print("⚠️ ALGUNS TESTES FALHARAM")

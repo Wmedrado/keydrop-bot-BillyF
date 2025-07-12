@@ -1,6 +1,6 @@
 # 🔑 KeyDrop Bot - Professional Edition
 
-![Version](https://img.shields.io/badge/version-2.0.5-blue.svg)
+![Version](https://img.shields.io/badge/version-4.0.0-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.7+-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-yellow.svg)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)
@@ -9,7 +9,7 @@ Bot profissional para KeyDrop com suporte a até **200 janelas simultâneas**, i
 
 ## 🚀 Principais Recursos
 
-### 🔥 Novidades v2.0.5
+### 🔥 Novidades v4.0.0
 
 - **🛑 Sistema de Stop Robusto**: Encerramento total de processos Chrome com eliminação de órfãos
 - **🔽 Mini Window Mode**: Janelas pequenas (200x300) para economia de recursos e espaço
@@ -265,13 +265,13 @@ type logs\error.log
 
 ## 🔄 Roadmap
 
-### v2.1.0 (Próxima)
+### v4.1.0 (Próxima)
 - [ ] Modo distribuído multi-máquina
 - [ ] Dashboard web
 - [ ] Integração Telegram
 - [ ] Análise de lucro
 
-### v2.2.0 (Futuro)
+### v4.2.0 (Futuro)
 - [ ] Machine Learning
 - [ ] Múltiplas plataformas
 - [ ] API REST

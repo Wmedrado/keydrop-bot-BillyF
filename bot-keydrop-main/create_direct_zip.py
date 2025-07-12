@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Criação direta do arquivo ZIP para release v2.0.10
+Criação direta do arquivo ZIP para release v4.0.0
 """
 import os
 import zipfile
@@ -8,14 +8,14 @@ import sys
 
 def create_zip_directly():
     """Cria o arquivo ZIP diretamente"""
-    print("Criando KeyDrop_Bot_Professional_v2.0.10.zip...")
+    print("Criando KeyDrop_Bot_Professional_v4.0.0.zip...")
     
     # Verificar se estamos no diretório correto
     if not os.path.exists('modern_gui_v2.py'):
         print("ERRO: Arquivo modern_gui_v2.py não encontrado")
         return False
     
-    zip_filename = "KeyDrop_Bot_Professional_v2.0.10.zip"
+    zip_filename = "KeyDrop_Bot_Professional_v4.0.0.zip"
     
     try:
         with zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED, compresslevel=6) as zipf:
@@ -55,7 +55,7 @@ def create_zip_directly():
                 'README.md',
                 'CHANGELOG.md',
                 'TROUBLESHOOTING.md',
-                'RELEASE_NOTES_v2.0.10.md'
+                'RELEASE_NOTES_v4.0.0.md'
             ]
             
             for file in doc_files:
@@ -129,7 +129,7 @@ def create_zip_directly():
 if __name__ == "__main__":
     success = create_zip_directly()
     if success:
-        print("KeyDrop Bot Professional Edition v2.0.10 pronto!")
+        print("KeyDrop Bot Professional Edition v4.0.0 pronto!")
     else:
         print("Falha na criação do arquivo ZIP")
         sys.exit(1)

@@ -1,2 +1,2 @@
-# keybotv3
-keydrop-bot v3
+# keybotv4
+keydrop-bot v4.0.0

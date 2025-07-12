@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Build simples para Keydrop Bot Professional v3.0.0
+Build simples para Keydrop Bot Professional v4.0.0
 """
 
 import subprocess
@@ -8,7 +8,7 @@ import sys
 import os
 
 def main():
-    print("🔧 Gerando executável Keydrop Bot Professional v3.0.0...")
+    print("🔧 Gerando executável Keydrop Bot Professional v4.0.0...")
     
     try:
         # Instalar PyInstaller se necessário
@@ -24,7 +24,7 @@ def main():
             "pyinstaller",
             "--onefile",
             "--windowed", 
-            "--name", "KeydropBot_v3.0.0",
+            "--name", "KeydropBot_v4.0.0",
             "keydrop_bot_desktop.py"
         ]
         
@@ -38,7 +38,7 @@ def main():
         
         if result.returncode == 0:
             print("🎉 EXECUTÁVEL CRIADO COM SUCESSO!")
-            print("📂 Localização: dist/KeydropBot_v3.0.0.exe")
+            print("📂 Localização: dist/KeydropBot_v4.0.0.exe")
         else:
             print("❌ Erro no build")
             

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Script de Build Otimizado para Keydrop Bot Professional v2.1.0
+Script de Build Otimizado para Keydrop Bot Professional v4.0.0
 Cria executável com máxima compatibilidade e robustez
 """
 
@@ -11,7 +11,7 @@ import subprocess
 from pathlib import Path
 
 def main():
-    print("🔨 Keydrop Bot Professional v3.0.0 - Build Executável Otimizado")
+    print("🔨 Keydrop Bot Professional v4.0.0 - Build Executável Otimizado")
     print("=" * 60)
     
     # Verificar se PyInstaller está instalado
@@ -56,7 +56,7 @@ def main():
     # Configurar argumentos do PyInstaller para máxima compatibilidade
     args = [
         str(main_script),
-        "--name=KeydropBot_Desktop_v3.0.0",
+        "--name=KeydropBot_Desktop_v4.0.0",
         "--onefile",  # Arquivo único
         "--console",  # Manter console para debug
         "--clean",  # Build limpo
@@ -96,7 +96,7 @@ def main():
         PyInstaller.__main__.run(args)
         
         # Verificar se o executável foi criado
-        exe_path = dist_dir / "KeydropBot_Desktop_v2.1.0.exe"
+        exe_path = dist_dir / "KeydropBot_Desktop_v4.0.0.exe"
         if exe_path.exists():
             exe_size = exe_path.stat().st_size / (1024 * 1024)  # MB
             print(f"\n✅ BUILD CONCLUÍDO COM SUCESSO!")
@@ -106,12 +106,12 @@ def main():
             # Criar versão alternativa sem console
             print(f"\n🔄 Criando versão sem console...")
             args_windowed = args.copy()
-            args_windowed[2] = "--name=KeydropBot_Desktop_NoConsole_v3.0.0"
+            args_windowed[2] = "--name=KeydropBot_Desktop_NoConsole_v4.0.0"
             args_windowed[4] = "--windowed"  # Substituir --console por --windowed
             
             try:
                 PyInstaller.__main__.run(args_windowed)
-                exe_windowed = dist_dir / "KeydropBot_Desktop_NoConsole_v2.1.0.exe"
+                exe_windowed = dist_dir / "KeydropBot_Desktop_NoConsole_v4.0.0.exe"
                 if exe_windowed.exists():
                     print(f"✅ Versão sem console criada: {exe_windowed}")
                 else:
@@ -121,13 +121,13 @@ def main():
             
             print(f"\n🎉 EXECUTÁVEIS PRONTOS!")
             print(f"📁 Localização: {dist_dir}")
-            print(f"🖥️ Console: KeydropBot_Desktop_v2.1.0.exe")
+            print(f"🖥️ Console: KeydropBot_Desktop_v4.0.0.exe")
             if exe_windowed.exists():
-                print(f"🪟 Windowed: KeydropBot_Desktop_NoConsole_v2.1.0.exe")
+                print(f"🪟 Windowed: KeydropBot_Desktop_NoConsole_v4.0.0.exe")
             
             print(f"\n💡 Para testar:")
             print(f"   cd \"{dist_dir}\"")
-            print(f"   .\\KeydropBot_Desktop_v2.1.0.exe")
+            print(f"   .\\KeydropBot_Desktop_v4.0.0.exe")
             
             return True
             
@@ -146,7 +146,7 @@ def main():
 def test_executable():
     """Testar o executável criado"""
     dist_dir = Path(__file__).parent / "dist"
-    exe_path = dist_dir / "KeydropBot_Desktop_v2.1.0.exe"
+    exe_path = dist_dir / "KeydropBot_Desktop_v4.0.0.exe"
     
     if not exe_path.exists():
         print("❌ Executável não encontrado para teste")
@@ -171,7 +171,7 @@ def test_executable():
         return False
 
 if __name__ == "__main__":
-    print("🎯 Keydrop Bot Professional - Build System v2.1.0")
+    print("🎯 Keydrop Bot Professional - Build System v4.0.0")
     print("👨‍💻 Desenvolvido por: William Medrado")
     print("=" * 60)
     

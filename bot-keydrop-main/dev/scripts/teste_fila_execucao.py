@@ -132,7 +132,7 @@ def test_beneficios():
     print("   ✅ Não perde nenhuma oportunidade")
 
 if __name__ == "__main__":
-    print("🚀 TESTE DE VALIDAÇÃO - Fila de Execução v2.0.2")
+    print("🚀 TESTE DE VALIDAÇÃO - Fila de Execução v4.0.0")
     print("=" * 60)
     
     test_fila_execucao()
