@@ -1,8 +1,23 @@
+from __future__ import annotations
+
+from os import PathLike
 from pathlib import Path
+from typing import Iterable, Union
 
 
-def validar_permissoes(pastas) -> bool:
-    """Check if the given folders are writable."""
+def validar_permissoes(pastas: Iterable[Union[str, PathLike]]) -> bool:
+    """Check if the given folders are writable.
+
+    Args:
+        pastas: Iterable of paths or strings representing directories.
+
+    Returns:
+        ``True`` if all directories can be created and written to, ``False`` otherwise.
+    """
+
+    if pastas is None:
+        raise ValueError("Lista de pastas não pode ser None")
+
     for pasta in pastas:
         p = Path(pasta)
         try:
@@ -14,4 +29,3 @@ def validar_permissoes(pastas) -> bool:
         except Exception:
             return False
     return True
-

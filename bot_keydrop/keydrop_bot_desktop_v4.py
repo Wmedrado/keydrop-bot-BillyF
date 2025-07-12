@@ -13,6 +13,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext, filedialog
 import threading
 import os
+import types
 import json
 import requests
 import time
@@ -806,6 +807,10 @@ class KeydropBotGUI:
     
     def __init__(self):
         self.setup_window()
+        if os.environ.get("MOCK_TK") == "1":
+            self.bot_manager = None
+            self.config = None
+            return
         self.bot_manager = KeydropBotManager()
         self.config = self.bot_manager.config
         self.setup_interface()
@@ -813,6 +818,16 @@ class KeydropBotGUI:
         
     def setup_window(self):
         """Configurar janela principal"""
+        if os.environ.get("MOCK_TK") == "1":
+            self.root = types.SimpleNamespace(
+                winfo_exists=lambda: True,
+                protocol=lambda *a, **k: None,
+                title=lambda *a, **k: None,
+                geometry=lambda *a, **k: None,
+                destroy=lambda: None,
+                tk=None,
+            )
+            return
         self.root = tk.Tk()
         self.root.title("Keydrop Bot Professional v4.0.0")
         self.root.geometry("1000x800")
