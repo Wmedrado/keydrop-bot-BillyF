@@ -18,6 +18,11 @@ pip install pytest pytest-asyncio pytest-mock pytest-cov pytest-html flake8 blac
 python ci/check_protected_files.py | tee build_results/protected_files.log
 
 
+# Classify pull request risk and generate report
+python ci/classify_pr_risk.py | tee build_results/pr_risk.log
+
+
+
 # Lint with flake8 and black
 flake8 . > build_results/flake8.log || true
 black --check . > build_results/black.log || true
