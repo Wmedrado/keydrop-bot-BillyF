@@ -9,6 +9,7 @@ from .permissions_validator import validar_permissoes
 from .backups import backup_arquivo, restaurar_arquivo
 from .watchdog import ProcessWatchdog
 from .error_reporter import error_reporter, ErrorReporter
+from .diagnostic import diagnostic
 
 __all__ = [
     'verificar_conexao_internet',
@@ -22,4 +23,5 @@ __all__ = [
     'ProcessWatchdog',
     'error_reporter',
     'ErrorReporter',
+    'diagnostic',
 ]
