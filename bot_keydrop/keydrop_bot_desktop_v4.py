@@ -967,9 +967,9 @@ class KeydropBotGUI:
             filename = logs_dir / f"logs_{timestamp}.txt"
             with open(filename, 'w', encoding='utf-8') as f:
                 f.write(self.logs_text.get(1.0, 'end'))
-            print(f"Logs exportados para {filename}")
+            self.log_message(f"📄 Logs exportados para {filename}", "SUCCESS")
         except Exception as e:
-            print(f"Erro ao exportar logs: {e}")
+            self.log_message(f"❌ Erro ao exportar logs: {e}", "ERROR")
 
     def on_close(self):
         """Exportar logs e fechar a aplicação"""
