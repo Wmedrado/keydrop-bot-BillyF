@@ -82,7 +82,10 @@ python -m unittest discover -v
 ```
 
 ## 🛠 Builds Disponíveis
-É possível gerar dois tipos de executável utilizando o script `gerador_exe/builder.py`:
+Execute `python gerador_exe/builder.py` para gerar os executáveis. O script cria automaticamente dois arquivos em `gerador_exe/binario_final`:
+
+- `KeydropBot.exe` – versão padrão para uso cotidiano.
+- `KeydropBot_DEBUG.exe` – build de depuração que testa todos os componentes e registra logs detalhados.
 
 - **Produção:** gera um executável enxuto pronto para uso.
 - **Debug:** inclui ferramentas de diagnóstico e executa `debug_tester.py` ao iniciar.

@@ -247,6 +247,30 @@ def package_build(exe_path: Path, version: str, config: dict) -> Path:
     return zip_path
 
 
+def perform_build(config: dict, version: str, debug: bool = False) -> Path:
+    """Compile and package the project for a single mode."""
+    build_cfg = dict(config)
+    if debug:
+        os.environ["MODO_DEBUG"] = "1"
+        build_cfg["output_name"] = f"{config['output_name']}_DEBUG"
+    else:
+        os.environ.pop("MODO_DEBUG", None)
+
+    exe = build_executable(build_cfg, version)
+    if not exe:
+        return Path()
+
+    zip_path = package_build(exe, version, build_cfg)
+
+    final_exe = BIN_DIR / f"{build_cfg['output_name']}.exe"
+    try:
+        shutil.copy2(exe, final_exe)
+    except Exception as exc:
+        log_warning(f"Não foi possível copiar {final_exe.name}: {exc}")
+
+    return zip_path
+
+
 def main():
     start_time = datetime.now()
     config = load_config()
@@ -268,14 +292,15 @@ def main():
     if not run_tests():
         log_error("Build cancelado devido a falhas nos testes.")
         return
+
     clean_previous_build()
-    exe = build_executable(config, version)
-    if not exe:
-        log_error("Build falhou.")
-        return
-    zip_path = package_build(exe, version, config)
+
+    normal_zip = perform_build(config, version, debug=False)
+    debug_zip = perform_build(config, version, debug=True)
+
     end_time = datetime.now()
-    logger.info(f"Build concluído em {zip_path}")
+    logger.info(f"Build normal: {normal_zip}")
+    logger.info(f"Build debug: {debug_zip}")
     logger.info(f"Início: {start_time}")
     logger.info(f"Fim: {end_time}")
     logger.info(f"✅ {error_count} erros")
