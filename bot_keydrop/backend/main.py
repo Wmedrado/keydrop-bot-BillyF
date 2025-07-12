@@ -480,6 +480,21 @@ async def test_discord_notification():
         logger.error(f"Erro ao testar Discord: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# Endpoint to teach the bot participation sequence
+@app.post("/learning/teach")
+async def teach_ai():
+    """Open a temporary tab for the user to demonstrate participation."""
+    try:
+        tab = await browser_manager.create_tab(-99, automation_engine.URLS['keydrop_lotteries'])
+        if not tab:
+            raise Exception("Falha ao criar guia de ensino")
+        await automation_engine.learn_participation(-99, learn_time=20)
+        await browser_manager.close_tab(-99)
+        return {"success": True}
+    except Exception as e:
+        logger.error(f"Erro no modo de ensino: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # WebSocket para comunicação em tempo real
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
