@@ -3,31 +3,41 @@ import os
 import re
 from pathlib import Path
 from typing import Dict, List
+import time
 
 REQUIRED_HEADINGS = {
-    "objective": "### 🧠 Objetivo da alteração",
-    "files": "### 📍 Arquivos principais alterados",
-    "impact": "### 🔁 Impacto em outros módulos",
+    "objective": "### 🌐 Objetivo da alteração",
+    "files": "### 📂 Arquivos principais alterados",
+    "impact": "### 🔍 Impacto em outros módulos",
     "tests": "### 🧪 Testes existentes cobrem essa lógica?",
-    "security": "### 🔐 Algum risco de segurança?",
-    "history": "### ✅ Justificativa no history_of_decisions.md?",
+    "security": "### 🔒 Algum risco de segurança?",
+    "history": "### ✅ Justificativa no history_of_decisions.md",
 }
 
 
 def parse_blocks(body: str) -> Dict[str, str]:
     """Return mapping from heading keys to block text."""
-    blocks = {}
-    for key, heading in REQUIRED_HEADINGS.items():
-        pattern = rf"{re.escape(heading)}\s+(.*?)(?=\n### |\Z)"
-        m = re.search(pattern, body, flags=re.DOTALL)
-        if m:
-            blocks[key] = m.group(1).strip()
-        else:
+    blocks: Dict[str, str] = {}
+    lower_body = body.lower()
+    headings = list(REQUIRED_HEADINGS.values())
+    for i, (key, heading) in enumerate(REQUIRED_HEADINGS.items()):
+        start = lower_body.find(heading.lower())
+        if start == -1:
             blocks[key] = ""
+            continue
+        start += len(heading)
+        next_idx = len(body)
+        for next_heading in headings[i + 1 :]:
+            idx = lower_body.find(next_heading.lower(), start)
+            if idx != -1:
+                next_idx = idx
+                break
+        blocks[key] = body[start:next_idx].strip()
     return blocks
 
 
 def validate_body(body: str, report_path: Path) -> bool:
+    start = time.perf_counter()
     blocks = parse_blocks(body)
     missing: List[str] = []
     report_lines = ["# PR Structure Validation", ""]
@@ -38,6 +48,12 @@ def validate_body(body: str, report_path: Path) -> bool:
         else:
             report_lines.append(f"- {heading}: MISSING")
             missing.append(heading)
+    elapsed = time.perf_counter() - start
+    report_lines.append("")
+    report_lines.append("## Resumo")
+    report_lines.append(f"- Blocos verificados: {len(REQUIRED_HEADINGS)}")
+    report_lines.append(f"- Blocos ausentes: {len(missing)}")
+    report_lines.append(f"- Tempo de execução: {elapsed:.2f}s")
     report_path.write_text("\n".join(report_lines), encoding="utf-8")
     if missing:
         print("Missing or empty sections: " + ", ".join(missing))
