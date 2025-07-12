@@ -151,3 +151,22 @@ try:
     KeydropBotGUI.setup_interface = _dummy_setup_interface
 except Exception:
     pass
+# Stub pystray to avoid display errors during tests
+if "pystray" not in sys.modules:
+    pystray = types.ModuleType("pystray")
+
+    class DummyIcon:
+        def __init__(self, *a, **k):
+            self.visible = False
+
+        def run(self):
+            self.visible = True
+
+        def stop(self):
+            self.visible = False
+
+    pystray.Icon = DummyIcon
+    pystray.MenuItem = lambda *a, **k: None
+    pystray.Menu = lambda *a, **k: None
+    sys.modules["pystray"] = pystray
+
