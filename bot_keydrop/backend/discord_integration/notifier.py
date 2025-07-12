@@ -11,7 +11,6 @@ from dataclasses import dataclass
 from discord_webhook import DiscordWebhook, DiscordEmbed
 import json
 
-from ..notifications.notification_worker import OfflineNotificationQueue
 
 # Configuração de logging
 logging.basicConfig(level=logging.INFO)
@@ -462,6 +461,8 @@ async def send_discord_notification(title: str, description: str, notification_t
         True se mensagem foi adicionada à fila
     """
     critical = kwargs.pop('critical', False)
+    from ..notifications.notification_worker import OfflineNotificationQueue
+
     notification = {
         "type": "discord",
         "data": {

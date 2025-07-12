@@ -4,7 +4,6 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List
 
-from .telegram_notifier import send_telegram_message_now
 from ..discord_integration.notifier import send_discord_notification_now
 
 logger = logging.getLogger(__name__)
@@ -79,6 +78,7 @@ class NotificationWorker:
         success = False
         try:
             if ntype == "telegram":
+                from .telegram_notifier import send_telegram_message_now
                 success = send_telegram_message_now(**data)
             elif ntype == "discord":
                 success = await send_discord_notification_now(**data)
