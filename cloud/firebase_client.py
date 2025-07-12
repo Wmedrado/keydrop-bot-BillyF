@@ -135,3 +135,18 @@ def registrar_compra(user_id: str, itens: List[Dict[str, Any]]) -> None:
     compra_ref.push(dados)
     logger.debug("Compra registrada para %s: %s", user_id, dados)
 
+
+
+def registrar_log_suspeito(user_id: str, hwid: str, recurso: str, mensagem: str) -> None:
+    """Save a suspicious activity log entry."""
+    initialize_firebase()
+    log_ref = db.reference("logs_suspeitos")
+    dados = {
+        "user_id": user_id,
+        "hwid": hwid,
+        "recurso": recurso,
+        "mensagem": mensagem,
+        "timestamp": int(datetime.utcnow().timestamp()),
+    }
+    log_ref.push(dados)
+    logger.warning("Registro suspeito: %s", dados)
