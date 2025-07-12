@@ -1,4 +1,5 @@
 # 🤖 Keydrop Bot Professional
+[![Sonar Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=keydrop-bot&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=keydrop-bot)
 
 Automatize suas participações em sorteios do Keydrop de forma prática! Esta versão utiliza um backend **FastAPI** com uma interface web leve em HTML/JavaScript.
 
@@ -93,6 +94,9 @@ pre-commit run --all-files
 ```
 
 Execute os testes separadamente com `pytest` quando necessário.
+
+### Lint e Análise de Segurança
+Execute as verificações de estilo e segurança localmente:
 
 ```bash
 python scripts/lint_code.py      # Verificação de estilo
