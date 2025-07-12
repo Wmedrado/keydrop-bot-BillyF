@@ -292,15 +292,26 @@ class KeydropAutomation:
             link = lottery['link']
             lottery_info = lottery['info']
             
-            # Abrir página do sorteio
-            await link.click()
-            await page.wait_for_load_state('domcontentloaded', timeout=15000)
+            # Abrir página do sorteio (alguns links abrem nova guia)
+            new_page = None
+            try:
+                async with page.context.expect_page(timeout=5000) as popup_info:
+                    await link.click()
+                new_page = await popup_info.value
+            except Exception:
+                await link.click()
+
+            target_page = new_page or page
+            await target_page.wait_for_load_state('domcontentloaded', timeout=15000)
 
             # Procurar botão final de participação
-            join_button = await page.wait_for_selector(self.SELECTORS['join_button'], timeout=10000)
+            join_button = await target_page.wait_for_selector(self.SELECTORS['join_button'], timeout=10000)
 
             if not join_button:
-                await page.go_back()
+                if new_page:
+                    await new_page.close()
+                else:
+                    await page.go_back()
                 return ParticipationAttempt(
                     tab_id=tab_id,
                     attempt_number=attempt_number,
@@ -314,7 +325,10 @@ class KeydropAutomation:
             # Verificar se já participou
             button_text = await join_button.inner_text()
             if any(word in button_text.lower() for word in ['já aderiu', 'já participou', 'participando']):
-                await page.go_back()
+                if new_page:
+                    await new_page.close()
+                else:
+                    await page.go_back()
                 return ParticipationAttempt(
                     tab_id=tab_id,
                     attempt_number=attempt_number,
@@ -335,14 +349,17 @@ class KeydropAutomation:
             await asyncio.sleep(random.uniform(2, 4))
 
             # Verificar se a participação foi bem-sucedida
-            success = await self._verify_participation_success(page, join_button)
+            success = await self._verify_participation_success(target_page, join_button)
 
             result = ParticipationResult.SUCCESS if success else ParticipationResult.FAILED
 
             logger.info(f"Participação na guia {tab_id}: {result.value}")
 
-            # Voltar para a página de sorteios
-            await page.go_back()
+            # Voltar para a página de sorteios ou fechar nova guia
+            if new_page:
+                await new_page.close()
+            else:
+                await page.go_back()
 
             return ParticipationAttempt(
                 tab_id=tab_id,

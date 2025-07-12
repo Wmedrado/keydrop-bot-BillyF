@@ -449,12 +449,16 @@ class BrowserManager:
             
             if tab_info.page:
                 await tab_info.page.close()
-            
+                tab_info.page = None
+
             if tab_info.context:
                 await tab_info.context.close()
-            
+                tab_info.context = None
+
             tab_info.status = 'closed'
             del self.tabs[tab_id]
+            if tab_id in self.contexts:
+                del self.contexts[tab_id]
             
             logger.info(f"Guia {tab_id} fechada com sucesso")
             return True
@@ -497,7 +501,29 @@ class BrowserManager:
         except Exception as e:
             logger.error(f"Erro ao reiniciar guia {tab_id}: {e}")
             return False
-    
+
+    async def cleanup_inactive_tabs(self, max_idle_minutes: int = 30) -> int:
+        """Fecha guias inativas para economizar recursos.
+
+        Args:
+            max_idle_minutes: Tempo máximo de inatividade permitido.
+
+        Returns:
+            Quantidade de guias fechadas.
+        """
+        closed = 0
+        now = datetime.now()
+        for tid, info in list(self.tabs.items()):
+            if info.status == 'closed':
+                continue
+            idle_time = now - info.last_activity
+            if idle_time > timedelta(minutes=max_idle_minutes):
+                if await self.close_tab(tid):
+                    closed += 1
+        if closed:
+            logger.info(f"{closed} guias inativas fechadas")
+        return closed
+
     async def clear_cache(self, preserve_login: bool = True) -> bool:
         """
         Limpa cache do navegador
@@ -554,6 +580,7 @@ class BrowserManager:
             
             self.is_running = False
             self.tabs.clear()
+            self.contexts.clear()
             
             logger.info("Navegador parado com sucesso")
             return True
