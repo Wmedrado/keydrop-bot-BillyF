@@ -49,7 +49,11 @@ class TestUserAuth(unittest.TestCase):
         with mock.patch.object(user_interface, "_load_pyrebase", return_value=mock_fb):
             user_interface.autenticar_usuario("a@b.com", "123")
         self.assertTrue(self.session_file.exists())
-        data = json.loads(self.session_file.read_text())
+        try:
+            sf_content = self.session_file.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            sf_content = self.session_file.read_text(encoding="latin-1")
+        data = json.loads(sf_content)
         self.assertEqual(data["localId"], "uid")
 
     def test_missing_config_raises(self):

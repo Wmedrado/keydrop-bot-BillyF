@@ -35,7 +35,10 @@ def test_diagnostic_sync_logging(tmp_path, caplog):
             fail()
 
     assert error_reporter.log_file.exists()
-    content = error_reporter.log_file.read_text()
+    try:
+        content = error_reporter.log_file.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        content = error_reporter.log_file.read_text(encoding="latin-1")
     assert "boom" in content
 
 

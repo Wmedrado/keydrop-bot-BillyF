@@ -301,7 +301,11 @@ class KeydropBot:
                         and UNDETECTED_AVAILABLE
                         and WebDriverClass is uc.Chrome
                     ):
-                        self.driver = WebDriverClass(options=options)
+                        self.driver = WebDriverClass(
+                            options=options,
+                            headless=False,
+                            use_subprocess=True,
+                        )
                     else:
                         service = ServiceClass(DriverManager().install())
                         self.driver = WebDriverClass(service=service, options=options)
@@ -399,6 +403,16 @@ class KeydropBot:
 
             for arg in performance_args:
                 options.add_argument(arg)
+
+            if browser_type == "chrome":
+                options.add_argument("--disable-blink-features=AutomationControlled")
+                options.add_argument("--start-maximized")
+                options.add_argument("--no-first-run")
+                options.add_argument("--no-default-browser-check")
+                if hasattr(options, "add_experimental_option"):
+                    options.add_experimental_option(
+                        "excludeSwitches", ["enable-automation"]
+                    )
 
         elif browser_type == "firefox":
             # Firefox configurações básicas
