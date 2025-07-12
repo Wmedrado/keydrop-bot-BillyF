@@ -207,7 +207,7 @@ def build_executable(config: dict, version: str) -> Path:
         if os.getenv("MODO_DEBUG") == "1":
             cmd.remove("--noconsole")
             cmd.append("--console")
-            cmd.extend(["--add-data", f"debug_tester.py;."])
+            cmd.extend(["--add-data", "debug_tester.py;."])
             logger.info("Modo debug ativado para o build")
         icon = config.get("icon")
         if icon:

@@ -7,7 +7,6 @@ import threading
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
 from pathlib import Path
-from PIL import Image, ImageTk
 
 try:
     from firebase_admin import db
@@ -80,7 +79,7 @@ class DashboardFrame(ctk.CTkFrame):
                 self.after(0, lambda: self._on_upload_success(url))
             except Exception as exc:  # pragma: no cover - network errors
                 logger.exception("Falha ao enviar foto de perfil")
-                self.after(0, lambda: messagebox.showerror("Erro", f"Falha ao enviar foto.\n{exc}"))
+                self.after(0, lambda exc=exc: messagebox.showerror("Erro", f"Falha ao enviar foto.\n{exc}"))
 
         threading.Thread(target=worker, daemon=True).start()
 

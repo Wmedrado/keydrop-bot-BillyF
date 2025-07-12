@@ -9,7 +9,7 @@ import sys
 import json
 import time
 from pathlib import Path
-from input_utils import safe_int, safe_float, sanitize_str
+from input_utils import safe_int, safe_float
 
 class KeydropBotSimples:
     def __init__(self):
@@ -26,7 +26,7 @@ class KeydropBotSimples:
         # Centralizar
         try:
             self.root.eval('tk::PlaceWindow . center')
-        except:
+        except Exception:
             pass
         
         # Diretório base
@@ -211,7 +211,7 @@ def main():
         
         try:
             messagebox.showerror("Erro Fatal", f"Erro na aplicação:\n{e}")
-        except:
+        except Exception:
             print("Erro ao mostrar messagebox")
 
 if __name__ == "__main__":

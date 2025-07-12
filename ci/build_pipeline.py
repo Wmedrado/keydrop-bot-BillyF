@@ -1,7 +1,6 @@
 import argparse
 import subprocess
 import shutil
-import sys
 import os
 import json
 import time

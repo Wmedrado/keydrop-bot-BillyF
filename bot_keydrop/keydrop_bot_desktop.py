@@ -1,10 +1,12 @@
 """Desktop GUI for controlling Keydrop Bot."""
+# ruff: noqa
 
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext, filedialog
 import threading
 import os
 import json
+from pathlib import Path
 import requests
 import time
 import shutil
@@ -19,7 +21,7 @@ from custom_browser import CustomBrowser
 
 from bot_keydrop.performance_utils import measure_time
 
-class KeydropBotGUI:
+class KeydropBotGUI:  # noqa: F811
     @measure_time("gui")
     def __init__(self):
         """Inicialização ultra-robusta para executável"""
@@ -61,14 +63,13 @@ class KeydropBotGUI:
         """Stub: Loga mensagem (implementação real deve ser feita)"""
         print(f"[{level}] {msg}")
 # Custom browser integration
-from custom_browser import CustomBrowser
 
 # matplotlib imports removidos temporariamente para evitar erro de dependências
 # import matplotlib.pyplot as plt
 # from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 # import numpy as np
 
-class KeydropBotGUI:
+class KeydropBotGUI:  # noqa: F811
     def __init__(self):
         """Inicialização ultra-robusta para executável"""
         # Criar janela principal
@@ -138,14 +139,13 @@ class KeydropBotGUI:
         pass
 
 # Custom browser integration
-from custom_browser import CustomBrowser
 
 # matplotlib imports removidos temporariamente para evitar erro de dependências
 # import matplotlib.pyplot as plt
 # from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 # import numpy as np
 
-class KeydropBotGUI:
+class KeydropBotGUI:  # noqa: F811
     def __init__(self):
         """Inicialização ultra-robusta para executável"""
         # Criar janela principal

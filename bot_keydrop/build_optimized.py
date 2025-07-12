@@ -87,7 +87,7 @@ def main():
         # Não adicionar --uac-admin por enquanto para evitar problemas
         pass
     
-    print(f"🚀 Iniciando build com argumentos otimizados...")
+    print("🚀 Iniciando build com argumentos otimizados...")
     print(f"📝 Comando: pyinstaller {' '.join(args[1:])}")
     
     try:
@@ -99,12 +99,12 @@ def main():
         exe_path = dist_dir / "KeydropBot_Desktop_v2.1.0.exe"
         if exe_path.exists():
             exe_size = exe_path.stat().st_size / (1024 * 1024)  # MB
-            print(f"\n✅ BUILD CONCLUÍDO COM SUCESSO!")
+            print("\n✅ BUILD CONCLUÍDO COM SUCESSO!")
             print(f"📄 Executável: {exe_path}")
             print(f"📏 Tamanho: {exe_size:.1f} MB")
             
             # Criar versão alternativa sem console
-            print(f"\n🔄 Criando versão sem console...")
+            print("\n🔄 Criando versão sem console...")
             args_windowed = args.copy()
             args_windowed[2] = "--name=KeydropBot_Desktop_NoConsole_v3.0.0"
             args_windowed[4] = "--windowed"  # Substituir --console por --windowed
@@ -119,15 +119,15 @@ def main():
             except Exception as e:
                 print(f"⚠️ Erro ao criar versão sem console: {e}")
             
-            print(f"\n🎉 EXECUTÁVEIS PRONTOS!")
+            print("\n🎉 EXECUTÁVEIS PRONTOS!")
             print(f"📁 Localização: {dist_dir}")
-            print(f"🖥️ Console: KeydropBot_Desktop_v2.1.0.exe")
+            print("🖥️ Console: KeydropBot_Desktop_v2.1.0.exe")
             if exe_windowed.exists():
-                print(f"🪟 Windowed: KeydropBot_Desktop_NoConsole_v2.1.0.exe")
+                print("🪟 Windowed: KeydropBot_Desktop_NoConsole_v2.1.0.exe")
             
-            print(f"\n💡 Para testar:")
+            print("\n💡 Para testar:")
             print(f"   cd \"{dist_dir}\"")
-            print(f"   .\\KeydropBot_Desktop_v2.1.0.exe")
+            print("   .\\KeydropBot_Desktop_v2.1.0.exe")
             
             return True
             

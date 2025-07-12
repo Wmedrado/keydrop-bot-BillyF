@@ -216,7 +216,7 @@ exe = EXE(
         # Limpar arquivo spec diagnóstico
         try:
             diagnostico_spec_file.unlink()
-        except:
+        except Exception:
             pass
         
         # Agora criar o spec principal
@@ -292,7 +292,7 @@ exe = EXE(
 
     def create_launcher_script(self):
         """Criar script de lançamento simples"""
-        launcher_content = f"""@echo off
+        launcher_content = """@echo off
 title Keydrop Bot Professional v2.1.0 - Desktop
 echo.
 echo ===============================================

@@ -91,7 +91,7 @@ def main():
             
             # Criar script de teste
             test_script = dist_dir / "TESTAR_v3.0.0.bat"
-            test_script.write_text(f"""@echo off
+            test_script.write_text("""@echo off
 title Teste Keydrop Bot v3.0.0
 echo.
 echo   🤖 KEYDROP BOT PROFESSIONAL v3.0.0
