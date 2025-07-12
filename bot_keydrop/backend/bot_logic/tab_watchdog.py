@@ -7,6 +7,7 @@ from .browser_manager import BrowserManager
 from .scheduler import BotScheduler, BotStatus
 from ..notifications import send_telegram_message
 from ..discord_integration import send_discord_notification
+from ..system_monitor.monitor import system_monitor
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +80,14 @@ class TabWatchdog:
 
     async def _check_tabs(self):
         now = datetime.now()
+
+        chrome_processes = system_monitor.get_chrome_processes()
+        for proc in chrome_processes:
+            if proc.get("memory_mb", 0) > 180:
+                for tab_id in list(self.browser_manager.tabs.keys()):
+                    await self.browser_manager.restart_tab(tab_id)
+                break
+
         for tab_id, info in list(self.browser_manager.tabs.items()):
             inactivity = (now - info.last_activity).total_seconds()
             if inactivity > self.timeout_seconds and info.status != "closed":

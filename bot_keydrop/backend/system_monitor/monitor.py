@@ -8,6 +8,7 @@ import time
 import asyncio
 import logging
 from typing import Dict, Any, List, Optional
+import os
 from dataclasses import dataclass, asdict
 from datetime import datetime
 
@@ -31,6 +32,9 @@ class SystemMetrics:
     memory_available: int  # bytes
     memory_used: int  # bytes
     memory_percent: float
+
+    # Memória do processo
+    process_memory_mb: float
     
     # Disco
     disk_total: int  # bytes
@@ -63,6 +67,7 @@ class SystemMetrics:
             'memory_used': self._bytes_to_gb(self.memory_used),
             'memory_available': self._bytes_to_gb(self.memory_available),
             'memory_percent': f"{self.memory_percent:.1f}%",
+            'process_memory': f"{self.process_memory_mb:.1f} MB",
             'disk_total': self._bytes_to_gb(self.disk_total),
             'disk_used': self._bytes_to_gb(self.disk_used),
             'disk_free': self._bytes_to_gb(self.disk_free),
@@ -140,6 +145,8 @@ class SystemMonitor:
             current_time = time.time()
             uptime = current_time - self._boot_time
             
+            process_mem = psutil.Process(os.getpid()).memory_info().rss / (1024 * 1024)
+
             metrics = SystemMetrics(
                 cpu_percent=cpu_percent,
                 cpu_count=cpu_count,
@@ -149,6 +156,7 @@ class SystemMonitor:
                 memory_available=memory.available,
                 memory_used=memory.used,
                 memory_percent=memory.percent,
+                process_memory_mb=process_mem,
                 disk_total=disk.total,
                 disk_used=disk.used,
                 disk_free=disk.free,
@@ -176,7 +184,8 @@ class SystemMonitor:
                 disk_total=0, disk_used=0, disk_free=0, disk_percent=0.0,
                 network_bytes_sent=0, network_bytes_recv=0,
                 network_packets_sent=0, network_packets_recv=0,
-                boot_time=0.0, uptime=0.0, timestamp=time.time()
+                boot_time=0.0, uptime=0.0, timestamp=time.time(),
+                process_memory_mb=0.0
             )
     
     def _add_to_history(self, metrics: SystemMetrics) -> None:
@@ -187,10 +196,9 @@ class SystemMonitor:
             metrics: Métricas para adicionar
         """
         self._metrics_history.append(metrics)
-        
-        # Manter apenas os últimos registros
-        if len(self._metrics_history) > self._max_history_size:
-            self._metrics_history.pop(0)
+
+        if len(self._metrics_history) >= self._max_history_size:
+            self._metrics_history.clear()
     
     def get_metrics_history(self, last_n: Optional[int] = None) -> List[SystemMetrics]:
         """
@@ -249,6 +257,7 @@ class SystemMonitor:
             memory_available=latest.memory_available,
             memory_used=latest.memory_used,
             memory_percent=avg_memory_percent,
+            process_memory_mb=latest.process_memory_mb,
             disk_total=latest.disk_total,
             disk_used=latest.disk_used,
             disk_free=latest.disk_free,
