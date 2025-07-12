@@ -11,6 +11,7 @@
   "telegram_enabled": false,
   "telegram_bot_token": "",
   "telegram_chat_id": "",
+  "authorized_chat_ids": [],
   "watchdog_enabled": true,
   "watchdog_timeout": 300,
   "keydrop_url": "https://key-drop.com/pt/",

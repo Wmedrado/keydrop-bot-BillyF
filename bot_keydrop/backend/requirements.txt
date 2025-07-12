@@ -10,5 +10,6 @@ python-multipart==0.0.6
 cryptography>=41.0.0
 requests>=2.31.0
 httpx>=0.25.0
+python-telegram-bot==20.6
 win10toast>=0.2
 dearpygui>=1.10.0
