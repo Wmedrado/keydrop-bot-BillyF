@@ -63,7 +63,7 @@ def main():
         try:
             import tkinter.messagebox as mb
             mb.showerror("Erro", f"Erro na aplicação:\n{e}")
-        except:
+        except Exception:
             print("Erro ao mostrar messagebox também")
 
 if __name__ == "__main__":

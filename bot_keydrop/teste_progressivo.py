@@ -32,7 +32,7 @@ class KeydropBotGUI_Teste:
         try:
             self.root.eval('tk::PlaceWindow . center')
             print("5. Janela centralizada...")
-        except:
+        except Exception:
             print("5. Erro ao centralizar - continuando...")
         
         # Definir diretório base correto
@@ -115,7 +115,7 @@ class KeydropBotGUI_Teste:
         # Tentar tema moderno
         try:
             style.theme_use('clam')
-        except:
+        except Exception:
             style.theme_use('default')
         
         # Cores personalizadas

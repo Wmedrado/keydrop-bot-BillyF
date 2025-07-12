@@ -6,10 +6,9 @@ from tkinter import messagebox
 from tkinter.ttk import Progressbar
 
 from log_utils import setup_logger
+from .utils import exibir_erro, safe_widget_call
 
 logger = setup_logger("login_frame")
-
-from .utils import exibir_erro, safe_widget_call
 
 
 class LoginFrame(ctk.CTkFrame):

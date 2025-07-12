@@ -123,7 +123,7 @@ def organize_dist():
         
         # Listar conteúdo
         files = list(dist_path.glob("*"))
-        print(f"\n📁 Conteúdo de dist/:")
+        print("\n📁 Conteúdo de dist/:")
         for file in files:
             if file.is_file():
                 size_mb = file.stat().st_size / 1024 / 1024

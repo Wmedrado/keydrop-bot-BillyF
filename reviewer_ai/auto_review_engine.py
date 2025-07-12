@@ -1,4 +1,3 @@
-from __future__ import annotations
 
 """Simple heuristics for automatic pull request review.
 
@@ -7,6 +6,8 @@ poor variable names, duplicated lines or missing tests. The results are written
 to ``ci/auto_review.md`` so another automated system can post the findings on
 the pull request.
 """
+
+from __future__ import annotations
 
 import subprocess
 import re

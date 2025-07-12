@@ -65,8 +65,8 @@ def build_executable():
                 if icon_file and os.path.exists(icon_file):
                     try:
                         shutil.copy2(icon_file, "dist/")
-                        print(f"📋 Ícone copiado para dist/")
-                    except:
+                        print("📋 Ícone copiado para dist/")
+                    except Exception:
                         pass
                 
                 return True
@@ -93,7 +93,7 @@ def main():
     try:
         subprocess.run(["pyinstaller", "--version"], capture_output=True, check=True)
         print("✅ PyInstaller encontrado")
-    except:
+    except Exception:
         print("❌ PyInstaller não encontrado!")
         print("💡 Instale com: pip install pyinstaller")
         return

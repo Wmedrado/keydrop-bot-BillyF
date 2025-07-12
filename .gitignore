@@ -1,7 +1,11 @@
 firebase_credentials.json
 bot_keydrop/backend/learning/learner_state.json
-\nbuild/
+build/
 ci/pr_structure_report.md
 ci/regression_intelligence_report.md
 config.json
 .env
+__pycache__/
+backups/
+logs/
+build_results/

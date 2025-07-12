@@ -12,11 +12,9 @@ import json
 import time
 import webbrowser
 
-from datetime import datetime, timedelta
-from pathlib import Path
-from input_utils import safe_int, safe_float, sanitize_str
-
 from datetime import datetime
+from input_utils import safe_int, sanitize_str
+
 
 # Importações para automação Chrome (opcional)
 try:
@@ -311,7 +309,7 @@ class KeydropBotGUI:
             if hasattr(self, 'logs_text'):
                 self.logs_text.insert(tk.END, log_entry)
                 self.logs_text.see(tk.END)
-        except:
+        except Exception:
             pass
         
         # Adicionar ao status
@@ -319,7 +317,7 @@ class KeydropBotGUI:
             if hasattr(self, 'status_text'):
                 self.status_text.insert(tk.END, log_entry)
                 self.status_text.see(tk.END)
-        except:
+        except Exception:
             pass
     
     def start_automation(self):
@@ -339,7 +337,7 @@ class KeydropBotGUI:
                 return
             headless = self.headless_var.get()
             contender = self.contender_mode_var.get()
-            interval = safe_int(self.speed_var.get(), 1) or 1
+
           
             self.log_message(f"📋 Config: {num_bots} bots, Headless: {headless}, Contender: {contender}", "INFO")
             
@@ -539,7 +537,7 @@ def main():
             try:
                 import ctypes
                 ctypes.windll.shcore.SetProcessDpiAwareness(1)
-            except:
+            except Exception:
                 pass
         
         # Criar e executar aplicação
@@ -562,7 +560,7 @@ def main():
             tk.Button(root, text="OK", command=root.destroy, font=('Arial', 12)).pack(pady=10)
             
             root.mainloop()
-        except:
+        except Exception:
             input("Pressione Enter para sair...")
 
 if __name__ == "__main__":
