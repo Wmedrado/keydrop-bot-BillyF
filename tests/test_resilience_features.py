@@ -11,7 +11,6 @@ from ci.enforce_str_repr import validate_file  # noqa: E402
 from bot_keydrop.system_safety.crash_tracker import (
     start_crash_tracker,
     log_exception,
-    LAST_LINE,
 )  # noqa: E402
 from bot_keydrop.utils.circuit_breaker import (
     CircuitBreaker,

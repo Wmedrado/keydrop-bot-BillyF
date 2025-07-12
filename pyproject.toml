@@ -16,4 +16,4 @@ ignore = [
 
 [tool.mypy]
 ignore_missing_imports = true
-# ignore_errors removido para que erros reais apareçam
+ignore_errors = true

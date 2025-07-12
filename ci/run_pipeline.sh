@@ -45,7 +45,7 @@ python ci/rollback_validator.py | tee build_results/rollback_validator.log
 flake8 . > build_results/flake8.log || true
 black --check . > build_results/black.log || true
 ruff check . > build_results/ruff.log || true
-bandit -r bot_keydrop -lll -q > build_results/bandit.log || true
+bandit -r bot_keydrop -lll -q -f txt -o build_results/bandit.log || true
 
 
 # Semantic naming validation

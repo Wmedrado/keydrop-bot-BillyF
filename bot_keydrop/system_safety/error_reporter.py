@@ -12,7 +12,6 @@ from typing import Callable, Optional, Dict
 import socket
 import platform
 import uuid
-import getpass
 import requests
 
 TEST_ENV_VAR = "PYTEST_CURRENT_TEST"
