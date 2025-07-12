@@ -12,6 +12,8 @@ import json
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 from pydantic import BaseModel
 import uvicorn
 
@@ -43,6 +45,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Servir painel web opcional
+ui_directory = Path(__file__).parent / "dashboard"
+if ui_directory.exists():
+    app.mount("/ui", StaticFiles(directory=str(ui_directory), html=True), name="ui")
 
 # Instâncias globais
 config_manager = ConfigManager()
