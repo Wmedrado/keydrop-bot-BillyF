@@ -27,6 +27,7 @@ class BotConfig(BaseModel):
     headless_mode: bool = Field(default=False, description="Executar em modo headless")
     mini_window_mode: bool = Field(default=False, description="Usar janelas em modo mini (200x300)")
     enable_login_tabs: bool = Field(default=False, description="Abrir abas de login automático")
+    tab_proxies: Dict[int, str] = Field(default_factory=dict, description="Proxy por guia (tab)")
     
     # Discord webhook
     discord_webhook_url: str = Field(default="", description="URL do webhook do Discord")

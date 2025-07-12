@@ -32,6 +32,7 @@ class TabInfo:
     last_activity: datetime
     error_count: int = 0
     participation_count: int = 0
+    proxy: str = ""
     
     def to_dict(self) -> Dict[str, Any]:
         """Converte para dicionário"""
@@ -41,7 +42,8 @@ class TabInfo:
             'status': self.status,
             'last_activity': self.last_activity.isoformat(),
             'error_count': self.error_count,
-            'participation_count': self.participation_count
+            'participation_count': self.participation_count,
+            'proxy': self.proxy
         }
 
 
@@ -283,7 +285,7 @@ class BrowserManager:
             logger.error(f"Erro ao limpar cache: {e}")
             return False
 
-    async def create_tab(self, tab_id: int, url: str = "about:blank") -> Optional[TabInfo]:
+    async def create_tab(self, tab_id: int, url: str = "about:blank", proxy: Optional[str] = None) -> Optional[TabInfo]:
         """
         Cria uma nova guia com perfil de usuário único
         
@@ -309,6 +311,9 @@ class BrowserManager:
                 'java_script_enabled': True,
                 'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
             }
+
+            if proxy:
+                context_options['proxy'] = {"server": proxy}
             
             # Adicionar dados de sessão se existirem
             if self.keep_cookies:
@@ -345,7 +350,8 @@ class BrowserManager:
                 context=context,
                 url=url,
                 status='loading',
-                last_activity=datetime.now()
+                last_activity=datetime.now(),
+                proxy=proxy or ""
             )
             
             self.tabs[tab_id] = tab_info
@@ -486,7 +492,7 @@ class BrowserManager:
             await self.close_tab(tab_id)
             
             # Criar nova guia
-            new_tab = await self.create_tab(tab_id, original_url)
+            new_tab = await self.create_tab(tab_id, original_url, tab_info.proxy)
             
             if new_tab:
                 logger.info(f"Guia {tab_id} reiniciada com sucesso")

@@ -142,6 +142,7 @@ class BotScheduler:
         self.retry_attempts = self.config.retry_attempts
         self.amateur_wait_time = self.config.amateur_lottery_wait_time
         self.action_delay = self.config.wait_time_between_actions
+        self.tab_proxies = self.config.tab_proxies
         
         logger.info("Configurações do agendador atualizadas")
     
@@ -366,8 +367,8 @@ class BotScheduler:
         logger.info(f"Criando {self.num_tabs} guias e tarefas...")
         
         for tab_id in range(1, self.num_tabs + 1):
-            # Criar guia
-            tab_info = await self.browser_manager.create_tab(tab_id)
+            proxy = self.tab_proxies.get(tab_id)
+            tab_info = await self.browser_manager.create_tab(tab_id, proxy=proxy)
             if tab_info:
                 self.statistics.active_tabs += 1
                 
