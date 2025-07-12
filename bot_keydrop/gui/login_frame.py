@@ -9,7 +9,7 @@ from log_utils import setup_logger
 
 logger = setup_logger("login_frame")
 
-from .utils import exibir_erro
+from .utils import exibir_erro, safe_widget_call
 
 
 class LoginFrame(ctk.CTkFrame):
@@ -41,10 +41,19 @@ class LoginFrame(ctk.CTkFrame):
 
     def _simulate_loading(self) -> None:
         if not self.progress:
-            self.progress = Progressbar(self, mode="indeterminate")
-            self.progress.grid(row=6, column=0, pady=5, sticky="ew", padx=20)
-        self.progress.start(10)
-        self.after(1500, self.progress.stop)
+            self.progress = safe_widget_call(Progressbar, self, mode="indeterminate")
+            if self.progress:
+                safe_widget_call(
+                    self.progress.grid,
+                    row=6,
+                    column=0,
+                    pady=5,
+                    sticky="ew",
+                    padx=20,
+                )
+        if self.progress:
+            safe_widget_call(self.progress.start, 10)
+            self.after(1500, lambda: safe_widget_call(self.progress.stop))
 
     def _handle_login(self) -> None:
         email = self.email_var.get().strip()
@@ -53,9 +62,9 @@ class LoginFrame(ctk.CTkFrame):
             exibir_erro("Informe email e senha")
             return
         logger.info("Tentativa de login para %s", email)
-        self.login_button.configure(state="disabled")
+        safe_widget_call(self.login_button.configure, state="disabled")
         self._simulate_loading()
-        self.after(3000, lambda: self.login_button.configure(state="normal"))
+        self.after(3000, lambda: safe_widget_call(self.login_button.configure, state="normal"))
         try:
             self.on_login(email, senha)
             logger.info("Login realizado com sucesso para %s", email)

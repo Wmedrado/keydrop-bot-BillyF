@@ -6,8 +6,6 @@ Script para testar o executável gerado
 import subprocess
 import time
 import requests
-import threading
-import os
 from pathlib import Path
 
 def test_executable():

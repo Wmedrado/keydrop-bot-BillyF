@@ -6,25 +6,22 @@ Aplicativo desktop nativo com automação Chrome integrada
 
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
-import threading
-import subprocess
 import sys
 import os
 import json
 import time
 import webbrowser
-from datetime import datetime, timedelta
-from pathlib import Path
+from datetime import datetime
 
 # Importações para automação Chrome (opcional)
 try:
-    from selenium import webdriver
-    from selenium.webdriver.chrome.service import Service
-    from selenium.webdriver.chrome.options import Options
-    from selenium.webdriver.common.by import By
-    from selenium.webdriver.support.wait import WebDriverWait
-    from selenium.webdriver.support import expected_conditions as EC
-    from webdriver_manager.chrome import ChromeDriverManager
+    from selenium import webdriver  # noqa: F401
+    from selenium.webdriver.chrome.service import Service  # noqa: F401
+    from selenium.webdriver.chrome.options import Options  # noqa: F401
+    from selenium.webdriver.common.by import By  # noqa: F401
+    from selenium.webdriver.support.wait import WebDriverWait  # noqa: F401
+    from selenium.webdriver.support import expected_conditions as EC  # noqa: F401
+    from webdriver_manager.chrome import ChromeDriverManager  # noqa: F401
     SELENIUM_AVAILABLE = True
     print("✅ Selenium disponível")
 except ImportError:
@@ -40,7 +37,7 @@ except ImportError:
     print("⚠️ psutil não disponível")
 
 try:
-    import requests
+    import requests  # noqa: F401
     REQUESTS_AVAILABLE = True
     print("✅ requests disponível")
 except ImportError:
@@ -333,10 +330,7 @@ class KeydropBotGUI:
             # Obter configurações
             num_bots = int(self.num_tabs_var.get())
             headless = self.headless_var.get()
-            mini = self.mini_window_var.get()
             contender = self.contender_mode_var.get()
-            interval = int(self.speed_var.get())
-            
             self.log_message(f"📋 Config: {num_bots} bots, Headless: {headless}, Contender: {contender}", "INFO")
             
             # Simular automação

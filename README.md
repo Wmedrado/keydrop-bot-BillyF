@@ -87,6 +87,23 @@ Execute `python gerador_exe/builder.py` para gerar os executáveis. O script cri
 - `KeydropBot.exe` – versão padrão para uso cotidiano.
 - `KeydropBot_DEBUG.exe` – build de depuração que testa todos os componentes e registra logs detalhados.
 
+- **Produção:** gera um executável enxuto pronto para uso.
+- **Debug:** inclui ferramentas de diagnóstico e executa `debug_tester.py` ao iniciar.
+
+Para gerar o build padrão:
+
+```bash
+python gerador_exe/builder.py
+```
+
+Para criar o executável de debug e ativar o modo de desenvolvimento defina a variável de ambiente `MODO_DEBUG=1`:
+
+```bash
+MODO_DEBUG=1 python gerador_exe/builder.py
+```
+
+Com `MODO_DEBUG=1` o programa exibe todos os logs, pinta a interface de vermelho e executa uma falha simulada após alguns segundos.
+
 ## 📄 Licença
 Distribuído sob a licença MIT. Consulte os arquivos de documentação das pastas internas para mais detalhes.
 

@@ -6,6 +6,8 @@ Se a vers\xc3\xa3o local estiver desatualizada, baixa o pacote (ZIP ou EXE)
 e reinicia o programa automaticamente.
 """
 
+from __future__ import annotations
+
 import os
 import sys
 import tempfile
@@ -13,6 +15,7 @@ import subprocess
 import zipfile
 import shutil
 from pathlib import Path
+from typing import Dict, Any, Optional, Tuple
 
 import requests
 
@@ -23,43 +26,58 @@ UPDATE_INFO_URL = "https://example.com/update_info.json"
 CURRENT_VERSION = "2.1.0"
 
 
-def _parse_version(version: str):
-    """Converter string de vers\xc3\xa3o em tupla compar\xc3\xa1vel."""
-    return tuple(int(part) for part in version.split("."))
-
-
-def fetch_update_info():
-    """Baixar informa\xc3\xa7\xc3\xb5es de atualiza\xc3\xa7\xc3\xa3o do servidor."""
+def _parse_version(version: str) -> Tuple[int, ...]:
+    """Converter string de vers\u00e3o em tupla compar\u00e1vel."""
+    if not version:
+        raise ValueError("Vers\u00e3o vazia")
     try:
-        response = requests.get(UPDATE_INFO_URL, timeout=5)
+        return tuple(int(part) for part in version.split("."))
+    except ValueError as exc:  # Not numeric
+        raise ValueError(f"Vers\u00e3o inv\u00e1lida: {version}") from exc
+
+
+def fetch_update_info(url: str = UPDATE_INFO_URL) -> Optional[Dict[str, Any]]:
+    """Baixar informa\u00e7\u00f5es de atualiza\u00e7\u00e3o do servidor."""
+    if not url:
+        raise ValueError("URL de atualiza\u00e7\u00e3o n\u00e3o informada")
+    try:
+        response = requests.get(url, timeout=5)
         response.raise_for_status()
         return response.json()
     except Exception as exc:
-        print(f"\u26a0\ufe0f Falha ao obter informa\xc3\xa7\xc3\xb5es de atualiza\xc3\xa7\xc3\xa3o: {exc}")
+        print(
+            f"\u26a0\ufe0f Falha ao obter informa\u00e7\u00f5es de atualiza\u00e7\u00e3o: {exc}"
+        )
         return None
 
 
-def download_file(url: str, destination: Path):
+def download_file(url: str, destination: Path) -> None:
     """Realizar download do arquivo indicado para o caminho destino."""
+    if not url:
+        raise ValueError("URL de download vazia")
+    if destination is None:
+        raise ValueError("Caminho de destino n\u00e3o pode ser None")
     with requests.get(url, stream=True) as r:
         r.raise_for_status()
         with open(destination, "wb") as f:
             shutil.copyfileobj(r.raw, f)
 
 
-def apply_update(package_path: Path):
-    """Aplicar pacote de atualiza\xc3\xa7\xc3\xa3o (.zip ou .exe)."""
+def apply_update(package_path: Path) -> None:
+    """Aplicar pacote de atualiza\u00e7\u00e3o (.zip ou .exe)."""
+    if not package_path.exists():
+        raise FileNotFoundError(str(package_path))
     if package_path.suffix == ".zip":
         with zipfile.ZipFile(package_path, "r") as zf:
             zf.extractall(package_path.parent)
     elif package_path.suffix == ".exe" and os.name == "nt":
         subprocess.Popen([str(package_path)], shell=True)
     else:
-        raise RuntimeError("Formato de pacote n\xc3\xa3o suportado")
+        raise RuntimeError("Formato de pacote n\u00e3o suportado")
 
 
-def check_for_update():
-    """Verificar se h\xc3\xa1 nova vers\xc3\xa3o e aplicar se necess\xc3\xa1rio."""
+def check_for_update() -> None:
+    """Verificar se h\u00e1 nova vers\u00e3o e aplicar se necess\u00e1rio."""
     info = fetch_update_info()
     if not info:
         return

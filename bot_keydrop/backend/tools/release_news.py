@@ -24,10 +24,14 @@ def get_latest_release(repo: str, token: Optional[str] = None) -> dict:
     try:
         response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
-    except Exception as e:
+        data = response.json()
+    except requests.RequestException as e:
         logger.warning(f"Erro ao buscar versão mais recente: {e}")
         return {"error": "Erro ao buscar atualização"}
-    return response.json()
+    except ValueError as e:
+        logger.warning(f"Resposta malformada: {e}")
+        return {"error": "Resposta malformada"}
+    return data
 
 
 def load_last_tag() -> Optional[str]:

@@ -319,6 +319,11 @@ class KeydropAutomation:
 
             self.learner.record_result(method, result.result == ParticipationResult.SUCCESS)
 
+            if result.result != ParticipationResult.SUCCESS:
+                logger.warning(
+                    f"Método {method} falhou na guia {tab_id}: {result.result.value}"
+                )
+
             if result.result == ParticipationResult.SUCCESS:
                 return result
 

@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+import logging
 import subprocess
 import sys
 import time
@@ -6,17 +9,23 @@ from pathlib import Path
 from log_utils import setup_logger
 
 
-def run_pytest(logger):
+def run_pytest(logger: logging.Logger) -> bool:
+    if not hasattr(logger, "info"):
+        raise TypeError("logger must have 'info' method")
     start = time.time()
     logger.info("Executando suite de testes com pytest")
-    result = subprocess.run([sys.executable, "-m", "pytest", "-q"], capture_output=True, text=True)
+    result = subprocess.run(
+        [sys.executable, "-m", "pytest", "-q"], capture_output=True, text=True
+    )
     duration = time.time() - start
     logger.info("Saida pytest:\n%s", result.stdout + result.stderr)
     logger.info("Tempo pytest: %.2fs", duration)
     return result.returncode == 0
 
 
-def check_assets(logger):
+def check_assets(logger: logging.Logger) -> bool:
+    if not hasattr(logger, "info"):
+        raise TypeError("logger must have 'info' method")
     assets = [
         Path("bot_keydrop/backend"),
         Path("bot_keydrop/frontend"),
@@ -32,7 +41,7 @@ def check_assets(logger):
     return ok
 
 
-def main():
+def main() -> None:
     logs_dir = Path("logs")
     logger = setup_logger("debug_relatorio", logs_dir=str(logs_dir))
     logger.info("=== MODO DEBUG INICIADO ===")

@@ -5,8 +5,6 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-import logging
-from logging.handlers import RotatingFileHandler
 
 from log_utils import setup_logger
 
