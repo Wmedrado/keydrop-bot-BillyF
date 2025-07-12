@@ -241,7 +241,7 @@ class ModernKeyDropGUI:
                 version_data = json.load(f)
                 version_text = f"v{version_data['version']}"
         except:
-            version_text = "v2.0.6"
+            version_text = "v4.0.0"
         
         version_label = ctk.CTkLabel(
             header_frame,
@@ -1079,7 +1079,7 @@ class ModernKeyDropGUI:
             update_manager = ImprovedUpdateManager(
                 repo_owner="wmedrado",
                 repo_name="bot-keydrop",
-                current_version="2.0.4"
+                current_version="4.0.0"
             )
             
             # Usar o diálogo melhorado
