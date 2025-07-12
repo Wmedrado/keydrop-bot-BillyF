@@ -1,7 +1,6 @@
 import base64
-import json
 import os
-import urllib.request
+import requests
 
 project_key = os.getenv("SONAR_PROJECT_KEY", "keydrop-bot")
 organization = os.getenv("SONAR_ORGANIZATION", "your-org")
@@ -23,15 +22,15 @@ if sonar_token:
     token = base64.b64encode(f"{sonar_token}:".encode()).decode()
     headers["Authorization"] = f"Basic {token}"
 
-req = urllib.request.Request(measure_url, headers=headers)
-with urllib.request.urlopen(req) as resp:
-    data = json.load(resp)
+resp = requests.get(measure_url, headers=headers, timeout=10)
+resp.raise_for_status()
+data = resp.json()
 
 measures = {m["metric"]: m["value"] for m in data.get("component", {}).get("measures", [])}
 
-req = urllib.request.Request(status_url, headers=headers)
-with urllib.request.urlopen(req) as resp:
-    status_data = json.load(resp)
+resp = requests.get(status_url, headers=headers, timeout=10)
+resp.raise_for_status()
+status_data = resp.json()
 
 status = status_data.get("projectStatus", {}).get("status")
 
