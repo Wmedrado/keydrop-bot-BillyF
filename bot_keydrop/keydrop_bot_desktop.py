@@ -432,7 +432,7 @@ class KeydropBotGUI:
             # Log inicial
             self.log_message("🎉 Keydrop Bot Professional v3.0.0 iniciado com sucesso!")
             self.log_message("📱 Modo: Aplicação Desktop Nativa com Dark Theme")
-            self.log_message("🚀 Sistema pronto para automação Microsoft Edge")
+            self.log_message("🚀 Sistema pronto para automação Google Chrome")
             
         except Exception as e:
             print(f"Erro ao configurar interface principal: {e}")
@@ -452,8 +452,8 @@ class KeydropBotGUI:
         tk.Label(info_frame, text="🤖 Automação Profissional para Sorteios Keydrop", 
                 font=('Arial', 14, 'bold'), bg=self.dark_colors['bg'], 
                 fg=self.dark_colors['accent']).pack(anchor=tk.W, padx=10, pady=5)
-        tk.Label(info_frame, text="🌐 Microsoft Edge Exclusivo • Múltiplos Perfis • Multi-Instância", 
-                font=('Arial', 12), bg=self.dark_colors['bg'], 
+        tk.Label(info_frame, text="🌐 Google Chrome Exclusivo • Múltiplos Perfis • Multi-Instância",
+                font=('Arial', 12), bg=self.dark_colors['bg'],
                 fg=self.dark_colors['fg']).pack(anchor=tk.W, padx=10, pady=2)
         # Nome do desenvolvedor removido conforme solicitado
 
@@ -892,15 +892,15 @@ class KeydropBotGUI:
             print(f"Erro ao atualizar sistema: {e}")
             self.root.after(5000, self.update_system_stats)
 
-    def find_edge_executable(self):
-        """Encontrar Edge"""
-        edge_paths = [
-            "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
-            "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
-            os.path.expanduser("~\\AppData\\Local\\Microsoft\\Edge\\Application\\msedge.exe"),
-            "msedge.exe"
+    def find_chrome_executable(self):
+        """Encontrar Google Chrome"""
+        chrome_paths = [
+            "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+            "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+            os.path.expanduser("~\\AppData\\Local\\Google\\Chrome\\Application\\chrome.exe"),
+            "chrome.exe"
         ]
-        for path in edge_paths:
+        for path in chrome_paths:
             if os.path.exists(path):
                 return path
         return None
@@ -1071,7 +1071,7 @@ class KeydropBotGUI:
             self.log_message(f"⚠️ Bot #{bot_id}: Falha após {max_retries} tentativas de participação contender.", "WARNING")
         return False
 
-    # REMOVIDO: Todo código Selenium/Edge
+    # REMOVIDO: Todo código Selenium legado
 
     # Métodos de controle e utilitários
     def stop_bot_direct(self):
@@ -1080,8 +1080,8 @@ class KeydropBotGUI:
             self.log_message("🛑 Parando automação Selenium...", "WARNING")
             self.automation_active = False
             # Fechar drivers Selenium
-            if hasattr(self, 'edge_drivers'):
-                for bot_data in self.edge_drivers:
+            if hasattr(self, 'chrome_drivers'):
+                for bot_data in self.chrome_drivers:
                     try:
                         driver = bot_data.get('driver')
                         bot_id = bot_data.get('id', '?')
@@ -1091,27 +1091,27 @@ class KeydropBotGUI:
                         self.log_message(f"✅ Bot #{bot_id} fechado", "SUCCESS")
                     except Exception as e:
                         self.log_message(f"❌ Erro ao fechar Bot #{bot_data.get('id', '?')}: {e}", "ERROR")
-                self.edge_drivers = []
+                self.chrome_drivers = []
             # Fechar processos antigos se existirem
-            if hasattr(self, 'edge_processes'):
-                for process in self.edge_processes:
+            if hasattr(self, 'chrome_processes'):
+                for process in self.chrome_processes:
                     try:
                         if process.poll() is None:
                             process.terminate()
                     except:
                         pass
-                self.edge_processes = []
-            # Matar todos os processos Edge e msedgedriver para garantir liberação dos perfis
+                self.chrome_processes = []
+            # Matar todos os processos Chrome e chromedriver para garantir liberação dos perfis
             killed = 0
             for proc in psutil.process_iter(['pid', 'name']):
                 try:
-                    if 'msedge' in proc.info['name'].lower() or 'msedgedriver' in proc.info['name'].lower():
+                    if 'chrome' in proc.info['name'].lower() or 'chromedriver' in proc.info['name'].lower():
                         psutil.Process(proc.info['pid']).terminate()
                         killed += 1
                 except:
                     pass
             if killed > 0:
-                self.log_message(f"🛑 {killed} processos Edge/msedgedriver finalizados!", "WARNING")
+                self.log_message(f"🛑 {killed} processos Chrome/chromedriver finalizados!", "WARNING")
             self.bot_stats.clear()
             self.total_bots_active = 0
             self.log_message("✅ Automação parada com sucesso!", "SUCCESS")
@@ -1121,7 +1121,7 @@ class KeydropBotGUI:
     def emergency_stop_direct(self):
         """Parada de emergência - fecha tudo"""
         try:
-            result = messagebox.askyesno("Emergência", "Fechar TODOS os processos Edge e drivers Selenium?")
+            result = messagebox.askyesno("Emergência", "Fechar TODOS os processos Chrome e drivers Selenium?")
             if result:
                 self.log_message("🚨 PARADA DE EMERGÊNCIA!", "WARNING")
                 
@@ -1129,20 +1129,20 @@ class KeydropBotGUI:
                 self.automation_active = False
                 
                 # Fechar drivers Selenium
-                if hasattr(self, 'edge_drivers'):
-                    for bot_data in self.edge_drivers:
+                if hasattr(self, 'chrome_drivers'):
+                    for bot_data in self.chrome_drivers:
                         try:
                             driver = bot_data['driver']
                             driver.quit()
                         except:
                             pass
-                    self.edge_drivers = []
+                    self.chrome_drivers = []
                 
-                # Matar processos Edge
+                # Matar processos Chrome
                 killed = 0
                 for proc in psutil.process_iter(['pid', 'name']):
                     try:
-                        if 'msedge' in proc.info['name'].lower() or 'msedgedriver' in proc.info['name'].lower():
+                        if 'chrome' in proc.info['name'].lower() or 'chromedriver' in proc.info['name'].lower():
                             psutil.Process(proc.info['pid']).terminate()
                             killed += 1
                     except:
@@ -1150,7 +1150,7 @@ class KeydropBotGUI:
                 
                 self.bot_stats.clear()
                 self.total_bots_active = 0
-                self.log_message(f"🛑 {killed} processos Edge finalizados!", "WARNING")
+                self.log_message(f"🛑 {killed} processos Chrome finalizados!", "WARNING")
                 
         except Exception as e:
             self.log_message(f"❌ Erro: {e}", "ERROR")
@@ -1329,7 +1329,6 @@ class KeydropBotGUI:
         """Limpar cache do sistema"""
         try:
             cache_dirs = [
-                Path.home() / "AppData" / "Local" / "Microsoft" / "Edge" / "User Data" / "Default" / "Cache",
                 Path.home() / "AppData" / "Local" / "Google" / "Chrome" / "User Data" / "Default" / "Cache",
                 Path("cache"),
                 Path("temp")

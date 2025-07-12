@@ -9,6 +9,7 @@ class UIManager {
         this.isInitialized = false;
         this.config = {};
         this.stats = {};
+        this.winnings = [];
         this.systemInfo = {};
         this.updateIntervals = new Map();
         
@@ -189,6 +190,9 @@ class UIManager {
             this.stats = await window.apiClient.getStats();
             this.updateStatsUI();
 
+            this.winnings = await window.apiClient.getWinnings();
+            this.updateWinningsUI(this.winnings);
+
             // Load system information
             this.systemInfo = await window.apiClient.getSystemInfo();
             this.updateSystemInfoUI();
@@ -275,6 +279,8 @@ class UIManager {
                 case 'stats':
                     this.stats = await window.apiClient.getDetailedStats();
                     this.updateStatsUI();
+                    this.winnings = await window.apiClient.getWinnings();
+                    this.updateWinningsUI(this.winnings);
                     break;
                 case 'reports':
                     await this.refreshReports();
@@ -658,6 +664,24 @@ class UIManager {
         // This would update the reports table/list
         // Implementation depends on the specific reports structure
         console.log('Reports updated:', reports);
+    }
+
+    /**
+     * Update winnings history UI
+     */
+    updateWinningsUI(winnings) {
+        const container = document.getElementById('winningsHistory');
+        if (!container) return;
+        container.innerHTML = '';
+        winnings.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'winning-item';
+            div.innerHTML = `
+                <span class="winning-time">${new Date(item.timestamp).toLocaleString()}</span>
+                <span class="winning-amount">R$ ${item.amount.toFixed(2)}</span>
+                <span class="winning-type">${item.lottery_type}</span>`;
+            container.appendChild(div);
+        });
     }
 
     /**

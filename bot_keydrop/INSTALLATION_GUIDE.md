@@ -43,6 +43,9 @@ cd keydrop-bot-professional
 cd backend
 pip install -r requirements.txt
 
+# O arquivo inclui `undetected-chromedriver`, utilizado para diminuir a
+# detecção automática do Chrome.
+
 # Frontend (opcional, para desenvolvimento)
 cd ../frontend
 npm install

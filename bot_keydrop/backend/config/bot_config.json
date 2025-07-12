@@ -13,5 +13,6 @@
   "amateur_lottery_wait_time": 180,
   "page_load_timeout": 30,
   "max_memory_usage_mb": 2048,
-  "enable_cache_clearing": true
+  "enable_cache_clearing": true,
+  "tab_proxies": {}
 }

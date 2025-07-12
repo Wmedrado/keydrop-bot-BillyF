@@ -47,6 +47,14 @@ class KeydropAutomationBot:
         self.gui_callback = gui_callback  # Para logs na interface
         self.driver = None
         self.running = False
+
+        # Configuração de logs individuais
+        os.makedirs("logs", exist_ok=True)
+        logging.basicConfig(
+            filename=f"logs/bot_{self.bot_id}.log",
+            format='%(asctime)s [%(levelname)s] %(message)s',
+            level=logging.INFO
+        )
         
         # Estatísticas do bot
         self.stats = {
@@ -62,6 +70,11 @@ class KeydropAutomationBot:
         """Log personalizado que envia para a GUI"""
         log_msg = f"[Bot {self.bot_id}] {message}"
         print(log_msg)
+        try:
+            logger_func = getattr(logging, level.lower(), logging.info)
+            logger_func(log_msg)
+        except Exception:
+            logging.info(log_msg)
         if self.gui_callback:
             self.gui_callback(log_msg, level)
     

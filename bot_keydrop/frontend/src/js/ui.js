@@ -26,6 +26,7 @@ class UIManager {
         this.handleTabSwitch = this.handleTabSwitch.bind(this);
         this.handleConfigChange = this.handleConfigChange.bind(this);
         this.handleEmergencyStop = this.handleEmergencyStop.bind(this);
+        this.handleProxyChange = this.handleProxyChange.bind(this);
     }
 
     /**
@@ -299,6 +300,10 @@ class UIManager {
             this.config[id] = value;
         }
 
+        if (id === 'numTabs') {
+            this.renderProxyInputs();
+        }
+
         // Mark config as modified
         this.markConfigModified();
     }
@@ -312,6 +317,20 @@ class UIManager {
             saveBtn.classList.add('modified');
             saveBtn.textContent = 'Salvar Alterações';
         }
+    }
+
+    handleProxyChange(event) {
+        const { dataset, value } = event.target;
+        const tabId = parseInt(dataset.tabId, 10);
+        if (!this.config.tab_proxies) {
+            this.config.tab_proxies = {};
+        }
+        if (value) {
+            this.config.tab_proxies[tabId] = value;
+        } else {
+            delete this.config.tab_proxies[tabId];
+        }
+        this.markConfigModified();
     }
 
     /**
@@ -529,6 +548,8 @@ class UIManager {
                 }
             }
         });
+
+        this.renderProxyInputs();
     }
 
     /**
@@ -749,6 +770,34 @@ class UIManager {
         oscillator.connect(this.audioContext.destination);
         oscillator.start();
         oscillator.stop(this.audioContext.currentTime + duration / 1000);
+    }
+
+    renderProxyInputs() {
+        const container = document.getElementById('proxyList');
+        if (!container) return;
+        container.innerHTML = '';
+        const numTabs = this.config.numTabs || 0;
+        if (this.config.tab_proxies) {
+            Object.keys(this.config.tab_proxies).forEach(key => {
+                if (parseInt(key) > numTabs) {
+                    delete this.config.tab_proxies[key];
+                }
+            });
+        }
+        for (let i = 1; i <= numTabs; i++) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'form-group full-width';
+            const label = document.createElement('label');
+            label.textContent = `Guia ${i} Proxy`;
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.dataset.tabId = i;
+            input.value = this.config.tab_proxies && this.config.tab_proxies[i] ? this.config.tab_proxies[i] : '';
+            input.addEventListener('input', this.handleProxyChange);
+            wrapper.appendChild(label);
+            wrapper.appendChild(input);
+            container.appendChild(wrapper);
+        }
     }
 
     /**

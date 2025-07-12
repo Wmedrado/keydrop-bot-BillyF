@@ -318,6 +318,27 @@
     color: var(--text-secondary);
 }
 
+/* Histórico de ganhos */
+.winnings-history {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    margin-top: 1.5rem;
+}
+
+.winning-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    font-size: var(--font-size-small);
+}
+
+.winning-item:last-child {
+    border-bottom: none;
+}
+
 /* Logs */
 .logs-container {
     margin-top: 1.5rem;

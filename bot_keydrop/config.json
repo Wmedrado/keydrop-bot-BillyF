@@ -5,5 +5,19 @@
   "contender_mode": false,
   "discord_enabled": false,
   "discord_webhook": "",
-  "save_timestamp": "2025-07-10T19:49:57.657195"
+  "save_timestamp": "2025-07-10T19:49:57.657195",
+  "proxy_enabled": false,
+  "proxy_host": "",
+  "proxy_port": 0,
+  "proxy_username": "",
+  "proxy_password": "",
+  "captcha_service": "",
+  "captcha_api_key": "",
+  "monitor_twitter": false,
+  "twitter_bearer_token": "",
+  "telegram_enabled": false,
+  "telegram_bot_token": "",
+  "telegram_chat_id": "",
+  "auto_open_golden_cases": false,
+  "golden_case_price": 0
 }

@@ -1,0 +1,42 @@
+[
+  {
+    "bot_id": 0,
+    "browser": "chrome",
+    "proxy": ""
+  },
+  {
+    "bot_id": 0,
+    "browser": "edge",
+    "proxy": ""
+  },
+  {
+    "bot_id": 1,
+    "browser": "chrome",
+    "proxy": ""
+  },
+  {
+    "bot_id": 1,
+    "browser": "edge",
+    "proxy": ""
+  },
+  {
+    "bot_id": 2,
+    "browser": "edge",
+    "proxy": ""
+  },
+  {
+    "bot_id": 2,
+    "browser": "chrome",
+    "proxy": ""
+  },
+  {
+    "bot_id": 999,
+    "browser": "chrome",
+    "proxy": ""
+  },
+  {
+    "bot_id": 999,
+    "browser": "edge",
+    "proxy": ""
+  }
+]
