@@ -81,6 +81,24 @@ pytest -q       # se o pytest estiver configurado
 python -m unittest discover -v
 ```
 
+## 🛠 Builds Disponíveis
+É possível gerar dois tipos de executável utilizando o script `gerador_exe/builder.py`:
+
+- **Produção:** gera um executável enxuto pronto para uso.
+- **Debug:** inclui ferramentas de diagnóstico e executa `debug_tester.py` ao iniciar.
+
+Para gerar o build padrão:
+
+```bash
+python gerador_exe/builder.py
+```
+
+Para criar o executável de debug defina a variável de ambiente `MODO_DEBUG=1`:
+
+```bash
+MODO_DEBUG=1 python gerador_exe/builder.py
+```
+
 ## 📄 Licença
 Distribuído sob a licença MIT. Consulte os arquivos de documentação das pastas internas para mais detalhes.
 

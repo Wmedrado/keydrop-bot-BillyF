@@ -5,6 +5,13 @@ import sys
 import os
 from pathlib import Path
 
+if os.getenv("MODO_DEBUG") == "1":
+    try:
+        import debug_tester
+        debug_tester.main()
+    except Exception as exc:
+        print(f"Falha ao executar debug_tester: {exc}")
+
 BASE_DIR = Path(__file__).resolve().parent
 BACKEND_DIR = BASE_DIR / "bot_keydrop" / "backend"
 GUI_SCRIPT = BASE_DIR / "bot_keydrop" / "keydrop_bot_desktop.py"
