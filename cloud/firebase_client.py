@@ -81,9 +81,14 @@ def atualizar_ranking(user_id: str, lucro_total: float) -> None:
 def upload_foto_perfil(user_id: str, caminho_imagem: str) -> str:
     """Upload a profile photo and store its URL."""
     initialize_firebase()
+    caminho = Path(caminho_imagem)
+    if not caminho.exists():
+        logger.error("Imagem de perfil nao encontrada: %s", caminho)
+        raise FileNotFoundError(f"Profile image not found: {caminho}")
+
     bucket = storage.bucket()
     blob = bucket.blob(f"avatars/{user_id}.jpg")
-    blob.upload_from_filename(caminho_imagem)
+    blob.upload_from_filename(str(caminho))
     blob.make_public()
     foto_url = blob.public_url
 
