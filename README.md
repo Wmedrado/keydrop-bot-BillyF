@@ -29,7 +29,9 @@ keydrop-bot-v3/
 - **Google Chrome/Chromium** instalado
 - **Internet** para baixar dependências e acessar o Keydrop
 
-As bibliotecas necessárias estão em `bot_keydrop/backend/requirements.txt`.
+As bibliotecas necessárias para a API estão em `bot_keydrop/backend/requirements.txt`.
+Para a interface desktop, instale também os pacotes listados em `bot_keydrop/requirements.txt`.
+O script `install_requirements.bat` cobre ambos automaticamente.
 
 ## ⚡ Instalação Rápida (Windows)
 1. Clone este repositório ou baixe o código.
