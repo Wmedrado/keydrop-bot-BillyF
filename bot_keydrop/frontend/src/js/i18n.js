@@ -29,7 +29,21 @@
       LOADING_HEADER: 'Carregando Keydrop Bot Professional',
       LOADING_MESSAGE: 'Conectando ao servidor...',
       INIT_ERROR_HEADER: 'Erro ao Inicializar',
-      RETRY_BUTTON: 'Tentar Novamente'
+      RETRY_BUTTON: 'Tentar Novamente',
+      TEST_UNKNOWN: 'Teste desconhecido',
+      TEST_COMPLETED: 'Teste concluído',
+      DIAGNOSIS_ERROR: 'Erro no diagnóstico',
+      TEACH_AI_COMPLETED: 'Modo de ensino concluído',
+      TEACH_AI_ERROR: 'Erro no modo de ensino',
+      START_RECORDING: 'Gravação iniciada',
+      PAUSE_RECORDING: 'Gravação pausada',
+      ERROR_START_RECORDING: 'Erro ao iniciar gravação',
+      ERROR_PAUSE_RECORDING: 'Erro ao pausar gravação',
+      ERROR_SAVE_MACRO: 'Erro ao salvar macro',
+      MACRO_SAVED: 'Macro salva',
+      TEACH_AI_TITLE: 'Ensinar IA',
+      TEACH_AI_BODY: '<p>Após clicar em iniciar, uma guia será aberta.</p><p>Realize manualmente a participação do sorteio e feche a janela para finalizar.</p>',
+      TEACH_AI_START_BUTTON: 'Iniciar'
     },
     en: {
       UI_INIT_ERROR: 'Failed to initialize interface',
@@ -60,7 +74,21 @@
       LOADING_HEADER: 'Loading Keydrop Bot Professional',
       LOADING_MESSAGE: 'Connecting to server...',
       INIT_ERROR_HEADER: 'Initialization Error',
-      RETRY_BUTTON: 'Try Again'
+      RETRY_BUTTON: 'Try Again',
+      TEST_UNKNOWN: 'Unknown test',
+      TEST_COMPLETED: 'Test completed',
+      DIAGNOSIS_ERROR: 'Diagnosis error',
+      TEACH_AI_COMPLETED: 'Teaching mode completed',
+      TEACH_AI_ERROR: 'Teaching mode error',
+      START_RECORDING: 'Recording started',
+      PAUSE_RECORDING: 'Recording paused',
+      ERROR_START_RECORDING: 'Failed to start recording',
+      ERROR_PAUSE_RECORDING: 'Failed to pause recording',
+      ERROR_SAVE_MACRO: 'Failed to save macro',
+      MACRO_SAVED: 'Macro saved',
+      TEACH_AI_TITLE: 'Teach AI',
+      TEACH_AI_BODY: '<p>After clicking start, a tab will open.</p><p>Manually perform the giveaway participation and close the window to finish.</p>',
+      TEACH_AI_START_BUTTON: 'Start'
     },
     es: {
       UI_INIT_ERROR: 'Error al iniciar la interfaz',
@@ -91,7 +119,21 @@
       LOADING_HEADER: 'Cargando Keydrop Bot Professional',
       LOADING_MESSAGE: 'Conectando al servidor...',
       INIT_ERROR_HEADER: 'Error al iniciar',
-      RETRY_BUTTON: 'Intentar de nuevo'
+      RETRY_BUTTON: 'Intentar de nuevo',
+      TEST_UNKNOWN: 'Prueba desconocida',
+      TEST_COMPLETED: 'Prueba completada',
+      DIAGNOSIS_ERROR: 'Error en el diagnóstico',
+      TEACH_AI_COMPLETED: 'Modo de enseñanza completado',
+      TEACH_AI_ERROR: 'Error en el modo de enseñanza',
+      START_RECORDING: 'Grabación iniciada',
+      PAUSE_RECORDING: 'Grabación pausada',
+      ERROR_START_RECORDING: 'Error al iniciar la grabación',
+      ERROR_PAUSE_RECORDING: 'Error al pausar la grabación',
+      ERROR_SAVE_MACRO: 'Error al guardar la macro',
+      MACRO_SAVED: 'Macro guardada',
+      TEACH_AI_TITLE: 'Enseñar IA',
+      TEACH_AI_BODY: '<p>Después de hacer clic en iniciar, se abrirá una pestaña.</p><p>Realiza manualmente la participación en el sorteo y cierra la ventana para finalizar.</p>',
+      TEACH_AI_START_BUTTON: 'Iniciar'
     }
   };
 
