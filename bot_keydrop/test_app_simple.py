@@ -120,7 +120,7 @@ class KeydropBotGUI:
         self.status_label.pack(side='bottom', fill='x', padx=20, pady=10)
     
     def start_automation(self):
-        messagebox.showinfo("Automação", "🚀 Sistema de automação seria iniciado aqui!\n\nCada bot usaria seu próprio perfil Edge independente:\n- Bot #1: edge_profiles/bot_profile_1\n- Bot #2: edge_profiles/bot_profile_2\n- etc.")
+        messagebox.showinfo("Automação", "🚀 Sistema de automação seria iniciado aqui!\n\nCada bot usaria seu próprio perfil Chrome independente:\n- Bot #1: chrome_profiles/bot_profile_1\n- Bot #2: chrome_profiles/bot_profile_2\n- etc.")
         self.status_label.config(text="🟢 Automação ativa (simulação)", fg=self.dark_colors['success'])
     
     def stop_automation(self):

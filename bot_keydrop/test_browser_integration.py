@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Teste de Integração Multi-Browser para Keydrop Bot
-Testa Edge, Chrome e Firefox em ordem de prioridade
+Testa Chrome e Firefox em ordem de prioridade
 """
 
 import sys
@@ -16,7 +16,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from keydrop_bot_desktop_v4 import KeydropBot
 
 def test_browser_integration():
-    """Testar se o bot consegue usar Edge, Chrome ou Firefox"""
+    """Testar se o bot consegue usar Chrome ou Firefox"""
     print("🧪 TESTE DE INTEGRAÇÃO MULTI-BROWSER")
     print("=" * 50)
     
@@ -82,10 +82,6 @@ def test_browser_availability():
     print("=" * 50)
     
     browsers = {
-        'Edge': [
-            r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
-            r"C:\Program Files\Microsoft\Edge\Application\msedge.exe"
-        ],
         'Chrome': [
             r"C:\Program Files\Google\Chrome\Application\chrome.exe",
             r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
@@ -114,17 +110,17 @@ def test_browser_availability():
     print(f"\n📊 Resumo: {len(available_browsers)} navegadores disponíveis")
     if available_browsers:
         print(f"✅ Disponíveis: {', '.join(available_browsers)}")
-        print(f"🏆 Prioridade do bot: Edge > Chrome > Firefox")
+        print(f"🏆 Prioridade do bot: Chrome > Firefox")
     else:
         print("⚠️ ATENÇÃO: Nenhum navegador encontrado!")
-        print("💡 Instale Microsoft Edge (recomendado) ou Google Chrome")
+        print("💡 Instale Google Chrome")
     
     return available_browsers
 
 if __name__ == "__main__":
     print("🤖 KEYDROP BOT - TESTE DE INTEGRAÇÃO MULTI-BROWSER")
     print("📅 Desenvolvido por William Medrado")
-    print("🎯 Testando Edge, Chrome e Firefox")
+    print("🎯 Testando Chrome e Firefox")
     print("=" * 60)
     
     # Teste 1: Verificar navegadores disponíveis
@@ -132,8 +128,6 @@ if __name__ == "__main__":
     
     if not available:
         print("\n❌ TESTE CANCELADO: Nenhum navegador disponível")
-        print("💡 Instale um dos navegadores suportados:")
-        print("   - Microsoft Edge (recomendado - mais leve)")
         print("   - Google Chrome")
         print("   - Mozilla Firefox")
         input("\nPressione Enter para sair...")

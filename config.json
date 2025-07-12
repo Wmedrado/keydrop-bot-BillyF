@@ -7,5 +7,19 @@
   "enable_login_tabs": false,
   "contender_mode": true,
   "discord_webhook_url": "",
-  "discord_notifications": false
+  "discord_notifications": false,
+  "proxy_enabled": false,
+  "proxy_host": "",
+  "proxy_port": 0,
+  "proxy_username": "",
+  "proxy_password": "",
+  "captcha_service": "",
+  "captcha_api_key": "",
+  "monitor_twitter": false,
+  "twitter_bearer_token": "",
+  "telegram_enabled": false,
+  "telegram_bot_token": "",
+  "telegram_chat_id": "",
+  "auto_open_golden_cases": false,
+  "golden_case_price": 0
 }

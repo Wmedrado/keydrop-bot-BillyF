@@ -5,6 +5,7 @@
 
 class UIManager {
     constructor() {
+        this.t = window.i18n ? window.i18n.t : (k => k);
         this.currentTab = 'config';
         this.isInitialized = false;
         this.config = {};
@@ -26,6 +27,7 @@ class UIManager {
         this.handleTabSwitch = this.handleTabSwitch.bind(this);
         this.handleConfigChange = this.handleConfigChange.bind(this);
         this.handleEmergencyStop = this.handleEmergencyStop.bind(this);
+        this.handleProxyChange = this.handleProxyChange.bind(this);
     }
 
     /**
@@ -42,7 +44,7 @@ class UIManager {
             console.log('UI Manager initialized successfully');
         } catch (error) {
             console.error('Failed to initialize UI Manager:', error);
-            this.showNotification('Erro ao inicializar interface', 'error');
+            this.showNotification(this.t('UI_INIT_ERROR'), 'error');
         }
     }
 
@@ -59,6 +61,15 @@ class UIManager {
         const emergencyBtn = document.getElementById('emergencyStopBtn');
         if (emergencyBtn) {
             emergencyBtn.addEventListener('click', this.handleEmergencyStop);
+        }
+
+        const langSelect = document.getElementById('languageSelect');
+        if (langSelect) {
+            langSelect.value = window.i18n.getLanguage();
+            langSelect.addEventListener('change', (e) => {
+                window.i18n.setLanguage(e.target.value);
+                this.updateConnectionStatus();
+            });
         }
 
         // Configuration form elements
@@ -195,7 +206,7 @@ class UIManager {
 
         } catch (error) {
             console.error('Error loading initial data:', error);
-            this.showNotification('Erro ao carregar dados iniciais', 'error');
+            this.showNotification(this.t('DATA_LOAD_ERROR'), 'error');
         }
     }
 
@@ -299,6 +310,10 @@ class UIManager {
             this.config[id] = value;
         }
 
+        if (id === 'numTabs') {
+            this.renderProxyInputs();
+        }
+
         // Mark config as modified
         this.markConfigModified();
     }
@@ -314,17 +329,31 @@ class UIManager {
         }
     }
 
+    handleProxyChange(event) {
+        const { dataset, value } = event.target;
+        const tabId = parseInt(dataset.tabId, 10);
+        if (!this.config.tab_proxies) {
+            this.config.tab_proxies = {};
+        }
+        if (value) {
+            this.config.tab_proxies[tabId] = value;
+        } else {
+            delete this.config.tab_proxies[tabId];
+        }
+        this.markConfigModified();
+    }
+
     /**
      * Handle emergency stop
      */
     async handleEmergencyStop() {
         try {
             await window.apiClient.emergencyStop();
-            this.showNotification('Parada de emergência ativada!', 'warning');
+            this.showNotification(this.t('EMERGENCY_STOP_ACTIVATED'), 'warning');
             this.playSound('emergency');
         } catch (error) {
             console.error('Emergency stop failed:', error);
-            this.showNotification('Erro na parada de emergência', 'error');
+            this.showNotification(this.t('EMERGENCY_STOP_ERROR'), 'error');
         }
     }
 
@@ -340,12 +369,12 @@ class UIManager {
             }
 
             await window.apiClient.startBot();
-            this.showNotification('Bot iniciado com sucesso!', 'success');
+            this.showNotification(this.t('BOT_START_SUCCESS'), 'success');
             this.playSound('success');
 
         } catch (error) {
             console.error('Failed to start bot:', error);
-            this.showNotification('Erro ao iniciar o bot', 'error');
+            this.showNotification(this.t('BOT_START_ERROR'), 'error');
         } finally {
             const startBtn = document.getElementById('startBtn');
             if (startBtn) {
@@ -367,12 +396,12 @@ class UIManager {
             }
 
             await window.apiClient.stopBot();
-            this.showNotification('Bot parado com sucesso!', 'success');
+            this.showNotification(this.t('BOT_STOP_SUCCESS'), 'success');
             this.playSound('success');
 
         } catch (error) {
             console.error('Failed to stop bot:', error);
-            this.showNotification('Erro ao parar o bot', 'error');
+            this.showNotification(this.t('BOT_STOP_ERROR'), 'error');
         } finally {
             const stopBtn = document.getElementById('stopBtn');
             if (stopBtn) {
@@ -394,7 +423,7 @@ class UIManager {
             }
 
             await window.apiClient.updateConfig(this.config);
-            this.showNotification('Configuração salva com sucesso!', 'success');
+            this.showNotification(this.t('CONFIG_SAVE_SUCCESS'), 'success');
 
             if (saveBtn) {
                 saveBtn.classList.remove('modified');
@@ -403,7 +432,7 @@ class UIManager {
 
         } catch (error) {
             console.error('Failed to save config:', error);
-            this.showNotification('Erro ao salvar configuração', 'error');
+            this.showNotification(this.t('CONFIG_SAVE_ERROR'), 'error');
         } finally {
             const saveBtn = document.getElementById('saveConfigBtn');
             if (saveBtn) {
@@ -426,10 +455,10 @@ class UIManager {
         try {
             this.config = await window.apiClient.resetConfig();
             this.updateConfigUI();
-            this.showNotification('Configuração resetada com sucesso!', 'success');
+            this.showNotification(this.t('CONFIG_RESET_SUCCESS'), 'success');
         } catch (error) {
             console.error('Failed to reset config:', error);
-            this.showNotification('Erro ao resetar configuração', 'error');
+            this.showNotification(this.t('CONFIG_RESET_ERROR'), 'error');
         }
     }
 
@@ -454,14 +483,14 @@ class UIManager {
             });
 
             if (response.success) {
-                this.showNotification('Cache limpo com sucesso! Logins mantidos.', 'success');
+                this.showNotification(this.t('CACHE_CLEARED_SUCCESS'), 'success');
             } else {
-                this.showNotification('Erro ao limpar cache', 'error');
+                this.showNotification(this.t('CACHE_CLEARED_ERROR'), 'error');
             }
 
         } catch (error) {
             console.error('Failed to clear cache:', error);
-            this.showNotification('Erro ao limpar cache', 'error');
+            this.showNotification(this.t('CACHE_CLEARED_ERROR'), 'error');
         } finally {
             const clearBtn = document.getElementById('clearCacheBtn');
             if (clearBtn) {
@@ -492,12 +521,12 @@ class UIManager {
             if (isLatest) {
                 this.showNotification(`Você está usando a versão mais recente (${currentVersion})`, 'success');
             } else {
-                this.showNotification('Nova versão disponível! Visite o GitHub para baixar.', 'info');
+                this.showNotification(this.t('UPDATE_AVAILABLE'), 'info');
             }
 
         } catch (error) {
             console.error('Failed to check for updates:', error);
-            this.showNotification('Erro ao verificar atualizações', 'error');
+            this.showNotification(this.t('UPDATE_CHECK_ERROR'), 'error');
         } finally {
             const updateBtn = document.getElementById('checkUpdateBtn');
             if (updateBtn) {
@@ -529,6 +558,8 @@ class UIManager {
                 }
             }
         });
+
+        this.renderProxyInputs();
     }
 
     /**
@@ -647,7 +678,7 @@ class UIManager {
             this.updateReportsUI(reports);
         } catch (error) {
             console.error('Failed to refresh reports:', error);
-            this.showNotification('Erro ao atualizar relatórios', 'error');
+            this.showNotification(this.t('REPORTS_UPDATE_ERROR'), 'error');
         }
     }
 
@@ -670,7 +701,7 @@ class UIManager {
             this.showNotification(`Relatório exportado em ${format.toUpperCase()}`, 'success');
         } catch (error) {
             console.error('Failed to export report:', error);
-            this.showNotification('Erro ao exportar relatório', 'error');
+            this.showNotification(this.t('REPORT_EXPORT_ERROR'), 'error');
         }
     }
 
@@ -749,6 +780,34 @@ class UIManager {
         oscillator.connect(this.audioContext.destination);
         oscillator.start();
         oscillator.stop(this.audioContext.currentTime + duration / 1000);
+    }
+
+    renderProxyInputs() {
+        const container = document.getElementById('proxyList');
+        if (!container) return;
+        container.innerHTML = '';
+        const numTabs = this.config.numTabs || 0;
+        if (this.config.tab_proxies) {
+            Object.keys(this.config.tab_proxies).forEach(key => {
+                if (parseInt(key) > numTabs) {
+                    delete this.config.tab_proxies[key];
+                }
+            });
+        }
+        for (let i = 1; i <= numTabs; i++) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'form-group full-width';
+            const label = document.createElement('label');
+            label.textContent = `Guia ${i} Proxy`;
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.dataset.tabId = i;
+            input.value = this.config.tab_proxies && this.config.tab_proxies[i] ? this.config.tab_proxies[i] : '';
+            input.addEventListener('input', this.handleProxyChange);
+            wrapper.appendChild(label);
+            wrapper.appendChild(input);
+            container.appendChild(wrapper);
+        }
     }
 
     /**

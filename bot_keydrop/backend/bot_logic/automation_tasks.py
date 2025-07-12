@@ -52,6 +52,21 @@ class ParticipationAttempt:
         }
 
 
+@dataclass
+class WinningRecord:
+    """Informações de um ganho obtido"""
+    timestamp: datetime
+    amount: float
+    lottery_type: str
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            'timestamp': self.timestamp.isoformat(),
+            'amount': self.amount,
+            'lottery_type': self.lottery_type
+        }
+
+
 class KeydropAutomation:
     """Classe para automação específica do Keydrop"""
     
@@ -87,6 +102,8 @@ class KeydropAutomation:
         """
         self.browser_manager = browser_manager
         # Utilize deque to automatically discard oldest entries when the limit is exceeded
+        self.participation_history: List[ParticipationAttempt] = []
+        self.winnings_history: List[WinningRecord] = []
         self.max_history_size = 1000
         self.participation_history: Deque[ParticipationAttempt] = deque(maxlen=self.max_history_size)
         
@@ -532,8 +549,26 @@ class KeydropAutomation:
         history: List[ParticipationAttempt] = list(self.participation_history)
         if limit:
             history = history[-limit:]
-        
+
         return [attempt.to_dict() for attempt in history]
+
+    def record_winning(self, amount: float, lottery_type: str) -> None:
+        """Registra um ganho obtido"""
+        record = WinningRecord(
+            timestamp=datetime.now(),
+            amount=amount,
+            lottery_type=lottery_type
+        )
+        self.winnings_history.append(record)
+        if len(self.winnings_history) > self.max_history_size:
+            self.winnings_history.pop(0)
+
+    def get_winnings_history(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+        """Retorna histórico de ganhos"""
+        history = self.winnings_history
+        if limit:
+            history = history[-limit:]
+        return [record.to_dict() for record in history]
 
 
 # Função utilitária para criar instância da automação

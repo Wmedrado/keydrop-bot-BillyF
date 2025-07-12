@@ -5,6 +5,7 @@
 
 class KeydropBotApp {
     constructor() {
+        this.t = window.i18n ? window.i18n.t : (k => k);
         this.isInitialized = false;
         this.connectionStatus = 'disconnected';
         this.retryCount = 0;
@@ -60,7 +61,7 @@ class KeydropBotApp {
             this.retryCount = 0;
         } catch (error) {
             this.connectionStatus = 'disconnected';
-            throw new Error('Não foi possível conectar ao backend. Verifique se o servidor está executando.');
+            throw new Error(this.t('CANNOT_CONNECT_BACKEND'));
         }
     }
 
@@ -71,14 +72,14 @@ class KeydropBotApp {
         // Handle unhandled promise rejections
         window.addEventListener('unhandledrejection', (event) => {
             console.error('Unhandled promise rejection:', event.reason);
-            window.uiManager.showNotification('Erro inesperado na aplicação', 'error');
+            window.uiManager.showNotification(this.t('UNEXPECTED_ERROR_APP'), 'error');
             event.preventDefault();
         });
 
         // Handle uncaught errors
         window.addEventListener('error', (event) => {
             console.error('Uncaught error:', event.error);
-            window.uiManager.showNotification('Erro inesperado na aplicação', 'error');
+            window.uiManager.showNotification(this.t('UNEXPECTED_ERROR_APP'), 'error');
         });
     }
 
@@ -113,7 +114,7 @@ class KeydropBotApp {
                     this.retryCount++;
                     if (this.retryCount >= this.maxRetries) {
                         window.uiManager.showNotification(
-                            'Conexão com o backend perdida. Verifique o servidor.', 
+                            this.t('BACKEND_CONNECTION_LOST'),
                             'error'
                         );
                     }
@@ -139,13 +140,13 @@ class KeydropBotApp {
     getConnectionStatusText() {
         switch (this.connectionStatus) {
             case 'connected':
-                return 'Conectado';
+                return this.t('CONNECTION_STATUS_CONNECTED');
             case 'disconnected':
-                return 'Desconectado';
+                return this.t('CONNECTION_STATUS_DISCONNECTED');
             case 'error':
-                return 'Erro de Conexão';
+                return this.t('CONNECTION_STATUS_ERROR');
             default:
-                return 'Desconhecido';
+                return this.t('CONNECTION_STATUS_UNKNOWN');
         }
     }
 
@@ -159,8 +160,8 @@ class KeydropBotApp {
         loadingOverlay.innerHTML = `
             <div class="loading-content">
                 <div class="loading-spinner"></div>
-                <h2>Carregando Keydrop Bot Professional</h2>
-                <p>Conectando ao servidor...</p>
+                <h2>${this.t('LOADING_HEADER')}</h2>
+                <p>${this.t('LOADING_MESSAGE')}</p>
             </div>
         `;
         document.body.appendChild(loadingOverlay);
@@ -188,10 +189,10 @@ class KeydropBotApp {
         errorOverlay.innerHTML = `
             <div class="error-content">
                 <div class="error-icon">❌</div>
-                <h2>Erro ao Inicializar</h2>
+                <h2>${this.t('INIT_ERROR_HEADER')}</h2>
                 <p>${message}</p>
                 <button class="retry-btn" onclick="window.location.reload()">
-                    Tentar Novamente
+                    ${this.t('RETRY_BUTTON')}
                 </button>
             </div>
         `;

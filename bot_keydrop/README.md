@@ -19,6 +19,10 @@ O **Keydrop Bot Professional** é uma solução avançada de automação para o 
 - ⚡ **Controle de Velocidade** e retry configuráveis
 - 🛡️ **Parada de Emergência** robusta
 - 📈 **Relatórios e Estatísticas** detalhados
+- 🔌 **Suporte a Proxy e Captcha**
+- 🐦 **Busca de Códigos no Twitter**
+- 📱 **Alertas via Telegram**
+- 💰 **Abertura Automática de Golden Cases**
 
 ## 🏗️ Arquitetura
 
@@ -141,6 +145,11 @@ python -m http.server 3000
 - ✅ Modo headless e mini-window
 - ✅ Ciclo inteligente entre guias
 - ✅ Histórico de participações
+- ✅ Suporte a proxy configurável
+- ✅ Integração com serviços de captcha
+- ✅ Monitoramento de códigos dourados via Twitter
+- ✅ Notificações de ganhos via Telegram
+- ✅ Abertura automática de Golden Cases
 
 ## 🔧 Configurações Avançadas
 
@@ -211,6 +220,7 @@ WS     /ws
 ### Recursos Otimizados
 - **Memória:** Gerenciamento eficiente de instâncias
 - **CPU:** Processamento assíncrono
+- **Looping:** Ciclos contínuos migrados para `asyncio`
 - **Rede:** Uso otimizado de bandwidth
 - **Disco:** Logs rotativos e limpeza automática
 
