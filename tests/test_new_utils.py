@@ -3,6 +3,7 @@ import time
 from pathlib import Path
 import logging
 import pytest
+from unittest import mock
 
 from bot_keydrop.utils.async_logger import AsyncRemoteHandler
 from bot_keydrop.utils.secure_store import save_secure_json, load_secure_json
@@ -105,9 +106,14 @@ def test_rate_limiter():
     assert rl.allow("p")
 
 
-def test_browser_fallback(tmp_path):
+@mock.patch("shutil.which", return_value=None)
+def test_browser_fallback(mock_which, tmp_path):
     fake = tmp_path / "notfound.exe"
-    assert launch_browser_with_fallback(str(fake)) is None
+    with mock.patch(
+        "bot_keydrop.system_safety.dependency_validator.BROWSER_PATHS",
+        [],
+    ):
+        assert launch_browser_with_fallback(str(fake)) is None
 
 
 def test_record_history(tmp_path):
