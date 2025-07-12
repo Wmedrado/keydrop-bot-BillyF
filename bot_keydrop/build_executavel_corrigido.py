@@ -77,7 +77,7 @@ def build_executable():
         exe_path = f"dist/{exe_name}.exe"
         if os.path.exists(exe_path):
             size_mb = os.path.getsize(exe_path) / (1024 * 1024)
-            print(f"✅ Executável criado com sucesso!")
+            print("✅ Executável criado com sucesso!")
             print(f"📍 Local: {os.path.abspath(exe_path)}")
             print(f"📊 Tamanho: {size_mb:.1f} MB")
             

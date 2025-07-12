@@ -66,7 +66,7 @@ def build_executable():
                 if icon_file and os.path.exists(icon_file):
                     try:
                         shutil.copy2(icon_file, "dist/")
-                        print(f"📋 Ícone copiado para dist/")
+                        print("📋 Ícone copiado para dist/")
                     except:
                         pass
                 

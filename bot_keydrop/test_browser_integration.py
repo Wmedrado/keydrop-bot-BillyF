@@ -114,7 +114,7 @@ def test_browser_availability():
     print(f"\n📊 Resumo: {len(available_browsers)} navegadores disponíveis")
     if available_browsers:
         print(f"✅ Disponíveis: {', '.join(available_browsers)}")
-        print(f"🏆 Prioridade do bot: Edge > Chrome > Firefox")
+        print("🏆 Prioridade do bot: Edge > Chrome > Firefox")
     else:
         print("⚠️ ATENÇÃO: Nenhum navegador encontrado!")
         print("💡 Instale Microsoft Edge (recomendado) ou Google Chrome")
@@ -140,7 +140,7 @@ if __name__ == "__main__":
         sys.exit(1)
     
     # Teste 2: Testar integração do bot
-    print(f"\n🚀 Iniciando teste com navegadores disponíveis...")
+    print("\n🚀 Iniciando teste com navegadores disponíveis...")
     
     if test_browser_integration():
         print("\n🎉 TODOS OS TESTES PASSARAM!")

@@ -1911,7 +1911,7 @@ def main():
     except Exception as e:
         # Outros erros
         print(f"❌ Erro inesperado: {e}")
-        print(f"📋 Detalhes do erro:")
+        print("📋 Detalhes do erro:")
         import traceback
         traceback.print_exc()
         
