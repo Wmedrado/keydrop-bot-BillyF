@@ -19,12 +19,15 @@ from tkhtmlview import HTMLLabel
 
 import pyrebase
 from firebase_admin import db
+from log_utils import setup_logger
 
 from cloud.firebase_client import (
     initialize_firebase,
     salvar_perfil,
     upload_foto_perfil,
 )
+
+logger = setup_logger("user_interface")
 
 # ---------------------------------------------------------------------------
 # Firebase helpers
@@ -231,9 +234,15 @@ class RankingFrame(ctk.CTkFrame):
         self.refresh()
 
     def refresh(self) -> None:
-        initialize_firebase()
-        ref = db.reference("rankings/top_lucro")
-        ranking = ref.order_by_value().limit_to_last(10).get() or {}
+        try:
+            initialize_firebase()
+            ref = db.reference("rankings/top_lucro")
+            ranking = ref.order_by_value().limit_to_last(10).get() or {}
+        except Exception as exc:  # pragma: no cover - network errors
+            logger.exception("Erro ao carregar ranking: %s", exc)
+            messagebox.showerror("Falha", "Não foi possível carregar o ranking.")
+            return
+
         sorted_items = sorted(ranking.items(), key=lambda x: x[1], reverse=True)
         html = ["<h3>Ranking Global</h3><ol>"]
         for idx, (uid, lucro) in enumerate(sorted_items, start=1):
