@@ -89,6 +89,8 @@ def check_tests_present(diff: str) -> str | None:
         return None
     if re.search(r"^diff --git a/tests", diff, re.MULTILINE):
         return None
+    if not diff.strip():
+        return None
     return "Altera\xe7\xf5es n\xe3o possuem testes."
 
 

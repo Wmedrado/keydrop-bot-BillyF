@@ -1,2 +1,1 @@
-- Nomes de variáveis suspeitos encontrados.
-- Função adicionada muito longa.
+- Blocos de exceção sem fallback.
