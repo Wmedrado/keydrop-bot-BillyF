@@ -12,15 +12,13 @@ detecção automatizada. Está em nossos planos avaliar a migração para
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext, filedialog
 import threading
-import subprocess
-import sys
 import os
 import json
 import requests
 import time
 import logging
 import traceback
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 import psutil
 
@@ -54,14 +52,6 @@ try:
     from selenium.webdriver.common.by import By
     from selenium.webdriver.support.wait import WebDriverWait
     from selenium.webdriver.support import expected_conditions as EC
-    from selenium.common.exceptions import (
-        WebDriverException, 
-        TimeoutException, 
-        NoSuchElementException,
-        ElementClickInterceptedException,
-        StaleElementReferenceException,
-        SessionNotCreatedException
-    )
     from webdriver_manager.chrome import ChromeDriverManager
     try:
         import undetected_chromedriver as uc
@@ -1144,7 +1134,7 @@ class KeydropBotGUI:
             
             # Criar bots
             for i in range(num_tabs):
-                bot = self.bot_manager.create_bot(i, self.config)
+                self.bot_manager.create_bot(i, self.config)
             
             # Iniciar todos os bots
             self.bot_manager.start_all_bots()

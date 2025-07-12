@@ -4,7 +4,6 @@ Gerencia as configurações persistentes do aplicativo
 """
 
 import json
-import os
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 from pydantic import BaseModel, Field

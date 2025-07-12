@@ -4,9 +4,7 @@ Sistema de verificação para Keydrop Bot Professional
 Testa todos os componentes principais do sistema
 """
 
-import os
 import sys
-import subprocess
 import importlib.util
 from pathlib import Path
 

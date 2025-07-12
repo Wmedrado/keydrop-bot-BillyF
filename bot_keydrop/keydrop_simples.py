@@ -6,7 +6,6 @@ Keydrop Bot Professional v2.1.0 - Versão Simplificada Funcional
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
 import sys
-import os
 import json
 import time
 from pathlib import Path
@@ -193,7 +192,7 @@ def main():
         
         # Verificar dependências básicas
         try:
-            import psutil
+            import psutil  # noqa: F401
             print("✅ psutil disponível")
         except ImportError:
             print("⚠️  psutil não disponível (opcional)")
