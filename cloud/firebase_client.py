@@ -85,14 +85,19 @@ def upload_foto_perfil(user_id: str, caminho_imagem: str) -> str:
     if not caminho.exists():
         logger.error("Imagem de perfil nao encontrada: %s", caminho)
         raise FileNotFoundError(f"Profile image not found: {caminho}")
+    try:
+        bucket = storage.bucket()
+        blob = bucket.blob(f"avatars/{user_id}.jpg")
+        blob.upload_from_filename(str(caminho))
+        blob.make_public()
+        foto_url = blob.public_url
 
-    bucket = storage.bucket()
-    blob = bucket.blob(f"avatars/{user_id}.jpg")
-    blob.upload_from_filename(str(caminho))
-    blob.make_public()
-    foto_url = blob.public_url
-
-    user_ref = db.reference(f"users/{user_id}")
-    user_ref.update({"foto_url": foto_url})
-    logger.debug("Foto de perfil enviada para %s", foto_url)
-    return foto_url
+        user_ref = db.reference(f"users/{user_id}")
+        user_ref.update({"foto_url": foto_url})
+        logger.debug("Foto de perfil enviada para %s", foto_url)
+        return foto_url
+    except FileNotFoundError:
+        raise
+    except Exception as exc:  # pragma: no cover - network errors
+        logger.exception("Falha ao enviar foto de perfil: %s", exc)
+        raise RuntimeError("Falha ao enviar foto de perfil") from exc

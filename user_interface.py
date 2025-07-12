@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import logging
+import threading
 from pathlib import Path
 from typing import Dict, Optional, Any
 
@@ -218,12 +219,19 @@ class ProfileFrame(ctk.CTkFrame):
         path = filedialog.askopenfilename(filetypes=[("Imagens", "*.png;*.jpg;*.jpeg")])
         if not path:
             return
-        try:
-            url = upload_foto_perfil(self.user_id, path)
-            messagebox.showinfo("Upload", f"Foto enviada para {url}")
-            self.refresh()
-        except Exception as exc:  # pragma: no cover - network errors
-            messagebox.showerror("Erro", str(exc))
+        def worker() -> None:
+            try:
+                url = upload_foto_perfil(self.user_id, path)
+                self.img_container.after(0, lambda: self._on_upload_success(url))
+            except Exception as exc:  # pragma: no cover - network errors
+                logger.exception("Falha ao enviar foto de perfil")
+                self.img_container.after(0, lambda: messagebox.showerror("Erro", f"Falha ao enviar foto.\n{exc}"))
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def _on_upload_success(self, url: str) -> None:
+        messagebox.showinfo("Upload", f"Foto enviada para {url}")
+        self.refresh()
 
 
 class RankingFrame(ctk.CTkFrame):

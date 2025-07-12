@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Dict, Any
 import logging
+import threading
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
 from pathlib import Path
@@ -68,9 +69,16 @@ class DashboardFrame(ctk.CTkFrame):
         path = filedialog.askopenfilename(filetypes=[("Imagens", "*.png;*.jpg;*.jpeg")])
         if not path:
             return
-        try:
-            url = upload_foto_perfil(self.user_id, path)
-            messagebox.showinfo("Upload", f"Foto enviada para {url}")
-            self.refresh()
-        except Exception as exc:  # pragma: no cover
-            messagebox.showerror("Erro", str(exc))
+        def worker() -> None:
+            try:
+                url = upload_foto_perfil(self.user_id, path)
+                self.after(0, lambda: self._on_upload_success(url))
+            except Exception as exc:  # pragma: no cover - network errors
+                logger.exception("Falha ao enviar foto de perfil")
+                self.after(0, lambda: messagebox.showerror("Erro", f"Falha ao enviar foto.\n{exc}"))
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def _on_upload_success(self, url: str) -> None:
+        messagebox.showinfo("Upload", f"Foto enviada para {url}")
+        self.refresh()
