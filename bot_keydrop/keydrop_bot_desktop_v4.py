@@ -28,6 +28,20 @@ import psutil
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
+def check_initial_resources() -> None:
+    """Warn about missing essential files used by the GUI."""
+    missing = []
+    if not os.path.exists("config.json"):
+        missing.append("config.json")
+    if not os.path.exists("bot-icone.ico"):
+        missing.append("bot-icone.ico")
+    if missing:
+        messagebox.showwarning(
+            "Arquivos Ausentes",
+            "Os seguintes arquivos est\u00e3o faltando:\n" + "\n".join(missing),
+        )
+
 # Selenium imports - Suporte Edge + Chrome + Firefox
 try:
     from selenium import webdriver
@@ -1201,9 +1215,12 @@ class KeydropBotGUI:
         """Carregar configurações"""
         try:
             if os.path.exists("config.json"):
-                with open("config.json", 'r') as f:
+                with open("config.json", "r") as f:
                     saved_config = json.load(f)
+                if isinstance(saved_config, dict):
                     self.config.update(saved_config)
+                else:
+                    raise ValueError("config.json invalid format")
                 
                 # Atualizar interface
                 self.num_tabs_var.set(str(self.config['num_tabs']))
@@ -1233,6 +1250,8 @@ class KeydropBotGUI:
             else:
                 self.log_message("ℹ️ Usando configurações padrão", "INFO")
                 
+        except json.JSONDecodeError:
+            self.log_message("⚠️ config.json corrompido. Usando padrão", "WARNING")
         except Exception as e:
             self.log_message(f"❌ Erro ao carregar configurações: {e}", "ERROR")
     
@@ -1405,6 +1424,7 @@ Bot {bot_id}:
 def main():
     """Função principal"""
     try:
+        check_initial_resources()
         # Configurar DPI para Windows
         if os.name == 'nt':
             try:
