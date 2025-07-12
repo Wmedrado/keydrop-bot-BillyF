@@ -22,6 +22,8 @@ import traceback
 from datetime import datetime
 from pathlib import Path
 import psutil
+from PIL import Image
+import pystray
 
 # Modo debug via variável de ambiente
 DEBUG_MODE = os.getenv("MODO_DEBUG") == "1"
@@ -810,6 +812,7 @@ class KeydropBotGUI:
 
     def __init__(self):
         self.headless = False
+        self.tray_icon = None
         self.setup_window()
         if os.environ.get("MOCK_TK") == "1":
             self.bot_manager = None
@@ -866,11 +869,14 @@ class KeydropBotGUI:
         self.root.title("Keydrop Bot Professional v4.0.0")
         self.root.geometry("1000x800")
 
+        self.root.bind("<Unmap>", self.on_minimize)
+
         # Exportar logs quando a janela for fechada
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
         
         # Configurar ícone
         self.setup_icon()
+        self.setup_tray_icon()
         
         # Centralizar janela
         self.center_window()
@@ -1363,9 +1369,54 @@ class KeydropBotGUI:
         
         # Console
         print(log_entry.strip())
-        
+
         # Interface
         self.append_log(log_entry, level)
+
+    # --- System tray helpers ---
+    def setup_tray_icon(self):
+        """Criar ícone na bandeja do sistema"""
+        try:
+            icon_path = "bot-icone.ico"
+            if not os.path.exists(icon_path):
+                icon_path = Path(__file__).resolve().parent / "bot-icone.ico"
+            image = Image.open(icon_path)
+        except Exception:
+            image = Image.new("RGB", (64, 64), "black")
+
+        menu = pystray.Menu(
+            pystray.MenuItem("Abrir Interface", self.show_window),
+            pystray.MenuItem("Pausar todos os bots", self.pause_all_bots),
+            pystray.MenuItem("Sair", self.exit_app),
+        )
+        self.tray_icon = pystray.Icon("keydropbot", image, "Keydrop Bot", menu)
+
+    def show_window(self, _icon=None, _item=None):
+        """Restaurar janela principal"""
+        if self.tray_icon:
+            self.tray_icon.stop()
+        if self.root.state() == "withdrawn":
+            self.root.deiconify()
+            self.root.after(0, self.root.focus_force)
+
+    def hide_window(self):
+        """Ocultar janela e mostrar ícone"""
+        if self.tray_icon and not self.tray_icon.visible:
+            threading.Thread(target=self.tray_icon.run, daemon=True).start()
+        self.root.withdraw()
+
+    def on_minimize(self, _event=None):
+        if self.root.state() == "iconic":
+            self.hide_window()
+
+    def pause_all_bots(self, _icon=None, _item=None):
+        """Placeholder para pausar todos os bots"""
+        self.log_message("⏸️ Pausar bots ainda não implementado", "INFO")
+
+    def exit_app(self, _icon=None, _item=None):
+        if self.tray_icon:
+            self.tray_icon.stop()
+        self.on_close()
     
     def update_system_stats(self):
         """Atualizar estatísticas do sistema"""

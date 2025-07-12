@@ -4,3 +4,5 @@ psutil==5.9.6
 requests==2.31.0
 undetected-chromedriver==3.5.5
 PyQt5>=5.15
+pystray>=0.19
+Pillow>=9.0
