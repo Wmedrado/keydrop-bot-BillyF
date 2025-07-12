@@ -46,6 +46,7 @@ class KeyDropBot:
         self.fila_execucao = None  # Será configurado pelo BotManager
         self.chrome_pids = []  # PIDs dos processos Chrome relacionados a este bot
         self.driver_service = None  # Serviço do ChromeDriver
+        self.wait_timeout = 30  # Timeout padrão para WebDriverWait
         self.stats = {
             'participacoes': 0,
             'participacoes_contender': 0,
@@ -61,6 +62,13 @@ class KeyDropBot:
             'ganho_periodo': 0.0,
             'total_ganho': 0.0
         }
+
+    def verificar_sessao(self):
+        """Verifica se o driver ainda possui sessão ativa"""
+        if not self.driver or not getattr(self.driver, 'session_id', None):
+            self.reiniciar_driver()
+            return False
+        return True
     def checar_alerta_discord(self):
         """Envia alerta para o Discord se ficar 30 minutos sem participar"""
         if not self.discord_webhook:
@@ -395,6 +403,9 @@ class KeyDropBot:
     
     def fechar_popup_com_esc(self):
         """Pressiona ESC para fechar pop-ups"""
+        if not self.verificar_sessao():
+            return False
+
         try:
             from selenium.webdriver.common.keys import Keys
             from selenium.webdriver.common.action_chains import ActionChains
@@ -408,6 +419,9 @@ class KeyDropBot:
 
     def participar_sorteio(self):
         """Lógica principal para participar de sorteios com sistema de retry avançado"""
+        if not self.verificar_sessao():
+            return False
+
         tentativa = 0
         
         while tentativa < self.max_tentativas and self.running:
@@ -416,7 +430,7 @@ class KeyDropBot:
                 print(f"[Bot {self.bot_id}] Tentativa {tentativa}/{self.max_tentativas} - Acessando página de sorteios...")
                 
                 self.driver.get("https://key-drop.com/pt/giveaways/list")
-                wait = WebDriverWait(self.driver, 30)
+                wait = WebDriverWait(self.driver, self.wait_timeout)
                 
                 # Aguarda carregar a seção de sorteios
                 container = wait.until(
@@ -455,7 +469,6 @@ class KeyDropBot:
                     link_participar = ultimo_sorteio.find_element(By.CSS_SELECTOR, 'a[data-testid="btn-single-card-giveaway-join"]')
                     self.driver.execute_script("arguments[0].click();", link_participar)
                     print(f"[Bot {self.bot_id}] Clicou no link do sorteio")
-                    time.sleep(2)
                     
                     # Procura o botão final de participação
                     try:
@@ -560,6 +573,9 @@ class KeyDropBot:
     
     def participar_sorteio_contender(self):
         """Participa de sorteios CONTENDER (1 hora) com sistema de retry avançado"""
+        if not self.verificar_sessao():
+            return False
+
         tentativa = 0
         
         while tentativa < self.max_tentativas and self.running:
@@ -579,7 +595,7 @@ class KeyDropBot:
                 
                 # Acessa a página de sorteios
                 self.driver.get("https://key-drop.com/pt/giveaways/list")
-                wait = WebDriverWait(self.driver, 30)
+                wait = WebDriverWait(self.driver, self.wait_timeout)
                 
                 # Aguarda carregar a seção de sorteios
                 container = wait.until(
@@ -641,7 +657,6 @@ class KeyDropBot:
                     link_participar = ultimo_sorteio.find_element(By.CSS_SELECTOR, 'a[data-testid="btn-single-card-giveaway-join"]')
                     self.driver.execute_script("arguments[0].click();", link_participar)
                     print(f"[Bot {self.bot_id}] Clicou no link do sorteio CONTENDER")
-                    time.sleep(2)
                     
                     # Procura o botão final de participação
                     try:
@@ -762,9 +777,12 @@ class KeyDropBot:
                 print(f"[Bot {self.bot_id}] Aguardando login manual...")
             
             self.stats['inicio'] = datetime.now()
-            
+
             while self.running:
                 try:
+                    if not self.verificar_sessao():
+                        continue
+
                     # No modo login, não executa automação
                     if self.login_mode:
                         self.status = "🔐 Modo login ativo"
@@ -944,6 +962,9 @@ class KeyDropBot:
     
     def obter_saldo_skins(self):
         """Obtém o saldo de skins da conta"""
+        if not self.verificar_sessao():
+            return self.stats.get('saldo_skins', 'R$ 0,00')
+
         try:
             # Procurar pelo elemento do saldo
             saldo_element = self.driver.find_element(
@@ -1013,6 +1034,9 @@ class KeyDropBot:
     
     def limpar_cache_navegador(self):
         """Limpa cache do navegador sem perder login"""
+        if not self.verificar_sessao():
+            return False
+
         try:
             print(f"[Bot {self.bot_id}] Iniciando limpeza de cache...")
             self.status = "🧹 Limpando cache..."
@@ -1085,7 +1109,7 @@ class KeyDropBot:
     def atualizar_saldo_periodicamente(self):
         """Atualiza o saldo periodicamente durante a execução"""
         try:
-            if self.driver and not self.login_mode:
+            if not self.login_mode and self.verificar_sessao():
                 # Só atualizar se não estiver em modo login
                 self.obter_saldo_skins()
         except Exception:
