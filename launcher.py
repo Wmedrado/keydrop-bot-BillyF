@@ -5,7 +5,8 @@ import sys
 import os
 from pathlib import Path
 
-if os.getenv("MODO_DEBUG") == "1":
+if os.getenv("MODO_DEBUG") == "1" or Path(sys.argv[0]).stem.endswith("_DEBUG"):
+    os.environ["MODO_DEBUG"] = "1"
     try:
         import debug_tester
         debug_tester.main()
