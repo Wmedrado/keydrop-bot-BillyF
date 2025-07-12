@@ -472,7 +472,7 @@ async def send_discord_notification(title: str, description: str, notification_t
         "critical": critical,
         "retries": 0,
     }
-    await OfflineNotificationQueue.enqueue(notification, priority=critical)
+    OfflineNotificationQueue.enqueue(notification, priority=critical)
     return True
 
 def configure_discord_webhook(webhook_url: Optional[str]) -> None:
