@@ -1,9 +1,12 @@
 import hashlib
 import logging
+import os
 import traceback
 from collections import Counter
 from pathlib import Path
 from typing import Callable, Optional
+
+TEST_ENV_VAR = "PYTEST_CURRENT_TEST"
 
 class ErrorReporter:
     """Collect exceptions and optionally send them elsewhere."""
@@ -23,7 +26,8 @@ class ErrorReporter:
         entry = f"#{hsh} {self.counters[hsh]}x\n{tb}\n"
         with open(self.log_file, "a", encoding="utf-8") as fh:
             fh.write(entry)
-        if self.send_callback:
+        # Avoid sending notifications during automated tests
+        if self.send_callback and TEST_ENV_VAR not in os.environ:
             try:
                 self.send_callback(hsh, tb)
             except Exception as e:
