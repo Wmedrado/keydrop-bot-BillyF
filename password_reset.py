@@ -10,6 +10,7 @@ from email.message import EmailMessage
 from typing import Optional
 from uuid import uuid4
 from datetime import datetime, timedelta
+import secrets
 
 try:
     from firebase_admin import db, auth
@@ -60,18 +61,31 @@ def _send_email(email: str, token: str) -> None:
         raise RuntimeError(
             "❗ Arquivo de configuração SMTP não encontrado. Configure \"config.json\" com suas credenciais."
         )
-    link = f"https://meubot.com/reset?token={token}"
-    body = (
+    link = f"https://appdomain.com/reset-password?token={token}"
+    text_body = (
         "Olá, você solicitou a redefinição de sua senha.\n\n"
-        f"Clique no link abaixo para criar uma nova senha:\n{link}\n\n"
-        "Este link expira em 15 minutos.\nSe não foi você quem solicitou, ignore este e-mail."
+        f"Acesse o link a seguir para criar uma nova senha: {link}\n\n"
+        "Este link expira em 1 hora.\nSe você não solicitou, apenas ignore este e-mail."
     )
+    html_body = f"""
+    <html>
+        <body style='font-family: Arial, sans-serif;'>
+            <p>Olá,</p>
+            <p>Você solicitou a redefinição de sua senha.</p>
+            <p><a href='{link}'>Clique aqui para criar uma nova senha</a></p>
+            <p>O link é válido por 1 hora.</p>
+            <p>Se não foi você quem solicitou, ignore este e-mail.</p>
+        </body>
+    </html>
+    """
     msg = EmailMessage()
-    msg["Subject"] = "🔐 Redefinição de Senha - Bot Oficial"
+    msg["Subject"] = "🔐 Recuperação de senha"
     msg["From"] = _SMTP_USER
     msg["To"] = email
-    msg.set_content(body)
-    with smtplib.SMTP_SSL(_SMTP_HOST, _SMTP_PORT) as smtp:
+    msg.set_content(text_body)
+    msg.add_alternative(html_body, subtype="html")
+    with smtplib.SMTP(_SMTP_HOST, _SMTP_PORT) as smtp:
+        smtp.starttls()
         smtp.login(_SMTP_USER, _SMTP_PASS)
         smtp.send_message(msg)
 
@@ -85,10 +99,10 @@ def request_reset(email: str) -> str:
         user = auth.get_user_by_email(email)
     except Exception as exc:  # fallback to generic not-found error
         raise ValueError("E-mail não encontrado") from exc
-    token_raw = f"{uuid4()}-{datetime.utcnow().timestamp()}".encode()
-    token = hashlib.sha256(token_raw).hexdigest()
-    expires_at = datetime.utcnow() + timedelta(minutes=15)
-    _save_token(user.uid, token, expires_at)
+    token = secrets.token_urlsafe(32)
+    hashed = hashlib.sha256(token.encode()).hexdigest()
+    expires_at = datetime.utcnow() + timedelta(hours=1)
+    _save_token(user.uid, hashed, expires_at)
     _send_email(email, token)
     return token
 
@@ -101,8 +115,9 @@ def verify_token(token: str) -> Optional[str]:
     ref = db.reference("reset_tokens")
     data = ref.get() or {}
     now = int(datetime.utcnow().timestamp())
+    hashed = hashlib.sha256(token.encode()).hexdigest()
     for uid, info in data.items():
-        if info.get("token") == token and now < int(info.get("expires_at", 0)):
+        if info.get("token") == hashed and now < int(info.get("expires_at", 0)):
             return uid
     return None
 
