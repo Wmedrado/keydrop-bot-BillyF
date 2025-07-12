@@ -1,1 +1,1 @@
-- Blocos de exceção sem fallback.
+Nada a declarar.
