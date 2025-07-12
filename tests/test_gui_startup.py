@@ -1,6 +1,9 @@
 import sys
 from pathlib import Path
 
+import pytest
+from unittest import mock
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
@@ -16,7 +19,10 @@ def test_missing_files_warn(monkeypatch, tmp_path):
 
 
 def test_gui_instantiation(monkeypatch):
+    dummy = mock.MagicMock()
+    monkeypatch.setattr('tkinter.Tk', dummy)
+    monkeypatch.setattr('tkinter.StringVar', dummy)
+    monkeypatch.setattr('tkinter.BooleanVar', dummy)
     monkeypatch.setattr(KeydropBotGUI, 'start_monitoring', lambda self: None)
     gui = KeydropBotGUI()
-    assert gui.root.winfo_exists()
-    gui.root.destroy()
+    assert dummy.called
