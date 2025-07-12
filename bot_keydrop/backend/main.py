@@ -40,6 +40,12 @@ from bot_logic import (
     BotStatus,
     TabWatchdog,
 )
+from cloud.permissions import (
+    fetch_permissions,
+    has_premium_access,
+    has_telegram_access,
+    subscription_active,
+)
 from tools.proxy_manager import ProxyManager
 
 # Configuração de logging
@@ -75,6 +81,7 @@ bot_scheduler = None
 tab_watchdog = None
 telegram_bot = None
 proxy_manager = None
+permissions_data: Dict[str, Any] = {}
 
 
 # Gerenciamento de WebSocket
@@ -172,6 +179,23 @@ async def startup_event():
     proxy_manager = ProxyManager(config.proxy_pool, timeout=config.proxy_timeout)
     browser_manager.proxy_manager = proxy_manager
     browser_manager.page_load_timeout = config.page_load_timeout * 1000
+
+    # Carregar permissoes do usuario se houver sessao
+    session_file = Path("user_session.json")
+    if session_file.exists():
+        try:
+            uid = json.loads(session_file.read_text()).get("localId")
+            if uid:
+                permissions_data.update(fetch_permissions(uid))
+                if not subscription_active(permissions_data):
+                    permissions_data["premium_access"] = False
+                    permissions_data["telegram_access"] = False
+                if not has_premium_access(permissions_data) and config.num_tabs > 20:
+                    config_manager.update_config(num_tabs=20)
+                if not has_telegram_access(permissions_data):
+                    config_manager.update_config(telegram_enabled=False)
+        except Exception as exc:  # pragma: no cover - network or parse errors
+            logger.error("Erro ao verificar permissoes: %s", exc)
 
     # Criar instâncias do bot
     automation_engine = create_keydrop_automation(browser_manager)
