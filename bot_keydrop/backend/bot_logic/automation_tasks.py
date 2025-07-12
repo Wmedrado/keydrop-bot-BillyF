@@ -675,6 +675,9 @@ class KeydropAutomation:
         """
         self.participation_history.append(attempt)
 
+        if len(self.participation_history) >= self.max_history_size:
+            self.participation_history.clear()
+
     async def learn_participation(self, tab_id: int, learn_time: int = 30) -> bool:
         """Record user actions on the page to learn a custom selector."""
         tab_info = self.browser_manager.get_tab_info(tab_id)
@@ -756,8 +759,8 @@ class KeydropAutomation:
             lottery_type=lottery_type
         )
         self.winnings_history.append(record)
-        if len(self.winnings_history) > self.max_history_size:
-            self.winnings_history.pop(0)
+        if len(self.winnings_history) >= self.max_history_size:
+            self.winnings_history.clear()
 
     def get_winnings_history(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
         """Retorna histórico de ganhos"""

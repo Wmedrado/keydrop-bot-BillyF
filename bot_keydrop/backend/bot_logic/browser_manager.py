@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 import json
+import gc
 from playwright.async_api import async_playwright, Browser, BrowserContext, Page, Playwright
 
 # Configuração de logging
@@ -460,13 +461,20 @@ class BrowserManager:
         
         try:
             tab_info = self.tabs[tab_id]
-            
+
             if tab_info.page:
                 await tab_info.page.close()
-            
+
             if tab_info.context:
                 await tab_info.context.close()
 
+
+            self.contexts.pop(tab_id, None)
+
+            tab_info.status = 'closed'
+            del self.tabs[tab_id]
+
+            gc.collect()
             tab_info.status = 'closed'
             del self.tabs[tab_id]
 
