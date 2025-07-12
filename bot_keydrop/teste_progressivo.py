@@ -4,19 +4,11 @@ Teste progressivo do Keydrop Bot - Para identificar onde trava
 """
 
 import tkinter as tk
-from tkinter import ttk, messagebox, scrolledtext
-import threading
-import subprocess
+from tkinter import ttk
 import sys
 import os
-import json
-import requests
-import time
-import logging
 import traceback
-from datetime import datetime
 from pathlib import Path
-import psutil
 
 class KeydropBotGUI_Teste:
     def __init__(self):

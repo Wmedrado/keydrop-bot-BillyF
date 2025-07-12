@@ -2,12 +2,12 @@
 import sys
 import os
 import psutil
-from PyQt5.QtCore import QUrl, Qt, QTimer
+from PyQt5.QtCore import QUrl, QTimer
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QTabWidget, QWidget, QVBoxLayout, QHBoxLayout,
     QLineEdit, QPushButton, QLabel
 )
-from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile, QWebEnginePage, QWebEngineSettings
+from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile, QWebEnginePage
 
 _qt_app = None
 def ensure_qt_app():

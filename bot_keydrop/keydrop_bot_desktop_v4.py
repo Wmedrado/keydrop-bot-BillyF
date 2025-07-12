@@ -10,22 +10,24 @@ detecção automatizada. Está em nossos planos avaliar a migração para
 """
 
 import tkinter as tk
-from tkinter import ttk, messagebox, scrolledtext, filedialog
+from tkinter import ttk, messagebox, scrolledtext, filedialog, TclError
 import threading
-import subprocess
-import sys
 import os
+import types
 import json
 import requests
 import time
 import logging
 import traceback
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 import psutil
 
+# Modo debug via variável de ambiente
+DEBUG_MODE = os.getenv("MODO_DEBUG") == "1"
+
 # Configuração de logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG if DEBUG_MODE else logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -54,14 +56,6 @@ try:
     from selenium.webdriver.common.by import By
     from selenium.webdriver.support.wait import WebDriverWait
     from selenium.webdriver.support import expected_conditions as EC
-    from selenium.common.exceptions import (
-        WebDriverException, 
-        TimeoutException, 
-        NoSuchElementException,
-        ElementClickInterceptedException,
-        StaleElementReferenceException,
-        SessionNotCreatedException
-    )
     from webdriver_manager.chrome import ChromeDriverManager
     try:
         import undetected_chromedriver as uc
@@ -813,16 +807,61 @@ class KeydropBot:
 
 class KeydropBotGUI:
     """Interface gráfica principal"""
-    
+
     def __init__(self):
+        self.headless = False
         self.setup_window()
+        if os.environ.get("MOCK_TK") == "1":
+            self.bot_manager = None
+            self.config = None
+            return
         self.bot_manager = KeydropBotManager()
         self.config = self.bot_manager.config
-        self.setup_interface()
+        if not self.headless:
+            self.setup_interface()
         self.start_monitoring()
+        if DEBUG_MODE:
+            self.enable_debug_mode()
         
     def setup_window(self):
         """Configurar janela principal"""
+
+        try:
+            self.root = tk.Tk()
+        except TclError:
+            class DummyTk:
+                def title(self, *a, **k):
+                    pass
+                def geometry(self, *a, **k):
+                    pass
+                def protocol(self, *a, **k):
+                    pass
+                def iconbitmap(self, *a, **k):
+                    pass
+                def update_idletasks(self):
+                    pass
+                def winfo_screenwidth(self):
+                    return 1000
+                def winfo_screenheight(self):
+                    return 800
+                def winfo_exists(self):
+                    return True
+                def destroy(self):
+                    pass
+            self.root = DummyTk()
+            self.headless = True
+            return
+
+        if os.environ.get("MOCK_TK") == "1":
+            self.root = types.SimpleNamespace(
+                winfo_exists=lambda: True,
+                protocol=lambda *a, **k: None,
+                title=lambda *a, **k: None,
+                geometry=lambda *a, **k: None,
+                destroy=lambda: None,
+                tk=None,
+            )
+            return
         self.root = tk.Tk()
         self.root.title("Keydrop Bot Professional v4.0.0")
         self.root.geometry("1000x800")
@@ -1144,7 +1183,7 @@ class KeydropBotGUI:
             
             # Criar bots
             for i in range(num_tabs):
-                bot = self.bot_manager.create_bot(i, self.config)
+                self.bot_manager.create_bot(i, self.config)
             
             # Iniciar todos os bots
             self.bot_manager.start_all_bots()
@@ -1406,8 +1445,24 @@ Bot {bot_id}:
                 except Exception as e:
                     print(f"Erro no monitoramento: {e}")
                     time.sleep(10)
-        
+
         threading.Thread(target=monitor, daemon=True).start()
+
+    def enable_debug_mode(self):
+        """Ajustar interface e falhas controladas."""
+        self.root.configure(bg="#550000")
+        tk.Label(
+            self.root,
+            text="MODO DEBUG ATIVO",
+            bg="#550000",
+            fg="white",
+            font=("Arial", 12, "bold"),
+        ).pack(fill="x")
+        self.root.after(5000, self._simulate_failure)
+
+    def _simulate_failure(self):
+        logger.debug("Falha simulada em modo debug")
+        raise RuntimeError("Falha simulada para testes")
     
     def run(self):
         """Executar aplicação"""

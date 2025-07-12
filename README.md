@@ -93,11 +93,13 @@ Para gerar o build padrão:
 python gerador_exe/builder.py
 ```
 
-Para criar o executável de debug defina a variável de ambiente `MODO_DEBUG=1`:
+Para criar o executável de debug e ativar o modo de desenvolvimento defina a variável de ambiente `MODO_DEBUG=1`:
 
 ```bash
 MODO_DEBUG=1 python gerador_exe/builder.py
 ```
+
+Com `MODO_DEBUG=1` o programa exibe todos os logs, pinta a interface de vermelho e executa uma falha simulada após alguns segundos.
 
 ## 📄 Licença
 Distribuído sob a licença MIT. Consulte os arquivos de documentação das pastas internas para mais detalhes.

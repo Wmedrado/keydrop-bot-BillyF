@@ -22,7 +22,7 @@ class RankingFrame(ctk.CTkFrame):
             initialize_firebase()
             ref = db.reference("rankings/top_lucro")
             ranking = ref.order_by_value().limit_to_last(10).get() or {}
-        except Exception as e:
+        except Exception:
             logger.error("Erro ao carregar dados de ranking.")
             messagebox.showerror("Erro", "Falha ao carregar o ranking. Verifique sua conexão.")
             return

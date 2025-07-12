@@ -4,11 +4,8 @@ Teste da Interface Principal sem automação
 """
 
 import tkinter as tk
-from tkinter import ttk, messagebox, scrolledtext
-import sys
-import os
+from tkinter import ttk, scrolledtext
 import time
-from datetime import datetime
 
 def test_main_interface():
     """Testar apenas a interface principal"""

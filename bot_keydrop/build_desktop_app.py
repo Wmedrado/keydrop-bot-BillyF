@@ -23,7 +23,7 @@ class DesktopExecutableBuilder:
     def check_pyinstaller(self):
         """Check if PyInstaller is available"""
         try:
-            import PyInstaller
+            import PyInstaller  # noqa: F401
             print("✅ PyInstaller encontrado")
             return True
         except ImportError:
@@ -41,7 +41,7 @@ class DesktopExecutableBuilder:
         for dep in required:
             try:
                 if dep == "tkinter":
-                    import tkinter
+                    import tkinter  # noqa: F401
                 else:
                     __import__(dep)
                 print(f"✅ {dep}")
@@ -416,7 +416,7 @@ def main():
             print("1. Execute 'Iniciar_Bot_Desktop.bat'")
             print("2. Interface gráfica abrirá")
             print("3. Clique 'Iniciar Servidor' quando quiser usar")
-    print("4. Configure e controle tudo pela interface")  # Mantido: Instruções claras
+            print("4. Configure e controle tudo pela interface")  # Mantido: Instruções claras
         else:
             print("\n❌ Falha no build")
             sys.exit(1)
