@@ -87,6 +87,7 @@ class BotConfig(BaseModel):
     )
 
     # Configurações avançadas
+
     wait_time_between_actions: float = Field(
         default=2.0,
         ge=0.5,
@@ -105,6 +106,26 @@ class BotConfig(BaseModel):
         le=120,
         description="Timeout para carregamento de páginas (segundos)",
     )
+
+=======
+    wait_time_between_actions: float = Field(default=2.0, ge=0.5, le=30.0, description="Tempo de espera entre ações (segundos)")
+    amateur_lottery_wait_time: int = Field(default=180, ge=60, le=600, description="Tempo de espera para sorteios AMATEUR (segundos)")
+    page_load_timeout: int = Field(default=30, ge=10, le=120, description="Timeout para carregamento de páginas (segundos)")
+
+    # Reagendamento inteligente
+    failure_reschedule_threshold: int = Field(
+        default=2,
+        ge=1,
+        le=10,
+        description="Falhas consecutivas para acionar reagendamento",
+    )
+    failure_reschedule_delay: int = Field(
+        default=180,
+        ge=60,
+        le=600,
+        description="Aguardar (segundos) antes de reagendar após falhas",
+    )
+    
 
     # Configurações de sistema
     max_memory_usage_mb: int = Field(

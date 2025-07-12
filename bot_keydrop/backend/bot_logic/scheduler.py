@@ -117,6 +117,10 @@ class BotScheduler:
         self.status = BotStatus.STOPPED
         self.tasks: Dict[str, ScheduledTask] = {}
         self.statistics = BotStatistics()
+
+        # Histórico de falhas por aba
+        self.last_lottery_type: Dict[int, Optional[str]] = {}
+        self.consecutive_failures: Dict[int, int] = {}
         
         # Configurações
         self.config = self.config_manager.get_config()
@@ -143,7 +147,9 @@ class BotScheduler:
         self.amateur_wait_time = self.config.amateur_lottery_wait_time
         self.action_delay = self.config.wait_time_between_actions
         self.tab_proxies = self.config.tab_proxies
-        
+        self.failure_threshold = self.config.failure_reschedule_threshold
+        self.reschedule_delay = self.config.failure_reschedule_delay
+
         logger.info("Configurações do agendador atualizadas")
     
     async def start_bot(self) -> bool:
@@ -164,7 +170,11 @@ class BotScheduler:
             
             # Atualizar configurações
             self.update_config()
-            
+
+            # Resetar histórico de falhas
+            self.last_lottery_type.clear()
+            self.consecutive_failures.clear()
+
             # Inicializar estatísticas
             self.statistics = BotStatistics(start_time=datetime.now())
             
@@ -328,13 +338,15 @@ class BotScheduler:
             
             for task in tasks_to_cancel:
                 task.status = TaskStatus.CANCELLED
-            
+
             # Reiniciar guia no navegador
             success = await self.browser_manager.restart_tab(tab_id)
-            
+
             if success:
                 # Recriar tarefas para a guia
                 await self._create_tasks_for_tab(tab_id)
+                self.consecutive_failures.pop(tab_id, None)
+                self.last_lottery_type.pop(tab_id, None)
                 logger.info(f"Guia {tab_id} reiniciada com sucesso")
             
             return success
@@ -481,11 +493,23 @@ class BotScheduler:
                     # Verificar se a guia está pronta
                     if self.browser_manager.is_tab_ready(task.tab_id):
                         result = await self.automation_engine.participate_in_lottery(
-                            task.tab_id, 
+                            task.tab_id,
                             max_retries=1  # Uma tentativa por execução da tarefa
                         )
                         success = result.result.value == "success"
                         task.last_result = result.result.value
+
+                        # Atualizar histórico de falhas para reagendamento inteligente
+                        lot_type = result.lottery_type
+                        if success:
+                            self.consecutive_failures[task.tab_id] = 0
+                            self.last_lottery_type[task.tab_id] = None
+                        else:
+                            if lot_type == self.last_lottery_type.get(task.tab_id):
+                                self.consecutive_failures[task.tab_id] = self.consecutive_failures.get(task.tab_id, 0) + 1
+                            else:
+                                self.consecutive_failures[task.tab_id] = 1
+                                self.last_lottery_type[task.tab_id] = lot_type
                         
                         if result.error_message:
                             task.error_message = result.error_message
@@ -499,23 +523,28 @@ class BotScheduler:
                     task.status = TaskStatus.COMPLETED
                     task.retry_count = 0
                     self.statistics.successful_tasks += 1
-                    
+
                     # Agendar próxima execução
                     task.next_execution = datetime.now() + task.interval
                     task.status = TaskStatus.PENDING
-                    
+
                 else:
                     task.retry_count += 1
                     self.statistics.failed_tasks += 1
-                    
+
                     if task.retry_count >= task.max_retries:
                         # Reiniciar guia após múltiplas falhas
                         logger.warning(f"Reiniciando guia {task.tab_id} após {task.retry_count} falhas")
                         await self.restart_tab(task.tab_id)
                     else:
-                        # Reagendar com delay menor para retry
-                        retry_delay = timedelta(seconds=30 * task.retry_count)
-                        task.next_execution = datetime.now() + retry_delay
+                        # Verificar falhas consecutivas para reagendar com atraso maior
+                        fail_count = self.consecutive_failures.get(task.tab_id, 0)
+                        if fail_count >= self.failure_threshold:
+                            task.next_execution = datetime.now() + timedelta(seconds=self.reschedule_delay)
+                            self.consecutive_failures[task.tab_id] = 0
+                        else:
+                            retry_delay = timedelta(seconds=30 * task.retry_count)
+                            task.next_execution = datetime.now() + retry_delay
                         task.status = TaskStatus.PENDING
                 
                 # Notificar callbacks

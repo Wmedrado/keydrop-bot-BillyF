@@ -142,6 +142,25 @@ class ApiClient {
         return await this.request('/learning/teach', { method: 'POST' });
     }
 
+    async testKeydrop() {
+        return await this.request('/diagnostics/keydrop');
+    }
+
+    async testLogin() {
+        return await this.request('/diagnostics/login');
+    }
+
+    async testNotification() {
+        return await this.request('/diagnostics/notification', { method: 'POST' });
+    }
+
+    async testProxy(proxy) {
+        return await this.request('/diagnostics/proxy', {
+            method: 'POST',
+            body: JSON.stringify({ proxy })
+        });
+    }
+
     /**
      * WebSocket Connection Management
      */
