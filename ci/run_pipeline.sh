@@ -21,4 +21,7 @@ PY
 # Run tests with coverage and html report
 pytest --html=tests/test_report.html --self-contained-html --cov=bot_keydrop --cov-report=term --cov-report=html:tests/htmlcov | tee tests/coverage.txt
 
+# Regression intelligence validation
+python ci/check_regression_intelligence.py | tee build_results/regression_check.log
+
 echo "Build succeeded" > build_results/build_status.log
