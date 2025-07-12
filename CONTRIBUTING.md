@@ -22,7 +22,7 @@ Este projeto aceita códigos produzidos automaticamente por inteligências artif
   ```bash
   pre-commit install
   ```
-- A cada commit serão executados formatação, lint e `pytest`. Se algo falhar, corrija antes de prosseguir.
+  - A cada commit serão executadas apenas verificações de formatação e lint. Execute os testes manualmente com `pytest` quando necessário.
 
 ## 4. Processo de Pull Request
 - Descreva brevemente o que foi implementado pela IA.
