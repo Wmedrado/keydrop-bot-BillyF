@@ -6,7 +6,8 @@ Contém a lógica para interagir com o Keydrop e executar participações em sor
 import asyncio
 import logging
 import random
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Optional, Any, Tuple, Deque
+from collections import deque
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
@@ -100,9 +101,11 @@ class KeydropAutomation:
             browser_manager: Instância do gerenciador de navegador
         """
         self.browser_manager = browser_manager
+        # Utilize deque to automatically discard oldest entries when the limit is exceeded
         self.participation_history: List[ParticipationAttempt] = []
         self.winnings_history: List[WinningRecord] = []
         self.max_history_size = 1000
+        self.participation_history: Deque[ParticipationAttempt] = deque(maxlen=self.max_history_size)
         
         logger.info("Automação Keydrop inicializada")
     
@@ -500,10 +503,6 @@ class KeydropAutomation:
             attempt: Tentativa de participação
         """
         self.participation_history.append(attempt)
-        
-        # Manter apenas os últimos registros
-        if len(self.participation_history) > self.max_history_size:
-            self.participation_history.pop(0)
     
     def get_participation_stats(self, hours: int = 24) -> Dict[str, Any]:
         """
@@ -547,7 +546,7 @@ class KeydropAutomation:
         Returns:
             Lista de tentativas de participação
         """
-        history = self.participation_history
+        history: List[ParticipationAttempt] = list(self.participation_history)
         if limit:
             history = history[-limit:]
 
