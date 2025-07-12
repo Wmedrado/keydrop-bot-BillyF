@@ -18,11 +18,13 @@ import importlib.util
 from bot_keydrop.system_safety.environment_checker import (
     verificar_conexao_internet,
     ambiente_compativel,
+    executando_no_diretorio_correto,
     LockFile,
 )
 from bot_keydrop.system_safety.permissions_validator import validar_permissoes
 from bot_keydrop.system_safety.backups import backup_arquivo
 from bot_keydrop.system_safety.watchdog import ProcessWatchdog
+from bot_keydrop.system_safety.error_reporter import error_reporter
 
 BACKEND_PORT = 8000
 FRONTEND_URL = f"http://localhost:{BACKEND_PORT}"
@@ -265,6 +267,10 @@ async def main():
         print("O Keydrop Bot já está em execução!")
         return
 
+    if not executando_no_diretorio_correto():
+        print("Ambiente incompatível: Arquivos essenciais não encontrados.")
+        return
+
     if not ambiente_compativel():
         print("Ambiente incompatível: Este bot foi projetado para Windows 10+ com Python 3.10+.")
         return
@@ -334,3 +340,6 @@ if __name__ == "__main__":
             lock.release()
         except Exception:
             pass
+    except Exception as exc:  # pragma: no cover - final fallback
+        error_reporter.capture_exception(exc)
+        print("Erro inesperado. Detalhes registrados em logs/error_report.log")
