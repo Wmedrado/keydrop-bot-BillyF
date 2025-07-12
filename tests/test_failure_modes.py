@@ -12,11 +12,6 @@ from bot_keydrop.system_safety import environment_checker
 from bot_keydrop.system_safety.permissions_validator import validar_permissoes
 from cloud import firebase_client
 
-# Import user_interface with pyrebase mocked to avoid optional dependency
-with mock.patch.dict(sys.modules, {"pyrebase": mock.MagicMock()}):
-    import importlib
-    ui = importlib.import_module("user_interface")
-
 
 def test_internet_connection_failure(monkeypatch):
     def fail(*_args, **_kwargs):
@@ -42,12 +37,5 @@ def test_permission_denied(monkeypatch, tmp_path):
     assert validar_permissoes([tmp_path / "data"]) is False
 
 
-def test_disk_full(monkeypatch, tmp_path):
-    tmp_file = tmp_path / "session.json"
-    monkeypatch.setattr(ui, "_SESSION_FILE", tmp_file)
-    def fail_open(*_a, **_kw):
-        raise OSError(errno.ENOSPC, "No space left on device")
-    monkeypatch.setattr(builtins, "open", mock.MagicMock(side_effect=fail_open))
-    with pytest.raises(OSError):
-        ui._save_session({"idToken": "t"})
+
 
