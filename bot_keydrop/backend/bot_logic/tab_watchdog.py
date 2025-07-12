@@ -96,5 +96,5 @@ class TabWatchdog:
             if self.discord_notifications:
                 await send_discord_notification("🚨 Aba Reiniciada", msg, "warning")
             if self.telegram_token and self.telegram_chat_id:
-                send_telegram_message(self.telegram_token, self.telegram_chat_id, msg)
+                await send_telegram_message(self.telegram_token, self.telegram_chat_id, msg)
 

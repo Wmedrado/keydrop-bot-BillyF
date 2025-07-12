@@ -282,7 +282,7 @@ async def main():
     if not verificar_conexao_internet():
         print("Sem conexão com a internet. Tentando novamente em alguns segundos...")
         for _ in range(5):
-            time.sleep(5)
+            await asyncio.sleep(5)
             if verificar_conexao_internet():
                 break
         else:

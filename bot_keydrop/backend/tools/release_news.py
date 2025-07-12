@@ -4,7 +4,8 @@ import asyncio
 from typing import Optional
 
 import logging
-import requests
+import httpx
+import aiofiles
 
 from discord_integration import configure_discord_webhook, send_discord_notification
 
@@ -15,14 +16,15 @@ STATE_FILE = os.path.join(os.path.dirname(__file__), "release_state.json")
 logger = logging.getLogger(__name__)
 
 
-def get_latest_release(repo: str, token: Optional[str] = None) -> dict:
-    """Fetch latest release info from GitHub."""
+async def get_latest_release(repo: str, token: Optional[str] = None) -> dict:
+    """Fetch latest release info from GitHub asynchronously."""
     url = GITHUB_API_RELEASE_URL.format(repo=repo)
     headers = {"Accept": "application/vnd.github+json"}
     if token:
         headers["Authorization"] = f"Bearer {token}"
     try:
-        response = requests.get(url, headers=headers, timeout=10)
+        async with httpx.AsyncClient(timeout=10) as client:
+            response = await client.get(url, headers=headers)
         response.raise_for_status()
     except Exception as e:
         logger.warning(f"Erro ao buscar versão mais recente: {e}")
@@ -30,20 +32,20 @@ def get_latest_release(repo: str, token: Optional[str] = None) -> dict:
     return response.json()
 
 
-def load_last_tag() -> Optional[str]:
+async def load_last_tag() -> Optional[str]:
     if os.path.exists(STATE_FILE):
         try:
-            with open(STATE_FILE, "r", encoding="utf-8") as f:
-                data = json.load(f)
+            async with aiofiles.open(STATE_FILE, "r", encoding="utf-8") as f:
+                data = json.loads(await f.read())
                 return data.get("tag_name")
         except Exception:
             return None
     return None
 
 
-def save_last_tag(tag: str) -> None:
-    with open(STATE_FILE, "w", encoding="utf-8") as f:
-        json.dump({"tag_name": tag}, f)
+async def save_last_tag(tag: str) -> None:
+    async with aiofiles.open(STATE_FILE, "w", encoding="utf-8") as f:
+        await f.write(json.dumps({"tag_name": tag}))
 
 
 def format_release_news(release: dict) -> str:
@@ -74,13 +76,13 @@ async def main() -> None:
     token = os.getenv("GITHUB_TOKEN")
     webhook_url = os.getenv("DISCORD_WEBHOOK_URL")
 
-    release = get_latest_release(repo, token)
+    release = await get_latest_release(repo, token)
     current_tag = release.get("tag_name")
-    last_tag = load_last_tag()
+    last_tag = await load_last_tag()
 
     if current_tag != last_tag:
         await notify_discord(release, webhook_url)
-        save_last_tag(current_tag)
+        await save_last_tag(current_tag)
     else:
         print("No new release detected.")
 

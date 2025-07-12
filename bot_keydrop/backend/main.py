@@ -264,7 +264,7 @@ async def start_monitoring_loop():
 
 
 @app.get("/")
-async def root():
+def root():
     """Endpoint raiz"""
     return {
         "message": "Keydrop Bot Professional API",
@@ -275,7 +275,7 @@ async def root():
 
 
 @app.get("/health")
-async def health_check():
+def health_check():
     """Verificação de saúde da API"""
     return {
         "status": "healthy",
@@ -290,7 +290,7 @@ async def health_check():
 
 # Endpoints de configuração
 @app.get("/config")
-async def get_configuration():
+def get_configuration():
     """Obtém configuração atual"""
     config = get_config()
     return config.dict()
@@ -470,7 +470,7 @@ async def start_bot_background():
 
 
 @app.get("/bot/status")
-async def get_bot_status():
+def get_bot_status():
     """Obtém status atual do bot"""
     if not bot_scheduler:
         return {"status": "not_initialized"}
@@ -479,7 +479,7 @@ async def get_bot_status():
 
 
 @app.get("/bot/tasks")
-async def get_bot_tasks():
+def get_bot_tasks():
     """Obtém status das tarefas do bot"""
     if not bot_scheduler:
         return []
@@ -488,7 +488,7 @@ async def get_bot_tasks():
 
 
 @app.get("/bot/tabs")
-async def get_bot_tabs():
+def get_bot_tabs():
     """Obtém status das guias do bot"""
     return browser_manager.get_all_tabs_info()
 
@@ -570,7 +570,7 @@ async def get_system_stats():
 
 
 @app.get("/stats/participation")
-async def get_participation_stats():
+def get_participation_stats():
     """Obtém estatísticas de participação"""
     if not automation_engine:
         return {"error": "Bot não inicializado"}
@@ -583,7 +583,7 @@ async def get_participation_stats():
 
 
 @app.get("/stats/participation/history")
-async def get_participation_history(limit: Optional[int] = 100):
+def get_participation_history(limit: Optional[int] = 100):
     """Obtém histórico de participações"""
     if not automation_engine:
         return []
@@ -597,7 +597,7 @@ async def get_participation_history(limit: Optional[int] = 100):
 
 # Endpoints de ganhos
 @app.post("/winnings")
-async def register_winning(request: WinningRequest):
+def register_winning(request: WinningRequest):
     """Registra um ganho manualmente"""
     if not automation_engine:
         raise HTTPException(status_code=400, detail="Bot não inicializado")
@@ -610,7 +610,7 @@ async def register_winning(request: WinningRequest):
 
 
 @app.get("/winnings")
-async def get_winnings_history(limit: Optional[int] = 100):
+def get_winnings_history(limit: Optional[int] = 100):
     """Obtém histórico de ganhos"""
     if not automation_engine:
         return []
