@@ -21,6 +21,7 @@ def test_generate_report(tmp_path):
     (tmp_path / "ci").mkdir()
     report = generate_report(["docs/readme.md"], "Baixo Risco", tmp_path)
     assert report.exists()
-    text = report.read_text(encoding="utf-8")
+    with report.open("r", encoding="utf-8") as f:
+        text = f.read()
     assert "Baixo Risco" in text
     assert "docs/readme.md" in text
