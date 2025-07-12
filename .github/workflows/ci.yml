@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Check main branch push
+        run: python ci/check_main_push.py
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -30,4 +32,28 @@ jobs:
       - name: Run UI pipeline
         run: |
           bash ci/run_ui_pipeline.sh
+
+      - name: SonarCloud Scan
+        uses: sonarsource/sonarqube-scan-action@v1.0.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
+
+      - name: SonarCloud Quality Gate check
+        uses: sonarsource/sonarqube-quality-gate-action@v1.0.0
+        with:
+          pollingTimeoutSec: 600
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
+
+  staging:
+    if: github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run staging pipeline
+        run: |
+          bash ci/run_staging_pipeline.sh
 

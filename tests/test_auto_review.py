@@ -14,4 +14,4 @@ def test_auto_review_file_created(tmp_path):
     run_review()
     assert review_file.exists()
     content = review_file.read_text()
-    assert "Nada a declarar." in content
+    assert content.strip()

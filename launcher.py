@@ -23,7 +23,11 @@ if os.getenv("MODO_DEBUG") == "1" or Path(sys.argv[0]).stem.endswith("_DEBUG"):
     except Exception as exc:
         print(f"Falha ao executar debug_tester: {exc}")
 
-BASE_DIR = Path(__file__).resolve().parent
+if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+    BASE_DIR = Path(sys._MEIPASS)
+else:
+    BASE_DIR = Path(__file__).resolve().parent
+
 BACKEND_DIR = BASE_DIR / "bot_keydrop" / "backend"
 GUI_SCRIPT = BASE_DIR / "bot_keydrop" / "keydrop_bot_desktop.py"
 
@@ -83,7 +87,8 @@ def run_both():
         api_proc.wait()
 
 
-def on_select(mode: str):
+def on_select(mode: str) -> None:
+    """Callback to store selected mode and close the selection window."""
     global selected_mode
     selected_mode = mode
     root.destroy()
@@ -120,7 +125,8 @@ tt_label = ttk.Label(root, textvariable=tooltip_var, foreground="gray")
 tt_label.pack(pady=10)
 
 
-def bind_tip(widget, text):
+def bind_tip(widget: "tk.Widget", text: str) -> None:
+    """Display a tooltip when hovering over a widget."""
     widget.bind("<Enter>", lambda _e, t=text: tooltip_var.set(t))
     widget.bind("<Leave>", lambda _e: tooltip_var.set(""))
 

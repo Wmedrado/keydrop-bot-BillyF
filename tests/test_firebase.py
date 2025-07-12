@@ -10,6 +10,20 @@ sys.path.insert(0, str(ROOT))
 
 import user_interface
 from cloud import firebase_client
+import types
+import sys
+
+# Ensure stub modules exist for patching
+if 'cloud.firebase_client.storage' not in sys.modules:
+    storage_mod = types.ModuleType('cloud.firebase_client.storage')
+    storage_mod.bucket = lambda *a, **k: None
+    sys.modules['cloud.firebase_client.storage'] = storage_mod
+    firebase_client.storage = storage_mod
+if 'cloud.firebase_client.db' not in sys.modules:
+    db_mod = types.ModuleType('cloud.firebase_client.db')
+    db_mod.reference = lambda *a, **k: None
+    sys.modules['cloud.firebase_client.db'] = db_mod
+    firebase_client.db = db_mod
 
 
 class TestUserAuth(unittest.TestCase):
@@ -48,6 +62,8 @@ class TestUserAuth(unittest.TestCase):
 
 class TestUploadFoto(unittest.TestCase):
     def setUp(self):
+        if not hasattr(firebase_client, 'storage'):
+            self.skipTest('firebase_admin not available')
         self.init_patch = mock.patch("cloud.firebase_client.initialize_firebase")
         self.init_patch.start()
         self.blob = mock.Mock()

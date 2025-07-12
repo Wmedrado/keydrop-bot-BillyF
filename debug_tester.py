@@ -10,6 +10,7 @@ from log_utils import setup_logger
 
 
 def run_pytest(logger: logging.Logger) -> bool:
+    """Run the project's pytest suite and log the results."""
     if not hasattr(logger, "info"):
         raise TypeError("logger must have 'info' method")
     start = time.time()
@@ -24,6 +25,7 @@ def run_pytest(logger: logging.Logger) -> bool:
 
 
 def check_assets(logger: logging.Logger) -> bool:
+    """Verify required asset files are present."""
     if not hasattr(logger, "info"):
         raise TypeError("logger must have 'info' method")
     assets = [
@@ -42,6 +44,7 @@ def check_assets(logger: logging.Logger) -> bool:
 
 
 def main() -> None:
+    """Entry point used when running the executable in debug mode."""
     logs_dir = Path("logs")
     logger = setup_logger("debug_relatorio", logs_dir=str(logs_dir))
     logger.info("=== MODO DEBUG INICIADO ===")
