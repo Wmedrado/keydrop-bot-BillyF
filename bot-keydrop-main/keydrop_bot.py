@@ -59,7 +59,10 @@ class KeyDropBot:
             'saldo_inicial': 0.0,
             'saldo_atual': 0.0,
             'ganho_periodo': 0.0,
-            'total_ganho': 0.0
+            'total_ganho': 0.0,
+            # Progresso do intervalo atual de espera
+            'progresso_intervalo': 0,
+            'intervalo_total': 0
         }
     def checar_alerta_discord(self):
         """Envia alerta para o Discord se ficar 30 minutos sem participar"""
@@ -764,6 +767,8 @@ class KeyDropBot:
             self.stats['inicio'] = datetime.now()
             
             while self.running:
+                # Reinicia progresso do intervalo ao iniciar novo ciclo
+                self.stats['progresso_intervalo'] = 0
                 try:
                     # No modo login, não executa automação
                     if self.login_mode:
@@ -849,9 +854,15 @@ class KeyDropBot:
                     # Aguarda o intervalo configurado
                     print(f"[Bot {self.bot_id}] Aguardando {intervalo_segundos}s...")
                     self.status = f"⏳ Aguardando {intervalo_segundos}s..."
-                    for _ in range(intervalo_segundos):
+
+                    # Configura variáveis de progresso do intervalo
+                    self.stats['intervalo_total'] = intervalo_segundos
+                    self.stats['progresso_intervalo'] = 0
+
+                    for i in range(intervalo_segundos):
                         if not self.running:
                             break
+                        self.stats['progresso_intervalo'] = i + 1
                         time.sleep(1)
                         
                 except Exception as e:
@@ -929,7 +940,9 @@ class KeyDropBot:
             'saldo_skins': stats.get('saldo_skins', 'R$ 0,00'),
             'status': self.status,
             'pausado': False,  # Por enquanto sempre False, pode ser implementado depois
-            'inicio': stats.get('inicio')
+            'inicio': stats.get('inicio'),
+            'progresso_intervalo': stats.get('progresso_intervalo', 0),
+            'intervalo_total': stats.get('intervalo_total', 0)
         }
         
         # Debug - imprimir estatísticas quando solicitado

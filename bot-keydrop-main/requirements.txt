@@ -12,3 +12,4 @@ packaging>=23.2
 setuptools>=69.0.3
 wheel>=0.42.0
 customtkinter==5.2.2
+pystray==0.19.5
