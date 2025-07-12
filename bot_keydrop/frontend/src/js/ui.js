@@ -80,6 +80,9 @@ class UIManager {
 
         // Reports and exports
         this.setupReportsEventListeners();
+
+        // Diagnostics buttons
+        this.setupDiagnosticsEventListeners();
     }
 
     /**
@@ -125,6 +128,7 @@ class UIManager {
         const saveConfigBtn = document.getElementById('saveConfigBtn');
         const resetConfigBtn = document.getElementById('resetConfigBtn');
         const teachAIBtn = document.getElementById('teachAIBtn');
+        const testDiscordBtn = document.getElementById('testDiscordBtn');
 
         if (startBtn) {
             startBtn.addEventListener('click', async () => {
@@ -167,6 +171,12 @@ class UIManager {
                 this.showTeachAIModal();
             });
         }
+
+        if (testDiscordBtn) {
+            testDiscordBtn.addEventListener('click', () => {
+                this.runDiagnostic('notification');
+            });
+        }
     }
 
     /**
@@ -187,6 +197,23 @@ class UIManager {
 
         if (refreshReportsBtn) {
             refreshReportsBtn.addEventListener('click', () => this.refreshReports());
+        }
+    }
+
+    setupDiagnosticsEventListeners() {
+        const keydropBtn = document.getElementById('testKeydropBtn');
+        const loginBtn = document.getElementById('testLoginBtn');
+        const notifBtn = document.getElementById('testNotificationBtn');
+        const proxyBtn = document.getElementById('testProxyBtn');
+
+        if (keydropBtn) keydropBtn.addEventListener('click', () => this.runDiagnostic('keydrop'));
+        if (loginBtn) loginBtn.addEventListener('click', () => this.runDiagnostic('login'));
+        if (notifBtn) notifBtn.addEventListener('click', () => this.runDiagnostic('notification'));
+        if (proxyBtn) {
+            proxyBtn.addEventListener('click', () => {
+                const proxy = prompt('Proxy (ex: http://usuario:senha@ip:porta)');
+                if (proxy) this.runDiagnostic('proxy', { proxy });
+            });
         }
     }
 
@@ -727,6 +754,41 @@ class UIManager {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+    }
+
+    async runDiagnostic(type, payload = {}) {
+        const output = document.getElementById('diagnosticsOutput');
+        if (output) {
+            output.textContent = 'Executando teste...';
+        }
+        try {
+            let result;
+            switch (type) {
+                case 'keydrop':
+                    result = await window.apiClient.testKeydrop();
+                    break;
+                case 'login':
+                    result = await window.apiClient.testLogin();
+                    break;
+                case 'notification':
+                    result = await window.apiClient.testNotification();
+                    break;
+                case 'proxy':
+                    result = await window.apiClient.testProxy(payload.proxy);
+                    break;
+                default:
+                    result = { success: false, message: 'Teste desconhecido' };
+            }
+            if (output) {
+                output.textContent = JSON.stringify(result, null, 2);
+            }
+            this.showNotification(result.message || 'Teste concluído', result.success ? 'success' : 'error');
+        } catch (error) {
+            if (output) {
+                output.textContent = error.message;
+            }
+            this.showNotification('Erro no diagnóstico', 'error');
+        }
     }
 
     /**

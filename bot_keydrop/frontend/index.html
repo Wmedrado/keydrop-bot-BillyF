@@ -67,6 +67,10 @@
                 <span class="tab-icon">🔌</span>
                 Proxies
             </button>
+            <button class="tab-button" data-tab="diagnostics">
+                <span class="tab-icon">🛠️</span>
+                Diagnóstico
+            </button>
         </nav>
 
         <!-- Main Content -->
@@ -387,6 +391,17 @@
                 <div class="proxies-grid">
                     <div id="proxyList"></div>
                     <p class="form-help">Defina os proxies por guia. Deixe em branco para não usar proxy.</p>
+                </div>
+            </div>
+
+            <!-- Diagnostics Tab -->
+            <div class="tab-content" id="diagnostics">
+                <div class="diagnostics-grid">
+                    <button class="diagnostic-btn" id="testKeydropBtn">Testar Conexão com Keydrop</button>
+                    <button class="diagnostic-btn" id="testLoginBtn">Testar Login</button>
+                    <button class="diagnostic-btn" id="testNotificationBtn">Testar Notificação</button>
+                    <button class="diagnostic-btn" id="testProxyBtn">Testar Proxy</button>
+                    <pre id="diagnosticsOutput" class="diagnostics-output"></pre>
                 </div>
             </div>
         </main>

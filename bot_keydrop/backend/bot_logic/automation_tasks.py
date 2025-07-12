@@ -459,7 +459,14 @@ class KeydropAutomation:
                 element = await page.query_selector(selector)
                 if element and await element.is_visible():
                     return True
-            
+
+            return False
+
+        except Exception as e:
+            logger.debug(f"Erro ao verificar sucesso da participação: {e}")
+            return False
+        except Exception as e:
+            logger.debug(f"Erro ao verificar sucesso da participação: {e}")
             return False
 
     async def _attempt_with_learned_selector(self, page, lottery: Dict[str, Any], tab_id: int, attempt_number: int, selector: str) -> ParticipationAttempt:
@@ -550,11 +557,13 @@ class KeydropAutomation:
             return ParticipationAttempt(tab_id=tab_id, attempt_number=attempt_number, timestamp=datetime.now(), result=ParticipationResult.BUTTON_NOT_FOUND, error_message='button_not_found_image')
         except Exception as e:
             logger.error(f"Erro imagem ao tentar participar: {e}")
-            return ParticipationAttempt(tab_id=tab_id, attempt_number=attempt_number, timestamp=datetime.now(), result=ParticipationResult.FAILED, error_message=str(e))
-            
-        except Exception as e:
-            logger.debug(f"Erro ao verificar sucesso da participação: {e}")
-            return False
+            return ParticipationAttempt(
+                tab_id=tab_id,
+                attempt_number=attempt_number,
+                timestamp=datetime.now(),
+                result=ParticipationResult.FAILED,
+                error_message=str(e)
+            )
     
     async def navigate_to_lotteries(self, tab_id: int) -> bool:
         """
