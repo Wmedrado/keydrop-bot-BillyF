@@ -299,8 +299,7 @@ class KeydropAutomation:
         """Try multiple participation strategies and record results."""
         learned_selector = self.learner.get_selector()
         if learned_selector:
-            result = await self._attempt_participation(page, lottery, tab_id, attempt_number, learned_selector)
-            self.learner.record_result("learned", result.result == ParticipationResult.SUCCESS)
+            result = await self._attempt_with_learned_selector(page, lottery, tab_id, attempt_number, learned_selector)
             if result.result == ParticipationResult.SUCCESS:
                 return result
 
@@ -462,6 +461,27 @@ class KeydropAutomation:
                     return True
             
             return False
+
+    async def _attempt_with_learned_selector(self, page, lottery: Dict[str, Any], tab_id: int, attempt_number: int, selector: str) -> ParticipationAttempt:
+        """Try learned selector with text and image fallbacks."""
+        result = await self._attempt_participation(page, lottery, tab_id, attempt_number, selector)
+        self.learner.record_result("learned", result.result == ParticipationResult.SUCCESS)
+        if result.result == ParticipationResult.SUCCESS:
+            return result
+
+        # Try keywords on buttons if the CSS selector failed
+        keywords = ["Participar", "Join", "Participate"]
+        for kw in keywords:
+            text_selector = f"text={kw}"
+            result = await self._attempt_participation(page, lottery, tab_id, attempt_number, text_selector)
+            self.learner.record_result("text", result.result == ParticipationResult.SUCCESS)
+            if result.result == ParticipationResult.SUCCESS:
+                return result
+
+        # Finally fallback to image detection
+        result = await self._attempt_participation_image(page, lottery, tab_id, attempt_number)
+        self.learner.record_result("image", result.result == ParticipationResult.SUCCESS)
+        return result
 
     async def _attempt_participation_js(self, page, lottery: Dict[str, Any], tab_id: int, attempt_number: int) -> ParticipationAttempt:
         """Alternative participation using direct JavaScript calls."""
