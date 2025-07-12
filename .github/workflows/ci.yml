@@ -36,17 +36,12 @@ jobs:
           PR_BODY: ${{ github.event.pull_request.body }}
         run: python ci/validate_pr_description.py
 
-      - name: 📊 SonarCloud Scan
+      - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
         with:
-          projectKey: keydrop-bot
-          organization: your-org
-          args: >-
-            -Dsonar.qualitygate.wait=true
+          projectBaseDir: .
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_PROJECT_KEY: keydrop-bot
-          SONAR_ORGANIZATION: your-org
 
       - name: 📄 Relatório do SonarCloud
         run: python ci/sonar_report.py
