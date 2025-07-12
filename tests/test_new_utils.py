@@ -1,12 +1,18 @@
 import asyncio
+import time
 from pathlib import Path
+import logging
+import pytest
+
 from bot_keydrop.utils.async_logger import AsyncRemoteHandler
 from bot_keydrop.utils.secure_store import save_secure_json, load_secure_json
 from bot_keydrop.utils.smart_timeout import smart_timeout
+from bot_keydrop.utils.smart_cache import cache_result
+from bot_keydrop.utils.history_recorder import record_history
 from bot_keydrop.system_safety.browser_compat import browser_driver_compatible
 from bot_keydrop.system_safety.error_analyzer import analyze_error
-import logging
-import pytest
+from bot_keydrop.system_safety.rate_limiter import RateLimiter
+from bot_keydrop.system_safety.browser_fallback import launch_browser_with_fallback
 
 
 class DummySender:
@@ -73,3 +79,40 @@ def test_browser_driver_compatible():
 def test_error_analyzer():
     msg = analyze_error("Erro 429: too many requests")
     assert "bloqueio" in msg
+
+def test_cache_result():
+    calls = []
+
+    @cache_result(ttl=0.1)
+    def add(a, b):
+        calls.append(1)
+        return a + b
+
+    assert add(1, 2) == 3
+    assert add(1, 2) == 3
+    assert len(calls) == 1
+    time.sleep(0.11)
+    assert add(1, 2) == 3
+    assert len(calls) == 2
+
+
+def test_rate_limiter():
+    rl = RateLimiter(2, 0.5)
+    assert rl.allow("p")
+    assert rl.allow("p")
+    assert not rl.allow("p")
+    time.sleep(0.6)
+    assert rl.allow("p")
+
+
+def test_browser_fallback(tmp_path):
+    fake = tmp_path / "notfound.exe"
+    assert launch_browser_with_fallback(str(fake)) is None
+
+
+def test_record_history(tmp_path):
+    record_history("user", "event", logs_dir=tmp_path)
+    log_file = tmp_path / "user_history.log"
+    assert log_file.exists()
+    content = log_file.read_text()
+    assert "event" in content
