@@ -462,6 +462,9 @@ class KeydropAutomation:
                     return True
             
             return False
+        except Exception as e:
+            logger.debug(f"Erro ao verificar sucesso da participação: {e}")
+            return False
 
     async def _attempt_participation_js(self, page, lottery: Dict[str, Any], tab_id: int, attempt_number: int) -> ParticipationAttempt:
         """Alternative participation using direct JavaScript calls."""
@@ -530,11 +533,13 @@ class KeydropAutomation:
             return ParticipationAttempt(tab_id=tab_id, attempt_number=attempt_number, timestamp=datetime.now(), result=ParticipationResult.BUTTON_NOT_FOUND, error_message='button_not_found_image')
         except Exception as e:
             logger.error(f"Erro imagem ao tentar participar: {e}")
-            return ParticipationAttempt(tab_id=tab_id, attempt_number=attempt_number, timestamp=datetime.now(), result=ParticipationResult.FAILED, error_message=str(e))
-            
-        except Exception as e:
-            logger.debug(f"Erro ao verificar sucesso da participação: {e}")
-            return False
+            return ParticipationAttempt(
+                tab_id=tab_id,
+                attempt_number=attempt_number,
+                timestamp=datetime.now(),
+                result=ParticipationResult.FAILED,
+                error_message=str(e)
+            )
     
     async def navigate_to_lotteries(self, tab_id: int) -> bool:
         """
