@@ -2,8 +2,12 @@ import os
 import platform
 import socket
 import sys
+import logging
 from pathlib import Path
+from tkinter import messagebox
 import psutil
+
+logger = logging.getLogger(__name__)
 
 
 def verificar_conexao_internet(timeout: float = 3.0) -> bool:
@@ -25,9 +29,22 @@ def ambiente_compativel() -> bool:
 
 
 def verificar_arquivos_obrigatorios() -> bool:
-    """Ensure key files are present."""
-    required = [Path("firebase_credentials.json"), Path("bot_config.json"), Path("user_session.json")]
-    return all(p.exists() for p in required)
+    """Ensure key files are present and warn the user if not."""
+    required = [
+        Path("firebase_credentials.json"),
+        Path("config.json"),
+        Path("release_info.json"),
+    ]
+    missing = [str(p) for p in required if not p.exists()]
+    if missing:
+        msg = "Os seguintes arquivos estao faltando:\n" + "\n".join(missing)
+        try:
+            messagebox.showerror("Arquivos Ausentes", msg)
+        except Exception:
+            pass
+        logger.error(msg)
+        return False
+    return True
 
 
 class LockFile:
