@@ -2,5 +2,9 @@ pytest
 pytest-asyncio
 pytest-mock
 beautifulsoup4
+requests
+psutil
+cryptography
+Pillow
 ruff
 bandit
