@@ -104,6 +104,20 @@ class ApiClient {
     }
 
     /**
+     * Winnings
+     */
+    async getWinnings(limit = 100) {
+        return await this.request(`/winnings?limit=${limit}`);
+    }
+
+    async registerWinning(amount, lotteryType) {
+        return await this.request('/winnings', {
+            method: 'POST',
+            body: JSON.stringify({ amount, lottery_type: lotteryType })
+        });
+    }
+
+    /**
      * Reports
      */
     async getReports(startDate = null, endDate = null) {

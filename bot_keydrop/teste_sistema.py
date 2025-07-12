@@ -119,7 +119,7 @@ def main():
         if not test_selenium():
             print("❌ Automação de sorteios não disponível")
             print("💡 Execute: instalar_dependencias.bat")
-            print("💡 Ou use modo Edge básico")
+            print("💡 Ou use modo manual básico")
     else:
         print("❌ SISTEMA COM PROBLEMAS")
         print("💡 Verifique a instalação do Python")

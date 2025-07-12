@@ -165,7 +165,7 @@ O executável `KeydropBot_v3.0.0_AUTO.exe` já inclui todas as dependências!
 ## 🆘 **SOLUÇÃO DE PROBLEMAS**
 
 ### ❌ **"Selenium não disponível"**
-**Problema**: Automação não funciona, só abre Edge básico
+**Problema**: Automação não funciona, só abre modo manual básico
 **Solução**: 
 ```bash
 pip install selenium webdriver-manager
