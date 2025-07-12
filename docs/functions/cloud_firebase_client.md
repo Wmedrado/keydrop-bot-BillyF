@@ -17,3 +17,5 @@ update ranking data and upload profile images.
   with the user profile.
 - `registrar_compra(user_id: str, itens: List[Dict[str, Any]]) -> None`
   Persist information about a purchase attempt under `compras/{user_id}`.
+- `salvar_discord_info(user_id: str, info: Dict[str, Any]) -> None`
+  Store Discord account details such as `discord_id` and role status.
