@@ -20,6 +20,11 @@ CONFIG_PATH = BASE_DIR / "gerador_exe" / "build_config.json"
 BIN_DIR = BASE_DIR / "gerador_exe" / "binario_final"
 TEMP_DIR = BASE_DIR / "gerador_exe" / "temp"
 LOG_FILE = BASE_DIR / "logs" / "builder.log"
+REQUIREMENTS_FILE = (
+    BASE_DIR / "requirements.txt"
+    if (BASE_DIR / "requirements.txt").exists()
+    else BASE_DIR / "bot_keydrop" / "requirements.txt"
+)
 
 logger = setup_logger("builder")
 
@@ -50,6 +55,7 @@ def load_config():
         "output_name": "KeydropBot",
         "version_file": "update_info_example.json",
         "icon": "bot-icone.ico",
+        "spec_file": "launcher.spec",
     }
 
 
@@ -59,6 +65,15 @@ def ensure_dependency(package: str) -> None:
     except ImportError:
         logger.info(f"Instalando dependência faltante: {package}...")
         subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+
+
+def install_requirements() -> None:
+    """Install project dependencies from the requirements file."""
+    if REQUIREMENTS_FILE.exists():
+        logger.info("Instalando dependências do %s", REQUIREMENTS_FILE.name)
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", "-r", str(REQUIREMENTS_FILE)]
+        )
 
 
 def check_required_files() -> bool:
@@ -112,6 +127,7 @@ def validate_environment(min_version=(3, 10)) -> bool:
         return False
     for pkg in ("pyinstaller", "pytest", "psutil", "requests"):
         ensure_dependency(pkg)
+    install_requirements()
     if not check_pyinstaller():
         return False
     return True
@@ -165,35 +181,45 @@ def check_port(port: int = 8000) -> bool:
 
 def build_executable(config: dict, version: str) -> Path:
     exe_name = f"{config['output_name']}_v{version}.exe"
-
     main_script = BASE_DIR / config.get("main_script", "")
-    if not main_script.exists():
-        log_error(f"Arquivo principal '{main_script}' não encontrado.")
-        return Path()
+    spec_file = config.get("spec_file")
 
-    cmd = [
-        sys.executable,
-        "-m",
-        "PyInstaller",
-        "--onefile",
-        "--noconsole",
-        "--name",
-        exe_name,
-    ]
-    if os.getenv("MODO_DEBUG") == "1":
-        cmd.remove("--noconsole")
-        cmd.append("--console")
-        cmd.extend(["--add-data", f"debug_tester.py;."])
-        logger.info("Modo debug ativado para o build")
-    icon = config.get("icon")
-    if icon:
-        icon_path = BASE_DIR / icon
-        if icon_path.exists():
-            cmd.extend(["--icon", str(icon_path)])
-        else:
-            log_warning(f"Ícone '{icon}' não encontrado. Continuando sem ícone.")
+    if spec_file:
+        spec_path = BASE_DIR / spec_file
+        if not spec_path.exists():
+            log_error(f"Spec file '{spec_path}' não encontrado.")
+            return Path()
+        cmd = [sys.executable, "-m", "PyInstaller", str(spec_path)]
+    else:
+        if not main_script.exists():
+            log_error(f"Arquivo principal '{main_script}' não encontrado.")
+            return Path()
+        cmd = [
+            sys.executable,
+            "-m",
+            "PyInstaller",
+            "--onefile",
+            "--noconsole",
+            "--name",
+            exe_name,
+        ]
+    if not spec_file:
+        if os.getenv("MODO_DEBUG") == "1":
+            cmd.remove("--noconsole")
+            cmd.append("--console")
+            cmd.extend(["--add-data", f"debug_tester.py;."])
+            logger.info("Modo debug ativado para o build")
+        icon = config.get("icon")
+        if icon:
+            icon_path = BASE_DIR / icon
+            if icon_path.exists():
+                cmd.extend(["--icon", str(icon_path)])
+            else:
+                log_warning(
+                    f"Ícone '{icon}' não encontrado. Continuando sem ícone."
+                )
 
-    cmd.append(str(main_script))
+        cmd.append(str(main_script))
     logger.info("Gerando executável...")
     result = subprocess.run(cmd, text=True, capture_output=True)
     if result.returncode != 0:
@@ -201,8 +227,12 @@ def build_executable(config: dict, version: str) -> Path:
         return Path()
     dist_path = BASE_DIR / "dist" / exe_name
     if not dist_path.exists():
-        log_error("Executável não encontrado em 'dist'")
-        return Path()
+        alt = next((p for p in (BASE_DIR / "dist").glob("*.exe")), None)
+        if alt:
+            dist_path = alt
+        else:
+            log_error("Executável não encontrado em 'dist'")
+            return Path()
     return dist_path
 
 
