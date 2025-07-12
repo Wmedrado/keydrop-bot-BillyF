@@ -64,19 +64,32 @@ class ErrorReporter:
         with open(self.log_file, "a", encoding="utf-8") as fh:
             fh.write(entry)
 
+
         info = self._build_error_data(exc, tb)
         self._flush_pending()
-        send_ok = False
+        if not self._send_discord(info):
+            self._save_pending(info)
+
+        # Avoid calling local callbacks during automated tests
+        if self.send_callback and TEST_ENV_VAR not in os.environ:
+            try:
+                self.send_callback(hsh, tb)
+            except Exception as e:
+                self.logger.warning("Failed to send error: %s", e)
+
+        # Avoid sending notifications during automated tests
         if TEST_ENV_VAR not in os.environ:
-            send_ok = self._send_discord(info)
-            if self.send_callback and send_ok:
+            info = self._build_error_data(exc, tb)
+            self._flush_pending()
+            if not self._send_discord(info):
+                self._save_pending(info)
+
+            if self.send_callback:
                 try:
                     self.send_callback(hsh, tb)
                 except Exception as e:
                     self.logger.warning("Failed to send error: %s", e)
 
-        if not send_ok:
-            self._save_pending(info)
         return hsh
 
     # ------------------------------------------------------------------
