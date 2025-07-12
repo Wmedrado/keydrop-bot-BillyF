@@ -20,6 +20,7 @@ class ParticipationLearner:
             "image": {"success": 0, "fail": 0}
         })
         self.state["method_stats"].setdefault("learned", {"success": 0, "fail": 0})
+        self.state["method_stats"].setdefault("text", {"success": 0, "fail": 0})
         self.state.setdefault("learned_selector", None)
 
     def save(self):
