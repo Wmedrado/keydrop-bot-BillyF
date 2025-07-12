@@ -18,8 +18,11 @@ _orig_fb_client = sys.modules.get('cloud.firebase_client')
 _orig_firebase_admin = sys.modules.get('firebase_admin')
 
 updates = []
-
-password_reset = None
+if 'password_reset' in sys.modules:
+    password_reset = importlib.reload(sys.modules['password_reset'])
+else:
+    password_reset = importlib.import_module('password_reset')
+password_reset.db = types.SimpleNamespace(reference=lambda p: types.SimpleNamespace(delete=lambda: None))
 
 def setup_module(module):
     global password_reset

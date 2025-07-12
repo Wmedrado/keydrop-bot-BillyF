@@ -24,6 +24,9 @@ python ci/check_pr_structure.py | tee build_results/pr_structure.log
 # Classify pull request risk and generate report
 python ci/classify_pr_risk.py | tee build_results/pr_risk.log
 
+# Validate need for rollback on risky changes
+python ci/rollback_validator.py | tee build_results/rollback_validator.log
+
 
 
 
@@ -55,5 +58,8 @@ pytest --html=tests/test_report.html --self-contained-html --cov=bot_keydrop --c
 python ci/check_regression_intelligence.py | tee build_results/regression_check.log
 # Automated PR review
 python ci/auto_pr_review.py | tee build_results/auto_review.log
+
+# Record successful build for branch failure tracking
+python ci/branch_failure_manager.py --success | tee build_results/branch_failure.log
 
 echo "Build succeeded" > build_results/build_status.log

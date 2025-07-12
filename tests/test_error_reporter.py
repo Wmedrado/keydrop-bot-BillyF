@@ -47,6 +47,7 @@ def test_pending_file_on_send_fail(tmp_path, monkeypatch):
     pend = tmp_path / "pend.json"
     reporter = ErrorReporter(log_file=log, pending_file=pend)
 
+    monkeypatch.delenv(TEST_ENV_VAR, raising=False)
     monkeypatch.setattr(reporter, "_send_discord", lambda info: False)
     monkeypatch.delenv(TEST_ENV_VAR, raising=False)
 
