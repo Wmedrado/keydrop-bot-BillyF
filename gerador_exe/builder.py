@@ -169,7 +169,6 @@ def install_test_dependencies() -> None:
 def check_required_files() -> bool:
     logger.info("Verificando arquivos essenciais...")
     reqs = {
-        "launcher.py": BASE_DIR / "launcher.py",
         "config.json": BASE_DIR / "config.json",
         "requirements.txt": REQUIREMENTS_FILE,
     }

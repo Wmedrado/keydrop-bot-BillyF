@@ -147,20 +147,6 @@ try:
 except Exception:
     pass
 
-# Adjust KeydropBotGUI to work without real GUI
-try:
-    from bot_keydrop.keydrop_bot_desktop_v4 import KeydropBotGUI
-
-    def _dummy_setup_window(self):
-        self.root = tk.Tk()
-
-    def _dummy_setup_interface(self):
-        pass
-
-    KeydropBotGUI.setup_window = _dummy_setup_window
-    KeydropBotGUI.setup_interface = _dummy_setup_interface
-except Exception:
-    pass
 # Stub pystray to avoid display errors during tests
 if "pystray" not in sys.modules:
     pystray = types.ModuleType("pystray")
