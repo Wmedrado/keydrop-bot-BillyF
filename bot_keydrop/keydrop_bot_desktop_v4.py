@@ -24,8 +24,11 @@ from datetime import datetime, timedelta
 from pathlib import Path
 import psutil
 
+# Modo debug via variável de ambiente
+DEBUG_MODE = os.getenv("MODO_DEBUG") == "1"
+
 # Configuração de logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG if DEBUG_MODE else logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -820,6 +823,8 @@ class KeydropBotGUI:
         self.config = self.bot_manager.config
         self.setup_interface()
         self.start_monitoring()
+        if DEBUG_MODE:
+            self.enable_debug_mode()
         
     def setup_window(self):
         """Configurar janela principal"""
@@ -1406,8 +1411,24 @@ Bot {bot_id}:
                 except Exception as e:
                     print(f"Erro no monitoramento: {e}")
                     time.sleep(10)
-        
+
         threading.Thread(target=monitor, daemon=True).start()
+
+    def enable_debug_mode(self):
+        """Ajustar interface e falhas controladas."""
+        self.root.configure(bg="#550000")
+        tk.Label(
+            self.root,
+            text="MODO DEBUG ATIVO",
+            bg="#550000",
+            fg="white",
+            font=("Arial", 12, "bold"),
+        ).pack(fill="x")
+        self.root.after(5000, self._simulate_failure)
+
+    def _simulate_failure(self):
+        logger.debug("Falha simulada em modo debug")
+        raise RuntimeError("Falha simulada para testes")
     
     def run(self):
         """Executar aplicação"""
