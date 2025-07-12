@@ -6,6 +6,7 @@ Contém a lógica para interagir com o Keydrop e executar participações em sor
 import asyncio
 import logging
 import random
+from bot_keydrop.performance_utils import measure_time
 from typing import Dict, List, Optional, Any, Tuple, Deque
 from collections import deque
 from dataclasses import dataclass
@@ -111,6 +112,7 @@ class KeydropAutomation:
         logger.info("Automação Keydrop inicializada")
         self.learner = ParticipationLearner()
     
+    @measure_time("lottery")
     async def participate_in_lottery(self, tab_id: int, max_retries: int = 3) -> ParticipationAttempt:
         """
         Participa de um sorteio em uma guia específica
@@ -598,6 +600,7 @@ class KeydropAutomation:
             logger.error(f"Erro ao navegar para sorteios na guia {tab_id}: {e}")
             return False
     
+    @measure_time("login")
     async def setup_login_tabs(self) -> Tuple[bool, List[int]]:
         """
         Configura guias para login manual
