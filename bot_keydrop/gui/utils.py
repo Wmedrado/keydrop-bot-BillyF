@@ -44,10 +44,11 @@ def safe_load_image(
     img = None
     try:
         if str(source).startswith("http"):
-            from urllib.request import urlopen
+            import requests
 
-            with urlopen(source) as resp:
-                img = Image.open(resp)
+            with requests.get(source, timeout=10, stream=True) as resp:
+                resp.raise_for_status()
+                img = Image.open(resp.raw)
         else:
             img = Image.open(source)
     except Exception:

@@ -902,7 +902,11 @@ class KeydropBot:
             return
         url = f"https://api.telegram.org/bot{token}/sendMessage"
         try:
-            requests.post(url, data={"chat_id": chat_id, "text": message})
+            requests.post(
+                url,
+                data={"chat_id": chat_id, "text": message},
+                timeout=10,
+            )
         except Exception as e:
             print(f"[Bot {self.bot_id}] Erro ao enviar Telegram: {e}")
 

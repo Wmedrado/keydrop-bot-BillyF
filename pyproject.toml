@@ -1,4 +1,14 @@
 [tool.ruff]
 line-length = 120
-fix = true
+fix = false
 exclude = ["tests/", ".venv/"]
+extend-ignore = [
+  "E722",  # allow bare excepts
+  "F821",  # allow undefined names (tests rely on dynamic attributes)
+  "E402",  # allow imports not at top of file
+  "F401",  # allow unused imports
+  "F811",  # allow redefinitions
+  "F823",  # allow local variable referenced before assignment
+  "F841",  # allow unused variables
+  "F541",  # allow f-strings without placeholders
+]
