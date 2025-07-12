@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Keydrop Bot Professional v3.0.0 - Interface Gráfica Desktop COMPLETA
-Aplicativo desktop nativo com automação Edge integrada
+Aplicativo desktop nativo com automação Chrome integrada
 """
 
 import tkinter as tk
@@ -243,7 +243,7 @@ class KeydropBotGUI:
             # Log inicial
             self.log_message("🎉 Keydrop Bot Professional v3.0.0 iniciado com sucesso!")
             self.log_message("📱 Modo: Aplicação Desktop Nativa com Dark Theme")
-            self.log_message("🚀 Sistema pronto para automação Microsoft Edge")
+            self.log_message("🚀 Sistema pronto para automação Google Chrome")
             
         except Exception as e:
             print(f"Erro ao configurar interface principal: {e}")
@@ -262,8 +262,8 @@ class KeydropBotGUI:
         tk.Label(info_frame, text="🤖 Automação Profissional para Sorteios Keydrop", 
                 font=('Arial', 14, 'bold'), bg=self.dark_colors['bg'], 
                 fg=self.dark_colors['accent']).pack(anchor=tk.W, padx=10, pady=5)
-        tk.Label(info_frame, text="🌐 Microsoft Edge Exclusivo • Múltiplos Perfis • Multi-Instância", 
-                font=('Arial', 12), bg=self.dark_colors['bg'], 
+        tk.Label(info_frame, text="🌐 Google Chrome Exclusivo • Múltiplos Perfis • Multi-Instância",
+                font=('Arial', 12), bg=self.dark_colors['bg'],
                 fg=self.dark_colors['fg']).pack(anchor=tk.W, padx=10, pady=2)
         tk.Label(info_frame, text="👨‍💻 Desenvolvido por: William Medrado (wmedrado)", 
                 font=('Arial', 11), bg=self.dark_colors['bg'], 
@@ -654,15 +654,15 @@ class KeydropBotGUI:
             print(f"Erro ao atualizar sistema: {e}")
             self.root.after(5000, self.update_system_stats)
 
-    def find_edge_executable(self):
-        """Encontrar Edge"""
-        edge_paths = [
-            "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
-            "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
-            os.path.expanduser("~\\AppData\\Local\\Microsoft\\Edge\\Application\\msedge.exe"),
-            "msedge.exe"
+    def find_chrome_executable(self):
+        """Encontrar Google Chrome"""
+        chrome_paths = [
+            "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+            "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+            os.path.expanduser("~\\AppData\\Local\\Google\\Chrome\\Application\\chrome.exe"),
+            "chrome.exe"
         ]
-        for path in edge_paths:
+        for path in chrome_paths:
             if os.path.exists(path):
                 return path
         return None
@@ -670,14 +670,14 @@ class KeydropBotGUI:
     def start_bot_direct(self):
         """Iniciar automação"""
         try:
-            self.log_message("🤖 Iniciando automação Edge...", "INFO")
-            edge_path = self.find_edge_executable()
+            self.log_message("🤖 Iniciando automação Chrome...", "INFO")
+            edge_path = self.find_chrome_executable()
             
             if not edge_path:
-                messagebox.showerror("Erro", "Microsoft Edge não encontrado!")
+                messagebox.showerror("Erro", "Google Chrome não encontrado!")
                 return
-                
-            self.log_message(f"✅ Edge encontrado: {edge_path}", "SUCCESS")
+
+            self.log_message(f"✅ Chrome encontrado: {edge_path}", "SUCCESS")
             
             num_tabs = int(self.num_tabs_var.get()) if hasattr(self, 'num_tabs_var') else 3
             headless_mode = self.headless_var.get() if hasattr(self, 'headless_var') else False
@@ -772,18 +772,18 @@ class KeydropBotGUI:
     def emergency_stop_direct(self):
         """Parada de emergência"""
         try:
-            result = messagebox.askyesno("Emergência", "Fechar TODOS os processos Edge?")
+            result = messagebox.askyesno("Emergência", "Fechar TODOS os processos Chrome?")
             if result:
                 self.log_message("🚨 PARADA DE EMERGÊNCIA!", "WARNING")
                 killed = 0
                 for proc in psutil.process_iter(['pid', 'name']):
                     try:
-                        if 'msedge' in proc.info['name'].lower():
+                        if 'chrome' in proc.info['name'].lower():
                             psutil.Process(proc.info['pid']).terminate()
                             killed += 1
                     except:
                         pass
-                self.log_message(f"🛑 {killed} processos Edge finalizados!", "WARNING")
+                self.log_message(f"🛑 {killed} processos Chrome finalizados!", "WARNING")
         except Exception as e:
             self.log_message(f"❌ Erro: {e}", "ERROR")
 
@@ -880,7 +880,7 @@ class KeydropBotGUI:
         """Executar aplicação"""
         self.log_message("🎉 Keydrop Bot Professional v3.0.0 iniciado!")
         self.log_message("📱 Modo: Aplicação Desktop Nativa")
-        self.log_message("🚀 Sistema pronto para automação Edge")
+        self.log_message("🚀 Sistema pronto para automação Chrome")
         self.root.mainloop()
 
 def main():

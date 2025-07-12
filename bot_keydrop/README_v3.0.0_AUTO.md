@@ -81,8 +81,8 @@
 - ✅ **WebDriver Manager**: Gerenciamento automático
 
 ### Se Selenium não estiver disponível:
-- O bot funciona em "Modo Edge Básico"
-- Abre janelas do Edge para participação manual
+- O bot funciona em "Modo manual básico"
+- Abre janelas do Chrome para participação manual
 - Todas as outras funcionalidades permanecem ativas
 
 ## 📊 Relatórios Discord
@@ -148,7 +148,7 @@
 ### 🔧 Melhorias:
 - 🔧 Interface mais responsiva e estável
 - 🔧 Melhor tratamento de erros
-- 🔧 Sistema de fallback (Edge básico)
+- 🔧 Sistema de fallback (modo manual básico)
 - 🔧 Logs em tempo real mais informativos
 
 ### 🐛 Correções:
