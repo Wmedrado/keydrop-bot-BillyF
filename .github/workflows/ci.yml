@@ -31,3 +31,9 @@ jobs:
         run: |
           bash ci/run_ui_pipeline.sh
 
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: tests/coverage.xml
+          fail_ci_if_error: true
+

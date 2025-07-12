@@ -48,7 +48,14 @@ if not run_dependency_check():
 PY
 
 # Run tests with coverage and html report
-pytest --html=tests/test_report.html --self-contained-html --cov=bot_keydrop --cov-report=term --cov-report=html:tests/htmlcov | tee tests/coverage.txt
+pytest --html=tests/test_report.html --self-contained-html \
+    --cov=bot_keydrop --cov-report=term \
+    --cov-report=html:tests/htmlcov --cov-report=xml:tests/coverage.xml \
+    | tee tests/coverage.txt
+
+# Enforce minimum coverage of 80%
+python ci/check_coverage_threshold.py --min 80 --file tests/coverage.xml \
+    | tee build_results/coverage_check.log
 
 # Regression intelligence validation
 python ci/check_regression_intelligence.py | tee build_results/regression_check.log
