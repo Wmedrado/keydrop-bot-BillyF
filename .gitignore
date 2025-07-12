@@ -9,3 +9,6 @@ __pycache__/
 backups/
 logs/
 build_results/
+profiles/
+bandit*.json
+bandit.log
