@@ -5,6 +5,7 @@ Fornece endpoints para comunicação com o frontend
 
 import asyncio
 import logging
+from log_utils import setup_logger
 import sys
 from datetime import datetime, date
 from typing import Dict, List, Optional, Any
@@ -54,7 +55,7 @@ from . import premium
 
 # Configuração de logging
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = setup_logger("backend_main")
 
 # Criar aplicação FastAPI
 app = FastAPI(
@@ -954,10 +955,12 @@ def run_server(host: str = "127.0.0.1", port: int = 8000, debug: bool = False):
         port: Porta para bind
         debug: Modo debug
     """
+    logger.info("Iniciando servidor FastAPI em %s:%s", host, port)
     uvicorn.run("main:app", host=host, port=port, reload=debug, log_level="info")
 
 
 if __name__ == "__main__":
     # Detectar se está rodando como executável empacotado
     is_executable = getattr(sys, "frozen", False)
+    logger.debug("__main__ iniciado; debug=%s", not is_executable)
     run_server(debug=not is_executable)

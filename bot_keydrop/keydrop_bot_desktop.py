@@ -18,6 +18,9 @@ import shutil
 import psutil
 # Custom browser integration
 from custom_browser import CustomBrowser
+from log_utils import setup_logger
+
+logger = setup_logger("keydrop_bot_desktop")
 
 # matplotlib imports removidos temporariamente para evitar erro de dependências
 # import matplotlib.pyplot as plt
@@ -30,6 +33,7 @@ class KeydropBotGUI:  # noqa: F811
     @measure_time("gui")
     def __init__(self):
         """Inicialização ultra-robusta para executável"""
+        logger.debug("Criando instância da GUI")
         # Criar janela principal
         self.root = tk.Tk()
         self.root.withdraw()
@@ -47,6 +51,7 @@ class KeydropBotGUI:  # noqa: F811
         self.config_file = Path("config.json")
         # Inicializar estatísticas
         self.init_bot_stats()
+        logger.debug("GUI inicializada com sucesso")
 
     def setup_dark_theme(self):
         """Stub: Configura tema escuro (implementação real deve ser feita)"""
@@ -1245,7 +1250,9 @@ class KeydropBotGUI:  # noqa: F811
     def run(self):
         """Método principal para executar a aplicação"""
         self.log_message("🚀 Keydrop Bot Professional v3.0.0 iniciado!", "SUCCESS")
+        logger.debug("Entrando no loop principal da GUI")
         self.root.mainloop()
+        logger.debug("Loop principal da GUI encerrado")
 
     def save_config(self):
         """Salvar configurações no arquivo JSON"""
@@ -1380,6 +1387,7 @@ def main():
     """Função principal"""
     try:
         print("🎯 Iniciando Keydrop Bot Professional v3.0.0...")
+        logger.debug("main() iniciado")
 
         if os.name == 'nt':
             try:
@@ -1389,9 +1397,12 @@ def main():
                 pass
 
         app = KeydropBotGUI()
+        logger.debug("Instância da GUI criada")
         app.run()
+        logger.debug("Execução da GUI finalizada")
 
     except Exception as e:
+        logger.exception("Erro na execu\u00e7\u00e3o da GUI: %s", e)
         print(f"❌ Erro: {e}")
         import traceback
         traceback.print_exc()
