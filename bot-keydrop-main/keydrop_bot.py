@@ -401,10 +401,19 @@ class KeyDropBot:
             
             actions = ActionChains(self.driver)
             actions.send_keys(Keys.ESCAPE).perform()
-            time.sleep(0.5)
+            # Aguarda rápido para garantir que o comando foi processado
+            WebDriverWait(self.driver, 1).until(lambda d: True)
             return True
         except:
             return False
+
+    def aguardar_secao_sorteios(self, timeout=30):
+        """Espera a seção de sorteios carregar completamente"""
+        WebDriverWait(self.driver, timeout).until(
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR, '[data-testid="div-active-giveaways-list-section"]')
+            )
+        )
 
     def participar_sorteio(self):
         """Lógica principal para participar de sorteios com sistema de retry avançado"""
@@ -441,7 +450,7 @@ class KeyDropBot:
                         print(f"[Bot {self.bot_id}] Todas as tentativas falharam - iniciando reinício de guia...")
                         if self._reiniciar_guia_keydrop():
                             print(f"[Bot {self.bot_id}] Guia reiniciada - tentando novamente...")
-                            time.sleep(5)
+                            self.aguardar_secao_sorteios()
                             return self.participar_sorteio()  # Recomeçar após reiniciar
                         else:
                             self.checar_alerta_discord()
@@ -455,12 +464,13 @@ class KeyDropBot:
                     link_participar = ultimo_sorteio.find_element(By.CSS_SELECTOR, 'a[data-testid="btn-single-card-giveaway-join"]')
                     self.driver.execute_script("arguments[0].click();", link_participar)
                     print(f"[Bot {self.bot_id}] Clicou no link do sorteio")
-                    time.sleep(2)
-                    
-                    # Procura o botão final de participação
+
+                    # Procura o botão final de participação com espera dinâmica
                     try:
                         botao_participar = wait.until(
-                            EC.element_to_be_clickable((By.CSS_SELECTOR, '[data-testid="btn-giveaway-join-the-giveaway"]'))
+                            EC.element_to_be_clickable(
+                                (By.CSS_SELECTOR, '[data-testid="btn-giveaway-join-the-giveaway"]')
+                            )
                         )
                         
                         # Verifica se o botão não está desabilitado
@@ -503,7 +513,7 @@ class KeyDropBot:
                                 print(f"[Bot {self.bot_id}] Tentativas esgotadas - reiniciando guia...")
                                 if self._reiniciar_guia_keydrop():
                                     print(f"[Bot {self.bot_id}] Guia reiniciada - tentando novamente...")
-                                    time.sleep(5)
+                                    self.aguardar_secao_sorteios()
                                     return self.participar_sorteio()  # Recomeçar após reiniciar
                                 else:
                                     self.checar_alerta_discord()
@@ -519,7 +529,7 @@ class KeyDropBot:
                             print(f"[Bot {self.bot_id}] Tentativas esgotadas - reiniciando guia...")
                             if self._reiniciar_guia_keydrop():
                                 print(f"[Bot {self.bot_id}] Guia reiniciada - tentando novamente...")
-                                time.sleep(5)
+                                self.aguardar_secao_sorteios()
                                 return self.participar_sorteio()  # Recomeçar após reiniciar
                             else:
                                 self.checar_alerta_discord()
@@ -535,7 +545,7 @@ class KeyDropBot:
                         print(f"[Bot {self.bot_id}] Tentativas esgotadas - reiniciando guia...")
                         if self._reiniciar_guia_keydrop():
                             print(f"[Bot {self.bot_id}] Guia reiniciada - tentando novamente...")
-                            time.sleep(5)
+                            self.aguardar_secao_sorteios()
                             return self.participar_sorteio()  # Recomeçar após reiniciar
                         else:
                             self.checar_alerta_discord()
@@ -552,7 +562,7 @@ class KeyDropBot:
                     print(f"[Bot {self.bot_id}] Tentativas esgotadas - reiniciando guia...")
                     if self._reiniciar_guia_keydrop():
                         print(f"[Bot {self.bot_id}] Guia reiniciada - tentando novamente...")
-                        time.sleep(5)
+                        self.aguardar_secao_sorteios()
                         return self.participar_sorteio()  # Recomeçar após reiniciar
                     else:
                         self.checar_alerta_discord()
@@ -604,7 +614,7 @@ class KeyDropBot:
                         print(f"[Bot {self.bot_id}] Tentativas esgotadas - reiniciando guia...")
                         if self._reiniciar_guia_keydrop():
                             print(f"[Bot {self.bot_id}] Guia reiniciada - tentando novamente...")
-                            time.sleep(5)
+                            self.aguardar_secao_sorteios()
                             return self.participar_sorteio_contender()  # Recomeçar após reiniciar
                         else:
                             return False
@@ -629,7 +639,7 @@ class KeyDropBot:
                         print(f"[Bot {self.bot_id}] Tentativas esgotadas - reiniciando guia...")
                         if self._reiniciar_guia_keydrop():
                             print(f"[Bot {self.bot_id}] Guia reiniciada - tentando novamente...")
-                            time.sleep(5)
+                            self.aguardar_secao_sorteios()
                             return self.participar_sorteio_contender()  # Recomeçar após reiniciar
                         else:
                             return False
@@ -641,12 +651,13 @@ class KeyDropBot:
                     link_participar = ultimo_sorteio.find_element(By.CSS_SELECTOR, 'a[data-testid="btn-single-card-giveaway-join"]')
                     self.driver.execute_script("arguments[0].click();", link_participar)
                     print(f"[Bot {self.bot_id}] Clicou no link do sorteio CONTENDER")
-                    time.sleep(2)
-                    
-                    # Procura o botão final de participação
+
+                    # Procura o botão final de participação com espera dinâmica
                     try:
                         botao_participar = wait.until(
-                            EC.element_to_be_clickable((By.CSS_SELECTOR, '[data-testid="btn-giveaway-join-the-giveaway"]'))
+                            EC.element_to_be_clickable(
+                                (By.CSS_SELECTOR, '[data-testid="btn-giveaway-join-the-giveaway"]')
+                            )
                         )
                         
                         # Verifica se o botão não está desabilitado
@@ -688,7 +699,7 @@ class KeyDropBot:
                                 print(f"[Bot {self.bot_id}] Tentativas esgotadas - reiniciando guia...")
                                 if self._reiniciar_guia_keydrop():
                                     print(f"[Bot {self.bot_id}] Guia reiniciada - tentando novamente...")
-                                    time.sleep(5)
+                                    self.aguardar_secao_sorteios()
                                     return self.participar_sorteio_contender()  # Recomeçar após reiniciar
                                 else:
                                     return False
@@ -703,7 +714,7 @@ class KeyDropBot:
                             print(f"[Bot {self.bot_id}] Tentativas esgotadas - reiniciando guia...")
                             if self._reiniciar_guia_keydrop():
                                 print(f"[Bot {self.bot_id}] Guia reiniciada - tentando novamente...")
-                                time.sleep(5)
+                                self.aguardar_secao_sorteios()
                                 return self.participar_sorteio_contender()  # Recomeçar após reiniciar
                             else:
                                 return False
@@ -718,7 +729,7 @@ class KeyDropBot:
                         print(f"[Bot {self.bot_id}] Tentativas esgotadas - reiniciando guia...")
                         if self._reiniciar_guia_keydrop():
                             print(f"[Bot {self.bot_id}] Guia reiniciada - tentando novamente...")
-                            time.sleep(5)
+                            self.aguardar_secao_sorteios()
                             return self.participar_sorteio_contender()  # Recomeçar após reiniciar
                         else:
                             return False
@@ -734,7 +745,7 @@ class KeyDropBot:
                     print(f"[Bot {self.bot_id}] Tentativas esgotadas - reiniciando guia...")
                     if self._reiniciar_guia_keydrop():
                         print(f"[Bot {self.bot_id}] Guia reiniciada - tentando novamente...")
-                        time.sleep(5)
+                        self.aguardar_secao_sorteios()
                         return self.participar_sorteio_contender()  # Recomeçar após reiniciar
                     else:
                         return False
