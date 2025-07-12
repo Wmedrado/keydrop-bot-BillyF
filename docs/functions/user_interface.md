@@ -21,5 +21,8 @@ Firebase for persistence.
   `cloud/firebase_client.py`.
 
 Additional Tkinter `Frame` subclasses (`LoginFrame`, `RegisterFrame`,
-`ProfileFrame`, `RankingFrame`) implement the GUI components for interacting
-with the bot.
+`ProfileFrame`, `RankingFrame`, `StoreFrame`) implement the GUI components for
+interacting with the bot. `StoreFrame` provides a simple shopping interface
+allowing the user to add premium items to a cart and proceed with payment via
+Pix. The professional desktop version under `bot_keydrop/gui/` exposes a
+similar `StoreFrame` class for integration with the full-featured GUI.

@@ -12,6 +12,7 @@ if "customtkinter" not in sys.modules:
         def __getattr__(self, name):
             def method(*a, **k):
                 return None
+
             return method
 
         def __call__(self, *args, **kwargs):
@@ -31,6 +32,8 @@ if "customtkinter" not in sys.modules:
     ctk.CTkFrame = Dummy
     ctk.CTkButton = Dummy
     ctk.CTkLabel = Dummy
+    ctk.CTkToplevel = Dummy
+    ctk.CTkScrollableFrame = Dummy
     ctk.StringVar = DummyStringVar
     ctk.set_appearance_mode = lambda *a, **k: None
     sys.modules["customtkinter"] = ctk
@@ -95,6 +98,7 @@ if "tkinter" not in sys.modules:
     ttk.Notebook = Dummy
     ttk.Frame = DummyFrame
     ttk.LabelFrame = DummyFrame
+
     class DummyTreeview(DummyFrame):
         def heading(self, *a, **k):
             pass
@@ -119,9 +123,11 @@ if "tkinter" not in sys.modules:
     ttk.LabelFrame = DummyFrame
     tk.ttk = ttk
     tk.scrolledtext = types.SimpleNamespace(ScrolledText=Dummy)
-    tk.messagebox = types.SimpleNamespace(showinfo=lambda *a, **k: None,
-                                           showwarning=lambda *a, **k: None,
-                                           showerror=lambda *a, **k: None)
+    tk.messagebox = types.SimpleNamespace(
+        showinfo=lambda *a, **k: None,
+        showwarning=lambda *a, **k: None,
+        showerror=lambda *a, **k: None,
+    )
     tk.filedialog = types.SimpleNamespace(askopenfilename=lambda *a, **k: "")
     sys.modules["tkinter"] = tk
     sys.modules["tkinter.ttk"] = ttk
@@ -129,6 +135,7 @@ if "tkinter" not in sys.modules:
 # Stub PIL ImageTk PhotoImage to avoid Tcl errors
 try:
     from PIL import ImageTk  # type: ignore
+
     class DummyPhotoImage:
         def __init__(self, *a, **k):
             pass
@@ -169,4 +176,3 @@ if "pystray" not in sys.modules:
     pystray.MenuItem = lambda *a, **k: None
     pystray.Menu = lambda *a, **k: None
     sys.modules["pystray"] = pystray
-

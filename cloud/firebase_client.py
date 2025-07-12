@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Any, List, Dict
+from datetime import datetime
 
 try:
     import firebase_admin
@@ -121,4 +122,16 @@ def upload_foto_perfil(user_id: str, caminho_imagem: str) -> str:
     except Exception as exc:  # pragma: no cover - network errors
         logger.exception("Falha ao enviar foto de perfil: %s", exc)
         raise RuntimeError("Falha ao enviar foto de perfil") from exc
+
+
+def registrar_compra(user_id: str, itens: List[Dict[str, Any]]) -> None:
+    """Persist a purchase attempt in the realtime database."""
+    initialize_firebase()
+    compra_ref = db.reference(f"compras/{user_id}")
+    dados = {
+        "itens": itens,
+        "timestamp": int(datetime.utcnow().timestamp()),
+    }
+    compra_ref.push(dados)
+    logger.debug("Compra registrada para %s: %s", user_id, dados)
 
