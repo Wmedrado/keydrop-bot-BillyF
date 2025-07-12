@@ -18,6 +18,7 @@ from tkinter import messagebox
 import tkinter as tk
 from tkinter import ttk
 import time
+import logging
 
 class ImprovedUpdateManager:
     """Gerenciador de atualizações via GitHub com melhor tratamento de erros"""
@@ -28,7 +29,18 @@ class ImprovedUpdateManager:
         self.current_version = current_version
         self.github_api = f"https://api.github.com/repos/{repo_owner}/{repo_name}"
         self.update_in_progress = False
-        
+
+        # Configuração de logging
+        log_dir = Path("logs")
+        log_dir.mkdir(exist_ok=True)
+        self.logger = logging.getLogger("update_manager")
+        if not self.logger.handlers:
+            handler = logging.FileHandler(log_dir / "update.log", encoding="utf-8")
+            formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
+            handler.setFormatter(formatter)
+            self.logger.addHandler(handler)
+            self.logger.setLevel(logging.INFO)
+
         # Token de acesso pessoal do GitHub
         self.github_token = self.get_github_token()
         self.headers = {
@@ -42,7 +54,7 @@ class ImprovedUpdateManager:
         # Método 1: Variável de ambiente
         token = os.getenv('GITHUB_TOKEN')
         if token:
-            print("✅ Token do GitHub encontrado via variável de ambiente")
+            self.logger.info("Token do GitHub encontrado via variável de ambiente")
             return token
             
         # Método 2: Arquivo local - múltiplos caminhos para compatibilidade
@@ -73,10 +85,10 @@ class ImprovedUpdateManager:
                 try:
                     token = token_file.read_text(encoding='utf-8').strip()
                     if token and len(token) > 10:  # Validação básica
-                        print(f"✅ Token do GitHub encontrado em: {token_file}")
+                        self.logger.info(f"Token do GitHub encontrado em: {token_file}")
                         return token
                 except Exception as e:
-                    print(f"❌ Erro ao ler arquivo de token {token_file}: {e}")
+                    self.logger.warning(f"Erro ao ler arquivo de token {token_file}: {e}")
                     continue
                 
         # Método 3: Arquivo de configuração
@@ -93,105 +105,96 @@ class ImprovedUpdateManager:
                         config = json.load(f)
                         token = config.get('github_token', '')
                         if token:
-                            print("✅ Token do GitHub encontrado no bot_config.json")
+                            self.logger.info("Token do GitHub encontrado no bot_config.json")
                             return token
                 except Exception as e:
-                    print(f"❌ Erro ao ler configuração {config_file}: {e}")
+                    self.logger.warning(f"Erro ao ler configuração {config_file}: {e}")
                     continue
         
-        print("❌ Token do GitHub não encontrado!")
+        self.logger.warning("Token do GitHub não encontrado")
         return None
         
-    def check_for_updates(self):
-        """Verifica se há atualizações disponíveis"""
+    def check_for_updates(self, retries: int = 3):
+        """Verifica se há atualizações disponíveis com tentativas de retry"""
         if not self.github_token:
-            return {
-                "available": False,
-                "error": "Token do GitHub não configurado. Verifique o arquivo github_token.txt"
-            }
-            
-        try:
-            print("🔍 Verificando atualizações...")
-            print(f"📂 Repositório: {self.repo_owner}/{self.repo_name}")
-            
-            # Buscar última release no GitHub
-            url = f"{self.github_api}/releases/latest"
-            print(f"🌐 URL da API: {url}")
-            
-            response = requests.get(
-                url,
-                headers=self.headers,
-                timeout=15
-            )
-            
-            print(f"📡 Status da resposta: {response.status_code}")
-            
-            if response.status_code == 200:
-                release_data = response.json()
-                latest_version = release_data.get("tag_name", "").replace("v", "")
-                
-                print(f"📋 Versão atual: {self.current_version}")
-                print(f"📋 Versão disponível: {latest_version}")
-                
-                if self.is_newer_version(latest_version, self.current_version):
-                    # Buscar asset do ZIP (múltiplos formatos)
-                    assets = release_data.get("assets", [])
-                    zip_asset = None
-                    
-                    # Prioridade: KeyDrop_Bot_v*.zip, depois qualquer .zip
-                    for asset in assets:
-                        name = asset.get("name", "")
-                        if name.startswith("KeyDrop_Bot_v") and name.endswith(".zip"):
-                            zip_asset = asset
-                            break
-                    
-                    if not zip_asset:
+            self.logger.warning("Token do GitHub não configurado. Usando requisições anônimas")
+
+        url = f"{self.github_api}/releases/latest"
+        self.logger.info("Verificando atualizações")
+        self.logger.debug(f"URL da API: {url}")
+
+        for attempt in range(1, retries + 1):
+            try:
+                response = requests.get(
+                    url,
+                    headers=self.headers,
+                    timeout=15
+                )
+                self.logger.info(f"Tentativa {attempt}: status {response.status_code}")
+
+                if response.status_code == 401 and self.github_token:
+                    # Token inválido, tentar sem autenticação
+                    self.logger.warning("Token inválido. Tentando sem autenticação")
+                    self.headers = {}
+                    self.github_token = None
+                    continue
+
+                if response.status_code == 200:
+                    release_data = response.json()
+                    latest_version = release_data.get("tag_name", "").replace("v", "")
+
+                    if self.is_newer_version(latest_version, self.current_version):
+                        assets = release_data.get("assets", [])
+                        zip_asset = None
                         for asset in assets:
-                            if asset.get("name", "").endswith(".zip"):
+                            name = asset.get("name", "")
+                            if name.startswith("KeyDrop_Bot_v") and name.endswith(".zip"):
                                 zip_asset = asset
                                 break
-                    
-                    return {
-                        "available": True,
-                        "version": latest_version,
-                        "changelog": release_data.get("body", "Sem changelog disponível"),
-                        "release_date": release_data.get("published_at"),
-                        "download_url": zip_asset.get("browser_download_url") if zip_asset else None,
-                        "asset_name": zip_asset.get("name") if zip_asset else None,
-                        "asset_size": zip_asset.get("size", 0) if zip_asset else 0
-                    }
-                else:
+                        if not zip_asset:
+                            for asset in assets:
+                                if asset.get("name", "").endswith(".zip"):
+                                    zip_asset = asset
+                                    break
+                        return {
+                            "available": True,
+                            "version": latest_version,
+                            "changelog": release_data.get("body", "Sem changelog disponível"),
+                            "release_date": release_data.get("published_at"),
+                            "download_url": zip_asset.get("browser_download_url") if zip_asset else None,
+                            "asset_name": zip_asset.get("name") if zip_asset else None,
+                            "asset_size": zip_asset.get("size", 0) if zip_asset else 0
+                        }
+                    else:
+                        return {
+                            "available": False,
+                            "message": f"Versão atual ({self.current_version}) está atualizada"
+                        }
+                elif response.status_code == 404:
                     return {
                         "available": False,
-                        "message": f"Versão atual ({self.current_version}) está atualizada"
+                        "error": "Repositório não encontrado ou sem permissão"
                     }
-            elif response.status_code == 401:
+                else:
+                    self.logger.error(f"Erro HTTP {response.status_code}: {response.text}")
+                    return {
+                        "available": False,
+                        "error": f"Erro HTTP {response.status_code}: {response.text}"
+                    }
+            except requests.exceptions.RequestException as e:
+                self.logger.error(f"Tentativa {attempt} falhou: {e}")
+                if attempt == retries:
+                    return {
+                        "available": False,
+                        "error": f"Erro de conexão: {e}"
+                    }
+                time.sleep(2 ** attempt)
+            except Exception as e:
+                self.logger.error(f"Erro inesperado: {e}")
                 return {
                     "available": False,
-                    "error": "Token do GitHub inválido ou expirado"
+                    "error": f"Erro inesperado: {e}"
                 }
-            elif response.status_code == 404:
-                return {
-                    "available": False,
-                    "error": "Repositório não encontrado ou sem permissão"
-                }
-            else:
-                return {
-                    "available": False,
-                    "error": f"Erro HTTP {response.status_code}: {response.text}"
-                }
-                
-        except requests.exceptions.RequestException as e:
-            return {
-                "available": False,
-                "error": f"Erro de conexão: {str(e)}"
-            }
-        except Exception as e:
-            return {
-                "available": False,
-                "error": f"Erro inesperado: {str(e)}"
-            }
-    
     def is_newer_version(self, version1, version2):
         """Compara versões (version1 > version2)"""
         try:
@@ -222,8 +225,8 @@ class ImprovedUpdateManager:
             # Criar diretório temporário
             temp_dir = tempfile.mkdtemp()
             zip_path = os.path.join(temp_dir, "update.zip")
-            
-            print(f"📥 Baixando atualização de {download_url}...")
+
+            self.logger.info(f"Baixando atualização de {download_url}")
             
             # Download do arquivo com timeout aumentado
             response = requests.get(
@@ -237,14 +240,14 @@ class ImprovedUpdateManager:
             total_size = int(response.headers.get('content-length', 0))
             downloaded = 0
             
-            print(f"📦 Tamanho do arquivo: {total_size / (1024*1024):.2f} MB")
+            self.logger.info(f"Tamanho do arquivo: {total_size / (1024*1024):.2f} MB")
             
             with open(zip_path, 'wb') as f:
                 for chunk in response.iter_content(chunk_size=8192):
                     if chunk:
                         f.write(chunk)
                         downloaded += len(chunk)
-                        
+
                         if progress_callback and total_size > 0:
                             progress = (downloaded / total_size) * 100
                             progress_callback(progress)
@@ -260,19 +263,22 @@ class ImprovedUpdateManager:
             except zipfile.BadZipFile:
                 return {"success": False, "message": "Arquivo ZIP corrompido"}
             
+            self.logger.info("Download concluído")
             return {"success": True, "zip_path": zip_path, "temp_dir": temp_dir}
             
         except requests.exceptions.RequestException as e:
             self.update_in_progress = False
+            self.logger.error(f"Erro no download: {e}")
             return {"success": False, "message": f"Erro no download: {e}"}
         except Exception as e:
             self.update_in_progress = False
+            self.logger.error(f"Erro inesperado no download: {e}")
             return {"success": False, "message": f"Erro inesperado no download: {e}"}
     
-    def apply_update(self, zip_path, temp_dir):
+    def apply_update(self, zip_path, temp_dir, new_version=None):
         """Aplica a atualização com backup automático"""
         try:
-            print("📦 Extraindo atualização...")
+            self.logger.info("Extraindo atualização")
             
             # Extrair ZIP
             extract_dir = os.path.join(temp_dir, "extracted")
@@ -305,7 +311,7 @@ class ImprovedUpdateManager:
             backup_dir = f"backup/update_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             os.makedirs(backup_dir, exist_ok=True)
             
-            print("💾 Criando backup...")
+            self.logger.info("Criando backup")
             
             # Arquivos importantes para backup
             important_files = [
@@ -324,9 +330,9 @@ class ImprovedUpdateManager:
                         else:
                             shutil.copy2(item, backup_dir)
                     except Exception as e:
-                        print(f"⚠️ Erro ao fazer backup de {item}: {e}")
+                        self.logger.warning(f"Erro ao fazer backup de {item}: {e}")
             
-            print("🔄 Aplicando atualização...")
+            self.logger.info("Aplicando atualização")
             
             # Aplicar atualização (exceto arquivos de configuração)
             exclude_items = {
@@ -356,14 +362,18 @@ class ImprovedUpdateManager:
                             shutil.copytree(source_path, dest_path)
                         else:
                             shutil.copy2(source_path, dest_path)
-                        print(f"✅ Atualizado: {item}")
+                        self.logger.info(f"Atualizado: {item}")
                         success_count += 1
                     except Exception as e:
-                        print(f"❌ Erro ao atualizar {item}: {e}")
+                        self.logger.error(f"Erro ao atualizar {item}: {e}")
                         error_count += 1
             
             # Atualizar versão no arquivo de configuração
-            self.update_version_file(self.current_version)
+            if new_version:
+                self.update_version_file(new_version)
+                self.current_version = new_version
+            else:
+                self.update_version_file(self.current_version)
             
             # Limpeza
             try:
@@ -372,9 +382,9 @@ class ImprovedUpdateManager:
                 pass
             
             self.update_in_progress = False
-            
+
             if error_count == 0:
-                print("✅ Atualização aplicada com sucesso!")
+                self.logger.info("Atualização aplicada com sucesso")
                 return {
                     "success": True,
                     "backup_dir": backup_dir,
@@ -382,6 +392,7 @@ class ImprovedUpdateManager:
                     "message": f"Atualização concluída! {success_count} arquivos atualizados."
                 }
             else:
+                self.logger.error(f"Atualização parcial: {success_count} sucessos, {error_count} erros")
                 return {
                     "success": False,
                     "message": f"Atualização parcial: {success_count} sucessos, {error_count} erros",
@@ -390,6 +401,7 @@ class ImprovedUpdateManager:
             
         except Exception as e:
             self.update_in_progress = False
+            self.logger.error(f"Erro ao aplicar atualização: {e}")
             return {"success": False, "message": f"Erro ao aplicar atualização: {e}"}
     
     def update_version_file(self, new_version):
@@ -406,9 +418,9 @@ class ImprovedUpdateManager:
                 with open(version_file, 'w', encoding='utf-8') as f:
                     json.dump(version_data, f, indent=4, ensure_ascii=False)
                 
-                print(f"✅ Versão atualizada para {new_version}")
+                self.logger.info(f"Versão atualizada para {new_version}")
         except Exception as e:
-            print(f"⚠️ Erro ao atualizar arquivo de versão: {e}")
+            self.logger.warning(f"Erro ao atualizar arquivo de versão: {e}")
     
     def show_update_dialog(self, parent=None):
         """Mostra diálogo de atualização melhorado"""
@@ -573,8 +585,9 @@ class ImprovedUpdateManager:
                         
                         # Aplicar atualização
                         apply_result = self.apply_update(
-                            download_result["zip_path"], 
-                            download_result["temp_dir"]
+                            download_result["zip_path"],
+                            download_result["temp_dir"],
+                            update_info.get("version")
                         )
                         
                         if apply_result["success"]:
