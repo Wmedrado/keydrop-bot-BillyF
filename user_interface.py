@@ -20,6 +20,7 @@ from tkinter import messagebox, filedialog
 from tkhtmlview import HTMLLabel
 from bot_keydrop.gui.utils import safe_load_image, safe_widget_call
 from cloud.firebase_client import registrar_compra
+from password_reset import request_reset, reset_password
 
 try:
     import pyrebase
@@ -145,6 +146,9 @@ class LoginFrame(ctk.CTkFrame):
 
         ctk.CTkButton(self, text="Entrar", command=self._handle_login).pack(pady=10)
         ctk.CTkButton(self, text="Cadastrar", command=self.on_register).pack()
+        ctk.CTkButton(
+            self, text="Esqueci minha senha", command=self._open_reset
+        ).pack(pady=5)
 
     def _handle_login(self) -> None:
         email = self.email_var.get().strip()
@@ -157,6 +161,9 @@ class LoginFrame(ctk.CTkFrame):
             self.on_login(user)
         except Exception as exc:  # pragma: no cover - network errors
             messagebox.showerror("Falha no login", str(exc))
+
+    def _open_reset(self) -> None:
+        ResetRequestWindow(self)
 
 
 class RegisterFrame(ctk.CTkFrame):
@@ -428,4 +435,69 @@ class PaymentWindow(ctk.CTkToplevel):
                 "Compra em validação, será liberado em até 10 minutos.",
             )
             self.destroy()
+
+
+class ResetRequestWindow(ctk.CTkToplevel):
+    """Window for requesting a password reset via email."""
+
+    def __init__(self, master: ctk.CTk):
+        super().__init__(master)
+        self.title("Redefinir Senha")
+        self.email_var = ctk.StringVar()
+        self._build()
+
+    def _build(self) -> None:
+        ctk.CTkLabel(self, text="Digite seu e-mail cadastrado:").pack(pady=5)
+        ctk.CTkEntry(self, textvariable=self.email_var, width=220).pack(pady=5)
+        ctk.CTkButton(self, text="Enviar", command=self._send).pack(pady=10)
+
+    def _send(self) -> None:
+        email = self.email_var.get().strip()
+        if not email:
+            messagebox.showerror("Erro", "Informe o e-mail")
+            return
+        try:
+            request_reset(email)
+            messagebox.showinfo(
+                "Redefinição",
+                "Instruções enviadas para seu e-mail",
+            )
+            self.destroy()
+        except ValueError as exc:
+            messagebox.showerror("Erro", str(exc))
+        except Exception as exc:  # pragma: no cover - network errors, fallback
+            messagebox.showerror("Erro", f"Falha ao enviar e-mail.\n{exc}")
+
+
+class NewPasswordWindow(ctk.CTkToplevel):
+    """Window to confirm reset token and set a new password."""
+
+    def __init__(self, master: ctk.CTk):
+        super().__init__(master)
+        self.title("Nova Senha")
+        self.token_var = ctk.StringVar()
+        self.pass_var = ctk.StringVar()
+        self._build()
+
+    def _build(self) -> None:
+        ctk.CTkLabel(self, text="Token recebido por e-mail:").pack(pady=5)
+        ctk.CTkEntry(self, textvariable=self.token_var, width=240).pack(pady=5)
+        ctk.CTkLabel(self, text="Nova senha:").pack(pady=5)
+        ctk.CTkEntry(self, textvariable=self.pass_var, show="*").pack(pady=5)
+        ctk.CTkButton(self, text="Confirmar", command=self._confirm).pack(pady=10)
+
+    def _confirm(self) -> None:
+        token = self.token_var.get().strip()
+        passwd = self.pass_var.get().strip()
+        if not token or not passwd:
+            messagebox.showerror("Erro", "Preencha todos os campos")
+            return
+        try:
+            reset_password(token, passwd)
+            messagebox.showinfo("Sucesso", "Senha atualizada")
+            self.destroy()
+        except ValueError as exc:
+            messagebox.showerror("Erro", str(exc))
+        except Exception as exc:  # pragma: no cover - network errors, fallback
+            messagebox.showerror("Erro", f"Falha ao redefinir senha.\n{exc}")
 
