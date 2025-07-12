@@ -4,7 +4,7 @@ Gerencia a execução assíncrona das tarefas em cada guia e controla o ciclo en
 """
 
 import asyncio
-import logging
+from log_utils import setup_logger
 from typing import Dict, List, Optional, Any, Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -12,8 +12,7 @@ from enum import Enum
 import random
 
 # Configuração de logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = setup_logger(__name__)
 
 
 class BotStatus(Enum):

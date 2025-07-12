@@ -8,11 +8,10 @@ import os
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 from pydantic import BaseModel, Field
-import logging
+from log_utils import setup_logger
 
 # Configuração de logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = setup_logger(__name__)
 
 
 class BotConfig(BaseModel):

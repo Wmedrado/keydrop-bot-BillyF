@@ -13,7 +13,7 @@ import os
 import json
 import requests
 import time
-import logging
+from log_utils import setup_logger
 import traceback
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -50,11 +50,7 @@ class KeydropAutomationBot:
 
         # Configuração de logs individuais
         os.makedirs("logs", exist_ok=True)
-        logging.basicConfig(
-            filename=f"logs/bot_{self.bot_id}.log",
-            format='%(asctime)s [%(levelname)s] %(message)s',
-            level=logging.INFO
-        )
+        self.logger = setup_logger(f"bot_{self.bot_id}")
         
         # Estatísticas do bot
         self.stats = {
@@ -71,10 +67,10 @@ class KeydropAutomationBot:
         log_msg = f"[Bot {self.bot_id}] {message}"
         print(log_msg)
         try:
-            logger_func = getattr(logging, level.lower(), logging.info)
+            logger_func = getattr(self.logger, level.lower(), self.logger.info)
             logger_func(log_msg)
         except Exception:
-            logging.info(log_msg)
+            self.logger.info(log_msg)
         if self.gui_callback:
             self.gui_callback(log_msg, level)
     
@@ -920,6 +916,12 @@ class KeydropBotGUI:
                 self.status_text.config(state=tk.DISABLED)
         except Exception as e:
             print(f"Erro ao atualizar status: {e}")
+
+        # Registrar em arquivo
+        try:
+            self.log(message, level)
+        except Exception as e:
+            print(f"Erro ao registrar log: {e}")
 
     def start_server(self):
         """Iniciar servidor backend (opcional)"""

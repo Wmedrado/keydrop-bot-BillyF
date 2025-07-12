@@ -4,7 +4,7 @@ Gerencia notificações via webhook do Discord
 """
 
 import asyncio
-import logging
+from log_utils import setup_logger
 from datetime import datetime
 from typing import Dict, Any, Optional, List
 from dataclasses import dataclass
@@ -13,8 +13,7 @@ import json
 
 
 # Configuração de logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = setup_logger(__name__)
 
 
 @dataclass

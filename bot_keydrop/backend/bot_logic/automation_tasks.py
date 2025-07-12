@@ -4,7 +4,7 @@ Contém a lógica para interagir com o Keydrop e executar participações em sor
 """
 
 import asyncio
-import logging
+from log_utils import setup_logger
 import random
 from typing import Dict, List, Optional, Any, Tuple, Deque
 from collections import deque
@@ -14,8 +14,7 @@ from enum import Enum
 from ..learning.learner import ParticipationLearner
 
 # Configuração de logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = setup_logger(__name__)
 
 
 class ParticipationResult(Enum):

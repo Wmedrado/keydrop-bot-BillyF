@@ -18,15 +18,14 @@ import os
 import json
 import requests
 import time
-import logging
+from log_utils import setup_logger
 import traceback
 from datetime import datetime, timedelta
 from pathlib import Path
 import psutil
 
 # Configuração de logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = setup_logger(__name__)
 
 
 def check_initial_resources() -> None:

@@ -4,7 +4,7 @@ Fornece endpoints para comunicação com o frontend
 """
 
 import asyncio
-import logging
+from log_utils import setup_logger
 import sys
 from datetime import datetime
 from typing import Dict, List, Optional, Any
@@ -43,8 +43,7 @@ from bot_logic import (
 )
 
 # Configuração de logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = setup_logger(__name__)
 
 # Criar aplicação FastAPI
 app = FastAPI(

@@ -10,12 +10,19 @@ def setup_logger(name: str, logs_dir: str = "logs", level: int = logging.DEBUG) 
     path.mkdir(exist_ok=True)
     logger = logging.getLogger(name)
     logger.setLevel(level)
+
     if logger.handlers:
         return logger
 
-    formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
+    # Include file name and line number in messages
+    formatter = logging.Formatter(
+        "%(asctime)s [%(levelname)s] %(filename)s:%(lineno)d - %(message)s"
+    )
 
-    file_handler = RotatingFileHandler(path / f"{name}.log", maxBytes=1_000_000, backupCount=3, encoding="utf-8")
+    log_filename = f"{name.replace('.', '_')}.log"
+    file_handler = RotatingFileHandler(
+        path / log_filename, maxBytes=1_000_000, backupCount=3, encoding="utf-8"
+    )
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 

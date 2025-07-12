@@ -4,7 +4,7 @@ Responsável por iniciar, fechar e gerenciar instâncias do Chrome usando Playwr
 """
 
 import asyncio
-import logging
+from log_utils import setup_logger
 from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass
 from datetime import datetime
@@ -17,8 +17,7 @@ import shutil
 from playwright.async_api import async_playwright, Browser, BrowserContext, Page, Playwright
 
 # Configuração de logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = setup_logger(__name__)
 
 
 @dataclass
