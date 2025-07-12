@@ -61,6 +61,8 @@ class KeyDropBot:
             'ganho_periodo': 0.0,
             'total_ganho': 0.0
         }
+        # Saldo anterior para detecção de ganhos
+        self.saldo_anterior = 0.0
     def checar_alerta_discord(self):
         """Envia alerta para o Discord se ficar 30 minutos sem participar"""
         if not self.discord_webhook:
@@ -392,6 +394,11 @@ class KeyDropBot:
         """Log ao invés de toast para evitar spam"""
         print(f"[Bot {self.bot_id}] {titulo}: {mensagem}")
         self.stats['ultima_atividade'] = mensagem
+
+    def notificar_ganho(self, ganho):
+        """Notifica quando há aumento de saldo"""
+        mensagem = f"Ganhou R$ {ganho:.2f}!"
+        self.notificar("Ganho detectado", mensagem)
     
     def fechar_popup_com_esc(self):
         """Pressiona ESC para fechar pop-ups"""
@@ -1099,6 +1106,11 @@ class KeyDropBot:
             if self.driver and not self.login_mode:
                 # Só atualizar se não estiver em modo login
                 self.obter_saldo_skins()
+                saldo_atual = self.stats.get('saldo_atual', 0.0)
+                if self.saldo_anterior > 0 and saldo_atual > self.saldo_anterior:
+                    ganho = saldo_atual - self.saldo_anterior
+                    self.notificar_ganho(ganho)
+                self.saldo_anterior = saldo_atual
         except Exception:
             pass
 
