@@ -132,7 +132,7 @@ class KeydropBot:
             'ultima_participacao': None,
             'ultima_atividade': 'Iniciando...'
         }
-        # Track giveaway list size to detect DOM changes
+        # Rastreamento de mudanças nos sorteios
         self.last_giveaway_count = -1
         
     def start(self):
@@ -550,7 +550,7 @@ class KeydropBot:
             print(f"[Bot {self.bot_id}] Erro ao fechar popups: {e}")
 
     def page_needs_refresh(self):
-        """Verifica se a lista de sorteios mudou e decide se deve atualizar"""
+        """Avaliar se a página precisa ser recarregada"""
         try:
             if not self.driver or not By:
                 return True
@@ -581,9 +581,10 @@ class KeydropBot:
                     retry_count += 1
                     self.stats['ultima_atividade'] = f'Tentativa {retry_count}/{max_retries}'
                     
-                    # Tentar recarregar a página
-                    self.driver.refresh()
-                    time.sleep(3)
+                    # Tentar recarregar a página apenas se necessário
+                    if self.page_needs_refresh():
+                        self.driver.refresh()
+                        time.sleep(3)
                     
                     # Se chegou aqui, deu certo
                     self.stats['ultima_atividade'] = 'Recuperado de erro'

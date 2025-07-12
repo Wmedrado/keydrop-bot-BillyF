@@ -57,7 +57,7 @@ class KeydropAutomationBot:
             'last_contender_time': None,
             'start_time': datetime.now()
         }
-        # Rastreamento do número de sorteios para detectar mudanças na página
+        # Monitorar quantidade de sorteios para evitar refresh desnecessário
         self.last_giveaway_count = -1
     
     def log(self, message, level="INFO"):
@@ -243,7 +243,7 @@ class KeydropAutomationBot:
             return False
 
     def page_needs_refresh(self):
-        """Verifica se a lista de sorteios mudou"""
+        """Verifica se a página possui novos sorteios"""
         try:
             if not self.driver or not By:
                 return True
