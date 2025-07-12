@@ -22,8 +22,12 @@ import requests
 # URL do arquivo JSON contendo informa\xc3\xa7\xc3\xb5es da \xc3\xbaltima vers\xc3\xa3o
 UPDATE_INFO_URL = "https://example.com/update_info.json"
 
-# Vers\xc3\xa3o atual do bot
-CURRENT_VERSION = "2.1.0"
+# Vers\xc3\xa3o atual do bot lida do arquivo VERSION
+VERSION_FILE = Path(__file__).resolve().parents[1] / "VERSION"
+if VERSION_FILE.exists():
+    CURRENT_VERSION = VERSION_FILE.read_text().strip()
+else:
+    CURRENT_VERSION = "0.0.0"
 
 
 def _parse_version(version: str) -> Tuple[int, ...]:
