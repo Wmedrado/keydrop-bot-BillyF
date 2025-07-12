@@ -53,3 +53,10 @@ class LockFile:
                 self.path.unlink()
             except Exception:
                 pass
+
+
+def executando_no_diretorio_correto(expected: list[str] | None = None) -> bool:
+    """Check if the application is running from its original directory."""
+    expected = expected or ["launcher.py", "bot_keydrop", "config.json"]
+    return all(Path(item).exists() for item in expected)
+
