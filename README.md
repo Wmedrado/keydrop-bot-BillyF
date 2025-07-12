@@ -135,5 +135,8 @@ Use `launcher.py --watch` para iniciar o monitoramento em tempo real que grava `
 
 O repositório possui um workflow do GitHub Actions que valida cada Pull Request.
 Ele instala as dependências, executa `flake8`, `black` e roda toda a suíte de testes com cobertura.
+Após os testes, um revisor automático avalia os logs e gera `build_results/auto_review.txt`.
+Somente problemas encontrados nos arquivos modificados pelo PR contam como erro crítico.
+Se tais erros forem detectados, o PR é bloqueado; caso contrário, ele é aprovado automaticamente.
 Os relatórios são gerados em `tests/test_report.html` e `tests/coverage.txt`.
 

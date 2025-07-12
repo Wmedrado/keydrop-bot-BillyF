@@ -15,9 +15,12 @@ from bot_keydrop.backend.bot_logic.automation_tasks import (
 
 class DummyBrowserManager:
     def get_tab_info(self, tab_id):
-        class Info:
+        class TabInfo:
+            """Minimal stub representing tab state for tests."""
+
             page = True
-        return Info()
+
+        return TabInfo()
 
 
 def make_attempt(tab_id, result):
