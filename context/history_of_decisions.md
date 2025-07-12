@@ -42,3 +42,9 @@ Cada nova funcionalidade ou ajuste relevante deve adicionar um bloco seguindo o 
 - **Afeta/Substitui:** remove `validate_pr.yml`, passo `Validate PR description` em `ci.yml` e checagem em `run_pipeline.sh`.
 - **Justificativa técnica:** simplifica o fluxo de CI, mantendo a recomendação do template sem impedir integrações úteis.
 - **Tipo:** melhoria
+
+## SonarCloud quality gate enforcement
+- **Motivo:** Gerar relatório automático de duplicações, código morto e alta complexidade a cada PR.
+- **Afeta/Substitui:** adiciona `ci/sonar_report.py`, atualiza `ci.yml` e `README.md`.
+- **Justificativa técnica:** Esperar o resultado do Quality Gate garante que falhas graves sejam detectadas antes do merge.
+- **Tipo:** melhoria
