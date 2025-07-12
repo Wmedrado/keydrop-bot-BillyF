@@ -120,7 +120,7 @@ class KeydropBotGUI:
                         self.root.iconbitmap(icon_path)
                         print(f"✅ Ícone configurado: {icon_path}")
                         break
-                    except:
+                    except Exception:
                         continue
             else:
                 self.root.iconname("Keydrop Bot v3.0.0")
@@ -758,7 +758,7 @@ class KeydropBotGUI:
                     try:
                         if process.poll() is None:
                             process.terminate()
-                    except:
+                    except Exception:
                         pass
                 self.edge_processes = []
                 
@@ -781,7 +781,7 @@ class KeydropBotGUI:
                         if 'chrome' in proc.info['name'].lower():
                             psutil.Process(proc.info['pid']).terminate()
                             killed += 1
-                    except:
+                    except Exception:
                         pass
                 self.log_message(f"🛑 {killed} processos Chrome finalizados!", "WARNING")
         except Exception as e:
@@ -892,7 +892,7 @@ def main():
             try:
                 import ctypes
                 ctypes.windll.shcore.SetProcessDpiAwareness(1)
-            except:
+            except Exception:
                 pass
         
         app = KeydropBotGUI()

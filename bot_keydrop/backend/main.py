@@ -353,7 +353,7 @@ def get_configuration():
 @app.post("/config")
 async def update_configuration(request: ConfigUpdateRequest):
     """Atualiza configuração"""
-    global tab_watchdog
+    global tab_watchdog, telegram_bot
     try:
         # Converter para dict e remover valores None
         updates = {k: v for k, v in request.dict().items() if v is not None}

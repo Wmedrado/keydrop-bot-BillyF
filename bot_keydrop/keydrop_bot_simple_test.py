@@ -113,7 +113,7 @@ class KeydropBotSimple:
         # Teste 4: Verificar requests
         try:
             import requests  # noqa: F401
-            self.log(f"🌐 Requests - OK")
+            self.log("🌐 Requests - OK")
         except ImportError:
             self.log("⚠️ requests não instalado - Instale com: pip install requests")
         
