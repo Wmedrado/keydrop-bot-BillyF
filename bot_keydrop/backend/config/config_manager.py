@@ -93,6 +93,12 @@ class BotConfig(BaseModel):
         le=30.0,
         description="Tempo de espera entre ações (segundos)",
     )
+    iteration_delay: float = Field(
+        default=5.0,
+        ge=0.5,
+        le=60.0,
+        description="Delay entre participações de cada guia (segundos)",
+    )
     amateur_lottery_wait_time: int = Field(
         default=180,
         ge=60,

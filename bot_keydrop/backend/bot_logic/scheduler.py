@@ -146,6 +146,7 @@ class BotScheduler:
         self.retry_attempts = self.config.retry_attempts
         self.amateur_wait_time = self.config.amateur_lottery_wait_time
         self.action_delay = self.config.wait_time_between_actions
+        self.iteration_delay = self.config.iteration_delay
         self.tab_proxies = self.config.tab_proxies
         self.proxy_timeout = self.config.proxy_timeout
         if self.proxy_manager:
@@ -415,8 +416,8 @@ class BotScheduler:
         Args:
             tab_id: ID da guia
         """
-        # Calcular próxima execução (distribuir guias ao longo do tempo)
-        base_delay = (tab_id - 1) * (self.amateur_wait_time / self.num_tabs)
+        # Calcular próxima execução com base no delay de iteração configurado
+        base_delay = (tab_id - 1) * self.iteration_delay
         next_execution = datetime.now() + timedelta(seconds=base_delay)
         
         # Criar tarefa de participação
