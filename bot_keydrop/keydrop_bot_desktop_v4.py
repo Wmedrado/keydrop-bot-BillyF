@@ -339,7 +339,15 @@ class KeydropBot:
             # Navegar para Keydrop
             if self.driver:
                 self.driver.get("https://key-drop.com/pt/")
-                time.sleep(3)
+                if WebDriverWait:
+                    try:
+                        WebDriverWait(self.driver, 10).until(
+                            lambda d: d.execute_script("return document.readyState") == "complete"
+                        )
+                    except Exception:
+                        pass
+                else:
+                    time.sleep(3)
             
             while self.running:
                 try:
@@ -386,11 +394,27 @@ class KeydropBot:
             current_url = self.driver.current_url
             if "key-drop.com" not in current_url or "/giveaways" not in current_url:
                 self.driver.get("https://key-drop.com/pt/giveaways")
-                time.sleep(3)
+                if WebDriverWait:
+                    try:
+                        WebDriverWait(self.driver, 10).until(
+                            lambda d: d.execute_script("return document.readyState") == "complete"
+                        )
+                    except Exception:
+                        pass
+                else:
+                    time.sleep(3)
             
             # Atualizar página para ver novos sorteios
             self.driver.refresh()
-            time.sleep(2)
+            if WebDriverWait:
+                try:
+                    WebDriverWait(self.driver, 10).until(
+                        lambda d: d.execute_script("return document.readyState") == "complete"
+                    )
+                except Exception:
+                    pass
+            else:
+                time.sleep(2)
             
             # Fechar possíveis popups
             self.close_popups()
@@ -436,11 +460,22 @@ class KeydropBot:
                             if button.is_displayed() and button.is_enabled():
                                 # Scroll até o elemento
                                 self.driver.execute_script("arguments[0].scrollIntoView(true);", button)
-                                time.sleep(0.5)
-                                
-                                # Tentar clicar
+                                if WebDriverWait and EC:
+                                    try:
+                                        WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable(button))
+                                    except Exception:
+                                        pass
+                                else:
+                                    time.sleep(0.5)
+
                                 self.driver.execute_script("arguments[0].click();", button)
-                                time.sleep(1)
+                                if WebDriverWait:
+                                    try:
+                                        WebDriverWait(self.driver, 5).until_not(lambda d: button.is_displayed())
+                                    except Exception:
+                                        pass
+                                else:
+                                    time.sleep(1)
                                 
                                 print(f"[Bot {self.bot_id}] ✅ Participou de sorteio AMATEUR")
                                 self.stats['ultima_atividade'] = 'Participou de sorteio AMATEUR'
@@ -489,10 +524,22 @@ class KeydropBot:
                         try:
                             if button.is_displayed() and button.is_enabled():
                                 self.driver.execute_script("arguments[0].scrollIntoView(true);", button)
-                                time.sleep(0.5)
-                                
+                                if WebDriverWait and EC:
+                                    try:
+                                        WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable(button))
+                                    except Exception:
+                                        pass
+                                else:
+                                    time.sleep(0.5)
+
                                 self.driver.execute_script("arguments[0].click();", button)
-                                time.sleep(1)
+                                if WebDriverWait:
+                                    try:
+                                        WebDriverWait(self.driver, 5).until_not(lambda d: button.is_displayed())
+                                    except Exception:
+                                        pass
+                                else:
+                                    time.sleep(1)
                                 
                                 print(f"[Bot {self.bot_id}] ✅ Participou de sorteio CONTENDER")
                                 self.stats['ultima_atividade'] = 'Participou de sorteio CONTENDER'
@@ -528,7 +575,13 @@ class KeydropBot:
             
             actions = ActionChains(self.driver)
             actions.send_keys(Keys.ESCAPE).perform()
-            time.sleep(0.5)
+            if WebDriverWait:
+                try:
+                    WebDriverWait(self.driver, 2).until(lambda d: True)
+                except Exception:
+                    pass
+            else:
+                time.sleep(0.5)
             
             # Procurar e fechar modais específicos
             close_selectors = [
@@ -545,7 +598,13 @@ class KeydropBot:
                     for btn in close_buttons:
                         if btn.is_displayed():
                             btn.click()
-                            time.sleep(0.5)
+                            if WebDriverWait:
+                                try:
+                                    WebDriverWait(self.driver, 2).until_not(lambda d: btn.is_displayed())
+                                except Exception:
+                                    pass
+                            else:
+                                time.sleep(0.5)
                 except Exception:
                     continue
                     
@@ -568,7 +627,15 @@ class KeydropBot:
                     
                     # Tentar recarregar a página
                     self.driver.refresh()
-                    time.sleep(3)
+                    if WebDriverWait:
+                        try:
+                            WebDriverWait(self.driver, 10).until(
+                                lambda d: d.execute_script("return document.readyState") == "complete"
+                            )
+                        except Exception:
+                            pass
+                    else:
+                        time.sleep(3)
                     
                     # Se chegou aqui, deu certo
                     self.stats['ultima_atividade'] = 'Recuperado de erro'
@@ -576,7 +643,13 @@ class KeydropBot:
                     
                 except Exception as e:
                     print(f"[Bot {self.bot_id}] Tentativa {retry_count} falhou: {e}")
-                    time.sleep(5)
+                    if WebDriverWait:
+                        try:
+                            WebDriverWait(self.driver, 5).until(lambda d: True)
+                        except Exception:
+                            pass
+                    else:
+                        time.sleep(5)
             
             # Se esgotou tentativas, reiniciar driver
             if retry_count >= max_retries:
