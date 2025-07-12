@@ -1,4 +1,5 @@
 # 🤖 Keydrop Bot Professional
+[![codecov](https://codecov.io/gh/billyf/keydrop-bot-BillyF/branch/clean-main/graph/badge.svg)](https://codecov.io/gh/billyf/keydrop-bot-BillyF)
 
 Automatize suas participações em sorteios do Keydrop de forma prática! Esta versão utiliza um backend **FastAPI** com uma interface web leve em HTML/JavaScript.
 
@@ -148,6 +149,7 @@ Use `launcher.py --watch` para iniciar o monitoramento em tempo real que grava `
 
 O repositório possui um workflow do GitHub Actions que valida cada Pull Request.
 Ele instala as dependências, executa `flake8`, `black` e roda toda a suíte de testes com cobertura.
+A cobertura mínima exigida é de **80%** e o resultado é enviado ao Codecov.
 Após os testes, um revisor automático avalia os logs e gera `build_results/auto_review.txt`.
 Somente problemas encontrados nos arquivos modificados pelo PR contam como erro crítico.
 Se tais erros forem detectados, o PR é bloqueado; caso contrário, ele é aprovado automaticamente.
