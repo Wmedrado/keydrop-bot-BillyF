@@ -36,6 +36,15 @@ class BotConfig(BaseModel):
     # Discord webhook
     discord_webhook_url: str = Field(default="", description="URL do webhook do Discord")
     discord_notifications: bool = Field(default=True, description="Enviar notificações para Discord")
+
+    # Telegram notifications
+    telegram_enabled: bool = Field(default=False, description="Enviar notificações pelo Telegram")
+    telegram_bot_token: str = Field(default="", description="Token do bot do Telegram")
+    telegram_chat_id: str = Field(default="", description="Chat ID do Telegram")
+
+    # Watchdog
+    watchdog_enabled: bool = Field(default=True, description="Habilitar watchdog de abas")
+    watchdog_timeout: int = Field(default=300, ge=30, le=3600, description="Tempo de inatividade antes do reinício da aba (segundos)")
     
     # URLs de destino
     keydrop_url: str = Field(default="https://key-drop.com/pt/", description="URL do Keydrop")
