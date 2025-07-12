@@ -53,11 +53,11 @@ class ProductionLauncher:
         ]
         for frame in frames:
             print(f"\r{frame} {message}", end="", flush=True)
-            time.sleep(0.3)
+            time.sleep(0.25)
         print("\r", end="", flush=True)
 
     def install_package(self, package: str):
-        """Install a Python package showing a progress animation"""
+        """Install a Python package with a progress animation"""
         cmd = [sys.executable, "-m", "pip", "install", package]
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         bar_length = 20
@@ -73,8 +73,8 @@ class ProductionLauncher:
             print(f"❌ Falha ao instalar {package}")
 
     def verify_python_dependencies(self):
-        """Check and install Python dependencies"""
-        print("🤖 Verificando dependências Python...")
+        """Check and automatically install required Python packages"""
+        print("🤖 Verificando dependências do Python...")
 
         req_file = self.base_path / "backend" / "requirements.txt"
         packages = []
@@ -83,6 +83,7 @@ class ProductionLauncher:
                 line = line.strip()
                 if line and not line.startswith("#"):
                     pkg = line.split("==")[0]
+                    pkg = pkg.split("[")[0]
                     packages.append(pkg)
         else:
             packages = ["fastapi", "uvicorn", "playwright", "psutil"]
@@ -253,11 +254,11 @@ class ProductionLauncher:
 def main():
     """Main launcher function"""
     launcher = ProductionLauncher()
-
+    
     # Show banner
     launcher.show_startup_banner()
 
-    # Verify Python requirements
+    # Verify Python packages
     launcher.verify_python_dependencies()
 
     # Check dependencies
