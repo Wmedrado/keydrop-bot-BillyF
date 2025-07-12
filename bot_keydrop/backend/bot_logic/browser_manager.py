@@ -46,7 +46,7 @@ class TabInfo:
 class BrowserManager:
     """Gerenciador de navegador usando Playwright"""
     
-    def __init__(self):
+    def __init__(self, page_load_timeout: int = 30_000):
         """Inicializa o gerenciador de navegador"""
         self.playwright: Optional[Playwright] = None
         self.browser: Optional[Browser] = None
@@ -61,6 +61,8 @@ class BrowserManager:
         self.optimize_resources = True
         self.user_data_dir = None
         self.browser_args = []
+        self.page_load_timeout = page_load_timeout
+        self.proxy_manager = None
         
         # Configurações do navegador
         self.default_viewport = {'width': 1280, 'height': 720}
@@ -334,7 +336,7 @@ class BrowserManager:
             context = await self.browser.new_context(**context_options)
             
             # Configurar timeout
-            context.set_default_timeout(30000)  # 30 segundos
+            context.set_default_timeout(self.page_load_timeout)
             
             # Criar nova página
             page = await context.new_page()
@@ -438,6 +440,8 @@ class BrowserManager:
             logger.error(f"Erro ao navegar guia {tab_id} para {url}: {e}")
             tab_info.status = 'error'
             tab_info.error_count += 1
+            if self.proxy_manager:
+                self.proxy_manager.report_failure(tab_id, str(e))
             return False
     
     async def close_tab(self, tab_id: int) -> bool:
@@ -462,9 +466,12 @@ class BrowserManager:
             
             if tab_info.context:
                 await tab_info.context.close()
-            
+
             tab_info.status = 'closed'
             del self.tabs[tab_id]
+
+            if self.proxy_manager:
+                self.proxy_manager.release_proxy(tab_id)
             
             logger.info(f"Guia {tab_id} fechada com sucesso")
             return True
@@ -473,7 +480,7 @@ class BrowserManager:
             logger.error(f"Erro ao fechar guia {tab_id}: {e}")
             return False
     
-    async def restart_tab(self, tab_id: int) -> bool:
+    async def restart_tab(self, tab_id: int, proxy: Optional[str] = None) -> bool:
         """
         Reinicia uma guia específica
         
@@ -495,7 +502,7 @@ class BrowserManager:
             await self.close_tab(tab_id)
             
             # Criar nova guia
-            new_tab = await self.create_tab(tab_id, original_url, tab_info.proxy)
+            new_tab = await self.create_tab(tab_id, original_url, proxy or tab_info.proxy)
             
             if new_tab:
                 logger.info(f"Guia {tab_id} reiniciada com sucesso")
