@@ -22,8 +22,13 @@ python ci/check_protected_files.py | tee build_results/protected_files.log
 flake8 . > build_results/flake8.log || true
 black --check . > build_results/black.log || true
 
+
+# Semantic naming validation
+python ci/check_naming_quality.py | tee build_results/naming_quality.log
+
 # Validate PR checklist
 python ci/pr_validation.py
+
 
 # Dependency check
 python - <<'PY'

@@ -7,7 +7,42 @@ import logging
 from datetime import datetime
 from typing import Dict, Any, Optional, List
 from dataclasses import dataclass
-from discord_webhook import DiscordWebhook, DiscordEmbed
+try:
+    from discord_webhook import DiscordWebhook, DiscordEmbed
+except Exception:  # pragma: no cover - optional dependency
+    class _MissingWebhook:
+        def __init__(self, *a, **k):
+            pass
+
+        def add_embed(self, embed):
+            pass
+
+        def execute(self):
+            class ResponseMock:
+                """Placeholder response used when Discord dependency is missing."""
+
+                status_code = 0
+
+            return ResponseMock()
+
+    class _MissingEmbed:
+        def __init__(self, *a, **k):
+            pass
+
+        def add_embed_field(self, *a, **k):
+            pass
+
+        def set_footer(self, *a, **k):
+            pass
+
+        def set_thumbnail(self, *a, **k):
+            pass
+
+        def set_author(self, *a, **k):
+            pass
+
+    DiscordWebhook = _MissingWebhook  # type: ignore
+    DiscordEmbed = _MissingEmbed  # type: ignore
 
 
 # Configuração de logging
@@ -93,6 +128,9 @@ class DiscordNotifier:
             logger.debug("Notificação Discord ignorada - webhook não configurado")
             return False
         
+        if DiscordWebhook is None:
+            logger.error("discord_webhook package not available")
+            return False
         try:
             # Criar webhook
             webhook = DiscordWebhook(url=self.webhook_url, username=self.bot_name)

@@ -9,21 +9,33 @@ from typing import Optional
 try:
     import firebase_admin
     from firebase_admin import credentials, initialize_app, storage, db
+
+except Exception:  # pragma: no cover - optional dependency
+    from types import SimpleNamespace
+
+    firebase_admin = None
+    credentials = SimpleNamespace(Certificate=lambda *a, **k: None)
+    initialize_app = lambda *a, **k: None
+    storage = SimpleNamespace(bucket=lambda *a, **k: None)
+    db = SimpleNamespace(reference=lambda *a, **k: None)
 except ImportError:  # optional dependency
     firebase_admin = None
     credentials = initialize_app = storage = db = None
 
+
 logger = logging.getLogger(__name__)
 
 # Global variable to hold the initialized Firebase app
-_firebase_app: Optional[firebase_admin.App] = None
+from typing import Any
+
+_firebase_app: Optional[Any] = None
 
 # Constants for project configuration
 _DATABASE_URL = "https://keydrop-bot-ab111-default-rtdb.firebaseio.com/"
 _STORAGE_BUCKET = "keydrop-bot-ab111.appspot.com"
 
 
-def initialize_firebase() -> firebase_admin.App:
+def initialize_firebase() -> Any:
     """Initialize Firebase if not already done."""
     global _firebase_app
 
@@ -32,6 +44,7 @@ def initialize_firebase() -> firebase_admin.App:
 
     if _firebase_app:
         return _firebase_app
+
 
     cred_path = Path(__file__).resolve().parents[1] / "firebase_credentials.json"
     if not cred_path.exists():
