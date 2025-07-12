@@ -77,7 +77,7 @@ def main() -> None:
 
     run_and_capture(
         "ruff",
-        ["ruff", *DIRECTORIES, "--exclude", exclude_str],
+        ["ruff", "check", *DIRECTORIES, "--exclude", exclude_str],
         "ruff_output.txt",
     )
 

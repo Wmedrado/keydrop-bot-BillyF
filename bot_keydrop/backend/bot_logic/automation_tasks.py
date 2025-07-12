@@ -5,7 +5,7 @@ Contém a lógica para interagir com o Keydrop e executar participações em sor
 
 import asyncio
 import logging
-import random
+import secrets
 from bot_keydrop.performance_utils import measure_time
 from typing import Dict, List, Optional, Any, Tuple, Deque
 from collections import deque
@@ -189,13 +189,13 @@ class KeydropAutomation:
                 # Se chegou aqui, não conseguiu participar de nenhum sorteio
                 attempt_number += 1
                 if attempt_number <= max_retries:
-                    await asyncio.sleep(random.uniform(2, 5))  # Aguardar antes de tentar novamente
+                    await asyncio.sleep(secrets.SystemRandom().uniform(2, 5))  # Aguardar antes de tentar novamente
                 
             except Exception as e:
                 logger.error(f"Erro na tentativa {attempt_number} de participação na guia {tab_id}: {e}")
                 attempt_number += 1
                 if attempt_number <= max_retries:
-                    await asyncio.sleep(random.uniform(3, 7))
+                    await asyncio.sleep(secrets.SystemRandom().uniform(3, 7))
         
         # Todas as tentativas falharam
         tab_info.error_count += 1
@@ -242,7 +242,7 @@ class KeydropAutomation:
         
         try:
             # Aguardar um momento para carregamento
-            await asyncio.sleep(random.uniform(1, 3))
+            await asyncio.sleep(secrets.SystemRandom().uniform(1, 3))
             
             # Procurar cards de sorteio disponíveis
             cards = await page.query_selector_all(self.SELECTORS['giveaway_card'])
@@ -393,13 +393,13 @@ class KeydropAutomation:
 
             # Mover o mouse para o botão (simular comportamento humano)
             await join_button.hover()
-            await asyncio.sleep(random.uniform(0.5, 1.5))
+            await asyncio.sleep(secrets.SystemRandom().uniform(0.5, 1.5))
 
             # Clicar no botão
             await join_button.click()
 
             # Aguardar resultado da participação
-            await asyncio.sleep(random.uniform(2, 4))
+            await asyncio.sleep(secrets.SystemRandom().uniform(2, 4))
 
             # Verificar se a participação foi bem-sucedida
             success = await self._verify_participation_success(page, join_button)
@@ -621,7 +621,7 @@ class KeydropAutomation:
             await page.goto(self.URLS['keydrop_lotteries'], wait_until='domcontentloaded', timeout=30000)
             
             # Aguardar carregamento
-            await asyncio.sleep(random.uniform(3, 6))
+            await asyncio.sleep(secrets.SystemRandom().uniform(3, 6))
             
             tab_info.url = self.URLS['keydrop_lotteries']
             tab_info.status = 'ready'
