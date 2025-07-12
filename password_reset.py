@@ -18,11 +18,32 @@ except Exception:  # pragma: no cover - optional dependency
     db = auth = None  # type: ignore
 
 from dotenv import load_dotenv
-from cloud.firebase_client import initialize_firebase
+def _initialize() -> None:
+    """Call cloud.firebase_client.initialize_firebase lazily."""
+    import importlib
+
+    init = importlib.import_module("cloud.firebase_client").initialize_firebase
+    init()
+import importlib
 
 
 
 load_dotenv()
+
+
+def _ensure_admin() -> None:
+    """Lazy load firebase_admin components if available."""
+    global db, auth
+    if auth is not None and db is not None:
+        return
+    try:
+        fb = importlib.import_module("firebase_admin")
+    except Exception:  # pragma: no cover - optional dependency
+        return
+    if auth is None:
+        auth = getattr(fb, "auth", None)
+    if db is None:
+        db = getattr(fb, "db", None)
 
 _SMTP_USER = os.getenv("SMTP_USER")
 _SMTP_PASS = os.getenv("SMTP_PASS")
@@ -44,7 +65,8 @@ if not all([_SMTP_USER, _SMTP_PASS, _SMTP_HOST, _SMTP_PORT]):
 
 def _save_token(user_id: str, token: str, expires_at: datetime) -> None:
     """Persist the reset token in Firebase."""
-    initialize_firebase()
+    _initialize()
+    _ensure_admin()
     if db is None:
         raise ImportError("firebase_admin is required for database operations")
     ref = db.reference(f"reset_tokens/{user_id}")
@@ -92,9 +114,10 @@ def _send_email(email: str, token: str) -> None:
 
 def request_reset(email: str) -> str:
     """Generate reset token for the given email and send instructions."""
+    _ensure_admin()
     if auth is None:
         raise ImportError("firebase_admin is required for auth operations")
-    initialize_firebase()
+    _initialize()
     try:
         user = auth.get_user_by_email(email)
     except Exception as exc:  # fallback to generic not-found error
@@ -109,7 +132,8 @@ def request_reset(email: str) -> str:
 
 def verify_token(token: str) -> Optional[str]:
     """Return user_id if token is valid and not expired."""
-    initialize_firebase()
+    _initialize()
+    _ensure_admin()
     if db is None:
         raise ImportError("firebase_admin is required for database operations")
     ref = db.reference("reset_tokens")
@@ -124,13 +148,15 @@ def verify_token(token: str) -> Optional[str]:
 
 def reset_password(token: str, new_password: str) -> None:
     """Validate token and update user's password."""
+    _ensure_admin()
     if auth is None:
         raise ImportError("firebase_admin is required for auth operations")
     uid = verify_token(token)
     if not uid:
         raise ValueError("Token inválido ou expirado")
     auth.update_user(uid, password=new_password)
-    initialize_firebase()
+    _initialize()
+    _ensure_admin()
     if db is None:
         raise ImportError("firebase_admin is required for database operations")
     db.reference(f"reset_tokens/{uid}").delete()

@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 from typing import Optional, Any, List, Dict
+import sys
 from datetime import datetime
 
 try:
@@ -22,6 +23,10 @@ except Exception:  # pragma: no cover - optional dependency
 except ImportError:  # optional dependency
     firebase_admin = None
     credentials = initialize_app = storage = db = None
+
+# Expose storage and db as pseudo-submodules for easier testing
+sys.modules[__name__ + ".storage"] = storage
+sys.modules[__name__ + ".db"] = db
 
 
 logger = logging.getLogger(__name__)
