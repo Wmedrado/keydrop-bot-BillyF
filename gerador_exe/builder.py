@@ -6,6 +6,9 @@ import sys
 from datetime import datetime
 from pathlib import Path
 import logging
+from logging.handlers import RotatingFileHandler
+
+from log_utils import setup_logger
 
 try:
     import importlib
@@ -18,10 +21,26 @@ BASE_DIR = Path(__file__).resolve().parents[1]
 CONFIG_PATH = BASE_DIR / "gerador_exe" / "build_config.json"
 BIN_DIR = BASE_DIR / "gerador_exe" / "binario_final"
 TEMP_DIR = BASE_DIR / "gerador_exe" / "temp"
-LOG_FILE = BASE_DIR / "gerador_exe" / "build_log.txt"
+LOG_FILE = BASE_DIR / "logs" / "builder.log"
 
-logging.basicConfig(level=logging.INFO, format="%(message)s")
-logger = logging.getLogger("builder")
+logger = setup_logger("builder")
+
+error_count = 0
+warning_count = 0
+
+
+def log_error(message: str) -> None:
+    """Log error and increment counter."""
+    global error_count
+    error_count += 1
+    logger.error(message)
+
+
+def log_warning(message: str) -> None:
+    """Log warning and increment counter."""
+    global warning_count
+    warning_count += 1
+    logger.warning(message)
 
 
 def load_config():
@@ -44,13 +63,59 @@ def ensure_dependency(package: str) -> None:
         subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 
 
+def check_required_files() -> bool:
+    """Ensure main project files exist."""
+    logger.info("Verificando arquivos essenciais...")
+    reqs = {
+        "launcher.py": BASE_DIR / "launcher.py",
+        "config.json": BASE_DIR / "config.json",
+        "requirements.txt": (
+            BASE_DIR / "requirements.txt"
+            if (BASE_DIR / "requirements.txt").exists()
+            else BASE_DIR / "bot_keydrop" / "requirements.txt"
+        ),
+    }
+    cred = BASE_DIR / "firebase_credentials.json"
+    if not cred.exists():
+        cred = BASE_DIR / "firebase_credentials.json.example"
+    reqs["firebase_credentials.json"] = cred
+
+    missing = [name for name, path in reqs.items() if not path.exists()]
+    if missing:
+        for name in missing:
+            log_error(f"Arquivo obrigatório não encontrado: {name}")
+        return False
+    return True
+
+
+def check_pyinstaller() -> bool:
+    """Verify PyInstaller availability."""
+    try:
+        result = subprocess.run(
+            [sys.executable, "-m", "PyInstaller", "--version"],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            log_error("PyInstaller não está funcional.")
+            log_error(result.stdout + result.stderr)
+            return False
+        logger.debug("PyInstaller %s", result.stdout.strip())
+        return True
+    except Exception as exc:
+        log_error(f"Erro ao verificar PyInstaller: {exc}")
+        return False
+
+
 def validate_environment(min_version=(3, 10)) -> bool:
     logger.info("Verificando ambiente de build...")
     if sys.version_info < min_version:
-        logger.error(f"Python {min_version[0]}.{min_version[1]}+ é requerido.")
+        log_error(f"Python {min_version[0]}.{min_version[1]}+ é requerido.")
         return False
     for pkg in ("pyinstaller", "pytest", "psutil", "requests"):
         ensure_dependency(pkg)
+    if not check_pyinstaller():
+        return False
     return True
 
 
@@ -66,13 +131,13 @@ def run_tests() -> bool:
 
     output = (result.stdout + result.stderr).lower()
     if "no tests ran" in output or "no tests were collected" in output:
-        logger.warning("⚠️ Nenhum teste encontrado — prosseguindo mesmo assim.")
+        log_warning("⚠️ Nenhum teste encontrado — prosseguindo mesmo assim.")
         logger.info(result.stdout)
         return True
 
     if result.returncode != 0:
-        logger.error("❌ Testes falharam.")
-        logger.error(result.stdout + result.stderr)
+        log_error("❌ Testes falharam.")
+        log_error(result.stdout + result.stderr)
         return False
 
     logger.info(result.stdout)
@@ -105,7 +170,7 @@ def build_executable(config: dict, version: str) -> Path:
 
     main_script = BASE_DIR / config.get("main_script", "")
     if not main_script.exists():
-        logger.error(f"Arquivo principal '{main_script}' não encontrado.")
+        log_error(f"Arquivo principal '{main_script}' não encontrado.")
         return Path()
 
     cmd = [
@@ -123,31 +188,31 @@ def build_executable(config: dict, version: str) -> Path:
         if icon_path.exists():
             cmd.extend(["--icon", str(icon_path)])
         else:
-            logger.warning(f"Ícone '{icon}' não encontrado. Continuando sem ícone.")
+            log_warning(f"Ícone '{icon}' não encontrado. Continuando sem ícone.")
 
     cmd.append(str(main_script))
     logger.info("Gerando executável...")
     result = subprocess.run(cmd, text=True, capture_output=True)
     if result.returncode != 0:
-        logger.error("Erro ao gerar executável:\n" + result.stdout + result.stderr)
+        log_error("Erro ao gerar executável:\n" + result.stdout + result.stderr)
         return Path()
     dist_path = BASE_DIR / "dist" / exe_name
     if not dist_path.exists():
-        logger.error("Executável não encontrado em 'dist'")
+        log_error("Executável não encontrado em 'dist'")
         return Path()
     return dist_path
 
 
 def package_build(exe_path: Path, version: str, config: dict) -> Path:
     if not exe_path.exists():
-        logger.error("Arquivo executável não encontrado para empacotamento.")
+        log_error("Arquivo executável não encontrado para empacotamento.")
         return Path()
 
     target_exe = BIN_DIR / exe_path.name
     try:
         shutil.copy2(exe_path, target_exe)
     except Exception as exc:
-        logger.error(f"Erro ao copiar executável: {exc}")
+        log_error(f"Erro ao copiar executável: {exc}")
         return Path()
 
     instrucoes = TEMP_DIR / "INSTRUCOES.txt"
@@ -159,7 +224,7 @@ def package_build(exe_path: Path, version: str, config: dict) -> Path:
         shutil.copy2(exe_path, TEMP_DIR / exe_path.name)
         shutil.copy2(instrucoes, TEMP_DIR / instrucoes.name)
     except Exception as exc:
-        logger.error(f"Erro ao preparar arquivos temporários: {exc}")
+        log_error(f"Erro ao preparar arquivos temporários: {exc}")
         return Path()
 
     req_src = BASE_DIR / "bot_keydrop" / "backend" / "requirements.txt"
@@ -167,49 +232,52 @@ def package_build(exe_path: Path, version: str, config: dict) -> Path:
         try:
             shutil.copy2(req_src, TEMP_DIR / "requirements.txt")
         except Exception as exc:
-            logger.warning(f"Não foi possível copiar requirements: {exc}")
+            log_warning(f"Não foi possível copiar requirements: {exc}")
 
     zip_name = f"{config['output_name']}_v{version}_windows.zip"
     zip_path = BIN_DIR / zip_name
     try:
         shutil.make_archive(zip_path.with_suffix(""), "zip", TEMP_DIR)
     except Exception as exc:
-        logger.error(f"Erro ao criar arquivo zip: {exc}")
+        log_error(f"Erro ao criar arquivo zip: {exc}")
         return Path()
     return zip_path
 
 
 def main():
     start_time = datetime.now()
-    with open(LOG_FILE, "w", encoding="utf-8") as log_file:
-        handler = logging.StreamHandler(log_file)
-        logger.addHandler(handler)
-        config = load_config()
-        version = "0.0.0"
-        if (BASE_DIR / config.get("version_file", "")).exists():
-            with open(BASE_DIR / config["version_file"], "r", encoding="utf-8") as vf:
-                version = json.load(vf).get("version", version)
-        logger.info(f"Versão do build: {version}")
+    config = load_config()
+    version = "0.0.0"
+    if (BASE_DIR / config.get("version_file", "")).exists():
+        with open(BASE_DIR / config["version_file"], "r", encoding="utf-8") as vf:
+            version = json.load(vf).get("version", version)
+    logger.info(f"Versão do build: {version}")
 
-        if not validate_environment():
-            logger.error("Ambiente inválido.")
-            return
-        if not check_port(8000):
-            logger.error("Porta 8000 em uso. Abortando build.")
-            return
-        if not run_tests():
-            logger.error("Build cancelado devido a falhas nos testes.")
-            return
-        clean_previous_build()
-        exe = build_executable(config, version)
-        if not exe:
-            logger.error("Build falhou.")
-            return
-        zip_path = package_build(exe, version, config)
-        end_time = datetime.now()
-        logger.info(f"Build concluído em {zip_path}")
-        logger.info(f"Início: {start_time}")
-        logger.info(f"Fim: {end_time}")
+    if not check_required_files():
+        log_error("Arquivos obrigatórios ausentes. Abortando build.")
+        return
+    if not validate_environment():
+        log_error("Ambiente inválido.")
+        return
+    if not check_port(8000):
+        log_error("Porta 8000 em uso. Abortando build.")
+        return
+    if not run_tests():
+        log_error("Build cancelado devido a falhas nos testes.")
+        return
+    clean_previous_build()
+    exe = build_executable(config, version)
+    if not exe:
+        log_error("Build falhou.")
+        return
+    zip_path = package_build(exe, version, config)
+    end_time = datetime.now()
+    logger.info(f"Build concluído em {zip_path}")
+    logger.info(f"Início: {start_time}")
+    logger.info(f"Fim: {end_time}")
+    logger.info(f"✅ {error_count} erros")
+    logger.info(f"⚠️ {warning_count} avisos")
+    logger.info(f"📋 Logs salvos em {LOG_FILE.relative_to(BASE_DIR)}")
 
 
 if __name__ == "__main__":
