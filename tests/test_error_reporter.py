@@ -11,6 +11,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 import json
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 
 def test_capture_exception(tmp_path):
@@ -83,3 +85,18 @@ def test_pending_file_on_send_fail(tmp_path, monkeypatch):
     data = json.loads(pend.read_text())
     assert data[0]["message"].endswith("fail")
     monkeypatch.delenv(IS_TEST_ENV_VAR, raising=False)
+
+
+def test_timestamp_in_brasilia_timezone(tmp_path):
+    log = tmp_path / "err.log"
+    reporter = ErrorReporter(log_file=log)
+    try:
+        raise RuntimeError("boom")
+    except Exception as exc:
+        info = reporter._build_error_data(exc, "dummy")
+
+    ts = datetime.strptime(info["timestamp"], "%Y-%m-%d %H:%M:%S").replace(
+        tzinfo=ZoneInfo("America/Sao_Paulo")
+    )
+    now_brt = datetime.now(ZoneInfo("America/Sao_Paulo"))
+    assert abs((now_brt - ts).total_seconds()) < 5

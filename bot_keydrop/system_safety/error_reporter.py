@@ -6,6 +6,7 @@ import sys
 import traceback
 from collections import Counter
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from pathlib import Path
 from typing import Callable, Optional
 import getpass
@@ -94,7 +95,9 @@ class ErrorReporter:
         file_name = stack[-1].filename if stack else "unknown"
         line_no = stack[-1].lineno if stack else 0
         return {
-            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "timestamp": datetime.now(ZoneInfo("America/Sao_Paulo")).strftime(
+                "%Y-%m-%d %H:%M:%S"
+            ),
             "file": file_name,
             "line": line_no,
             "message": f"{type(exc).__name__}: {exc}",
