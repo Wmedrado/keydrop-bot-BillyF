@@ -8,11 +8,15 @@ from pathlib import Path
 
 from log_utils import setup_logger
 
+INSTALLER_SCRIPT = Path(__file__).resolve().with_name("installer_builder.py")
+
 try:
     import importlib
     import psutil
 except ImportError:
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "psutil"], stdout=subprocess.DEVNULL)
+    subprocess.check_call(
+        [sys.executable, "-m", "pip", "install", "psutil"], stdout=subprocess.DEVNULL
+    )
     import psutil
 
 BASE_DIR = Path(__file__).resolve().parents[1]
@@ -183,7 +187,11 @@ def build_executable(config: dict, version: str) -> Path:
     if os.getenv("MODO_DEBUG") == "1":
         cmd.remove("--noconsole")
         cmd.append("--console")
-        cmd.extend(["--add-data", f"debug_tester.py;."])
+        debug_tester = BASE_DIR / "debug_tester.py"
+        if debug_tester.exists():
+            cmd.extend(["--add-data", f"{debug_tester};."])
+        else:
+            log_warning("debug_tester.py não encontrado - modo debug limitado")
         logger.info("Modo debug ativado para o build")
     icon = config.get("icon")
     if icon:
@@ -195,7 +203,7 @@ def build_executable(config: dict, version: str) -> Path:
 
     cmd.append(str(main_script))
     logger.info("Gerando executável...")
-    result = subprocess.run(cmd, text=True, capture_output=True)
+    result = subprocess.run(cmd, text=True, capture_output=True, cwd=BASE_DIR)
     if result.returncode != 0:
         log_error("Erro ao gerar executável:\n" + result.stdout + result.stderr)
         return Path()
@@ -271,6 +279,37 @@ def perform_build(config: dict, version: str, debug: bool = False) -> Path:
     return zip_path
 
 
+def generate_installers(exe: Path, version: str) -> None:
+    """Create MSI and EXE installers for x64 and x86 architectures."""
+    if not INSTALLER_SCRIPT.exists() or not exe.exists():
+        log_warning(
+            "Installer script ou executável não encontrado; pulando instaladores."
+        )
+        return
+
+    if not shutil.which("makensis") or not shutil.which("wixl"):
+        log_warning("makensis ou wixl ausentes no PATH; instaladores serão ignorados.")
+        return
+
+    for arch in ("x64", "x86"):
+        logger.info("Gerando instalador %s...", arch)
+        cmd = [
+            sys.executable,
+            str(INSTALLER_SCRIPT),
+            "--exe",
+            str(exe),
+            "--arch",
+            arch,
+            "--version",
+            version,
+        ]
+        result = subprocess.run(cmd, text=True, capture_output=True)
+        if result.returncode != 0:
+            log_warning(
+                f"Falha ao gerar instalador {arch}:\n{result.stdout}{result.stderr}"
+            )
+
+
 def main():
     start_time = datetime.now()
     config = load_config()
@@ -297,6 +336,11 @@ def main():
 
     normal_zip = perform_build(config, version, debug=False)
     debug_zip = perform_build(config, version, debug=True)
+
+    # Gerar instaladores usando o executável normal, se existir
+    exe_normal = BIN_DIR / f"{config['output_name']}.exe"
+    if exe_normal.exists():
+        generate_installers(exe_normal, version)
 
     end_time = datetime.now()
     logger.info(f"Build normal: {normal_zip}")
