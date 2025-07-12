@@ -11,6 +11,11 @@ import os
 import json
 import time
 import webbrowser
+
+from datetime import datetime, timedelta
+from pathlib import Path
+from input_utils import safe_int, safe_float, sanitize_str
+
 from datetime import datetime
 
 # Importações para automação Chrome (opcional)
@@ -328,9 +333,14 @@ class KeydropBotGUI:
                 return
             
             # Obter configurações
-            num_bots = int(self.num_tabs_var.get())
+            num_bots = safe_int(self.num_tabs_var.get(), 1)
+            if num_bots is None or num_bots < 1:
+                messagebox.showerror("Erro", "Número de bots inválido")
+                return
             headless = self.headless_var.get()
             contender = self.contender_mode_var.get()
+            interval = safe_int(self.speed_var.get(), 1) or 1
+          
             self.log_message(f"📋 Config: {num_bots} bots, Headless: {headless}, Contender: {contender}", "INFO")
             
             # Simular automação
@@ -388,14 +398,14 @@ class KeydropBotGUI:
         """Salvar configurações"""
         try:
             config = {
-                "num_tabs": self.num_tabs_var.get(),
-                "speed": self.speed_var.get(),
+                "num_tabs": sanitize_str(self.num_tabs_var.get()),
+                "speed": sanitize_str(self.speed_var.get()),
                 "headless": self.headless_var.get(),
                 "mini_window": self.mini_window_var.get(),
                 "login_tabs": self.login_tabs_var.get(),
                 "contender_mode": self.contender_mode_var.get(),
-                "discord_webhook": self.discord_webhook_var.get(),
-                "discord_enabled": self.discord_enabled_var.get()
+                "discord_webhook": sanitize_str(self.discord_webhook_var.get()),
+                "discord_enabled": self.discord_enabled_var.get(),
             }
             
             with open("config.json", 'w') as f:
