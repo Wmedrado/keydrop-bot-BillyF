@@ -10,8 +10,8 @@ import time
 import webbrowser
 import threading
 import subprocess
-import importlib.util
 from pathlib import Path
+import importlib.util
 
 # Configuration
 BACKEND_PORT = 8000
@@ -44,7 +44,7 @@ class ProductionLauncher:
         print()
 
     def animate_robot(self, message: str = "Carregando"):
-        """Display a small dancing robot animation"""
+        """Display a simple dancing robot animation"""
         frames = [
             r"[¬º-°]¬",
             r"[¬º-°]¬ ",
@@ -57,9 +57,11 @@ class ProductionLauncher:
         print("\r", end="", flush=True)
 
     def install_package(self, package: str):
-        """Install a Python package with a progress animation"""
+        """Install a package showing progress"""
         cmd = [sys.executable, "-m", "pip", "install", package]
-        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        process = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        )
         bar_length = 20
         pos = 0
         while process.poll() is None:
@@ -73,7 +75,7 @@ class ProductionLauncher:
             print(f"❌ Falha ao instalar {package}")
 
     def verify_python_dependencies(self):
-        """Check and automatically install required Python packages"""
+        """Check for required Python packages and install if missing"""
         print("🤖 Verificando dependências do Python...")
 
         req_file = self.base_path / "backend" / "requirements.txt"
