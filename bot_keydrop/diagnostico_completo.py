@@ -176,7 +176,7 @@ def teste_interface_minima():
         try:
             messagebox.showerror("Erro no Diagnóstico", 
                                 f"{error_msg}\n\nLog salvo em: {log_file}")
-        except:
+        except Exception:
             # Se a messagebox falhar, pelo menos mostrar no console
             print("ERRO FATAL (messagebox falhou):")
             print(f"❌ {error_msg}")

@@ -7,7 +7,6 @@ import sys
 import logging
 from pathlib import Path
 from typing import Optional, Any, List, Dict
-import sys
 from datetime import datetime
 
 try:

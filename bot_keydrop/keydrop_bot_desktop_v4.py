@@ -1868,7 +1868,7 @@ def main():
                 import ctypes
 
                 ctypes.windll.shcore.SetProcessDpiAwareness(1)
-            except:
+            except Exception:
                 pass
 
         # Criar e executar aplicação

@@ -1,16 +1,19 @@
 [tool.ruff]
 line-length = 120
 fix = false
-exclude = ["tests/", ".venv/"]
+exclude = ["tests/", ".venv/", "build/", "dist/"]
 
 [tool.ruff.lint]
 ignore = [
     "E402",  # module import at top
     "E722",  # bare except
-    "F401",  # unused imports
     "F811",  # redefinition
     "F821",  # undefined name
     "F823",  # local var referenced before assignment
-    "F841",  # unused variable
     "F541",  # f-string without placeholders
 ]
+# F401 (unused import) e F841 (unused variable) REMOVIDOS do ignore
+
+[tool.mypy]
+ignore_missing_imports = true
+# ignore_errors removido para que erros reais apareçam

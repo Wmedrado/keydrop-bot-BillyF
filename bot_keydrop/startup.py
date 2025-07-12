@@ -49,25 +49,16 @@ class BotStarter:
         requirements_file = BACKEND_DIR / "requirements.txt"
         if requirements_file.exists():
             try:
-                # Check if FastAPI is available
+                import importlib.util
 
-                import fastapi
+                required_modules = ["fastapi", "playwright", "psutil"]
+                for module in required_modules:
+                    if importlib.util.find_spec(module) is None:
+                        print(f"❌ Dependência não encontrada: {module}")
+                        print("💡 Execute: pip install -r backend/requirements.txt")
+                        return False
 
-                print("✅ FastAPI disponível")
-
-                import playwright
-
-                print("✅ Playwright disponível")
-
-                import psutil
-                import fastapi  # noqa: F401
-                print("✅ FastAPI disponível")
-                
-                import playwright  # noqa: F401
-                print("✅ Playwright disponível")
-                
-                import psutil  # noqa: F401
-                print("✅ psutil disponível")
+                print("✅ Dependências básicas disponíveis")
 
             except ImportError as e:
                 print(f"❌ Dependência não encontrada: {e}")

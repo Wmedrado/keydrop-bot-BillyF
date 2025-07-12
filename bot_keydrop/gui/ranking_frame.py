@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 import customtkinter as ctk
+from tkinter import messagebox
 from tkhtmlview import HTMLLabel
 
 from cloud.firebase_client import initialize_firebase, db

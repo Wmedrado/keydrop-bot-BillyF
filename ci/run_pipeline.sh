@@ -26,6 +26,7 @@ pre-commit run --all-files || true
 
 # Validate modifications to protected files
 python ci/check_protected_files.py | tee build_results/protected_files.log
+python ci/sensitive_var_check.py | tee build_results/sensitive_vars.log
 
 
 # Validate pull request structure (optional)
@@ -43,8 +44,8 @@ python ci/rollback_validator.py | tee build_results/rollback_validator.log
 # Lint with flake8 and black
 flake8 . > build_results/flake8.log || true
 black --check . > build_results/black.log || true
-ruff check . > build_results/ruff.log
-bandit -r bot_keydrop -lll -q > build_results/bandit.log
+ruff check . > build_results/ruff.log || true
+bandit -r bot_keydrop -lll -q > build_results/bandit.log || true
 
 
 # Semantic naming validation

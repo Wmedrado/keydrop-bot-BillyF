@@ -41,7 +41,7 @@ def teste_simples():
         print(error_msg)
         try:
             messagebox.showerror("Erro no Teste", error_msg)
-        except:
+        except Exception:
             print("Erro ao mostrar messagebox também!")
 
 if __name__ == "__main__":

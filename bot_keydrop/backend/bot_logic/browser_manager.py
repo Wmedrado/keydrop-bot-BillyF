@@ -618,66 +618,6 @@ class BrowserManager:
             logger.error(f"Erro na parada de emergência: {e}")
             return False
 
-    async def clear_cache_keep_login(self):
-        """Limpa cache do navegador mantendo cookies de login"""
-        try:
-            logger.info("Iniciando limpeza de cache...")
-            cache_cleared = False
-            
-            for browser_id, browser_info in self.browsers.items():
-                try:
-                    context = browser_info['context']
-                    
-                    # Limpar apenas cache, mantendo cookies
-                    await context.clear_cookies(domain_filter=lambda domain: 
-                        not any(login_domain in domain.lower() 
-                               for login_domain in ['keydrop', 'steam', 'steamcommunity']))
-                    
-                    # Limpar storage exceto dados de login
-                    pages = context.pages
-                    for page in pages:
-                        try:
-                            # Limpar sessionStorage e localStorage, exceto dados de login
-                            await page.evaluate("""
-                                () => {
-                                    // Salvar dados importantes de login
-                                    const loginData = {};
-                                    for (let i = 0; i < localStorage.length; i++) {
-                                        const key = localStorage.key(i);
-                                        if (key && (key.includes('login') || key.includes('auth') || key.includes('token'))) {
-                                            loginData[key] = localStorage.getItem(key);
-                                        }
-                                    }
-                                    
-                                    // Limpar tudo
-                                    localStorage.clear();
-                                    sessionStorage.clear();
-                                    
-                                    // Restaurar dados de login
-                                    Object.entries(loginData).forEach(([key, value]) => {
-                                        localStorage.setItem(key, value);
-                                    });
-                                }
-                            """)
-                        except Exception as e:
-                            logger.warning(f"Erro ao limpar storage da página: {e}")
-                    
-                    cache_cleared = True
-                    logger.info(f"Cache limpo para navegador {browser_id}")
-                    
-                except Exception as e:
-                    logger.error(f"Erro ao limpar cache do navegador {browser_id}: {e}")
-            
-            if cache_cleared:
-                logger.info("Limpeza de cache concluída com sucesso")
-            else:
-                logger.warning("Nenhum cache foi limpo")
-                
-            return cache_cleared
-            
-        except Exception as e:
-            logger.error(f"Erro na limpeza de cache: {e}")
-            return False
 
     def get_tab_info(self, tab_id: int) -> Optional[TabInfo]:
         """

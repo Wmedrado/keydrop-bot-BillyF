@@ -6,7 +6,6 @@ Testa todos os componentes principais do sistema
 
 from __future__ import annotations
 
-import os
 import sys
 import importlib.util
 from pathlib import Path

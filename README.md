@@ -166,3 +166,8 @@ Sempre que há merge para a branch `main`, o workflow também cria um ambiente d
 **staging**. O script `ci/run_staging_pipeline.sh` compila a imagem
 `staging_bot`, executa o bot por três minutos em modo debug e verifica os logs
 por erros críticos.
+
+## 🧪 Qualidade do Código
+[![Sonar Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=keydrop-bot&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=keydrop-bot)
+
+Este projeto utiliza [SonarCloud](https://sonarcloud.io) para análise estática. Crie um projeto gratuito e defina o segredo `SONAR_TOKEN` no GitHub para habilitar a verificação do *Quality Gate*. O relatório aponta duplicações, código morto, alta complexidade ciclomática e outras más práticas. O build falha automaticamente se a qualidade estiver abaixo do mínimo aceitável.
