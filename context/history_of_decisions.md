@@ -24,3 +24,9 @@ Este arquivo documenta justificativas para alterações em arquivos críticos. S
 - **Afeta/Substitui:** adiciona `ci/run_staging_pipeline.sh` e atualiza `ci.yml` com job de staging.
 - **Justificativa técnica:** roda container isolado por 3 minutos em modo debug e checa logs para falhas críticas.
 - **Tipo:** melhoria
+
+## Static analysis with SonarCloud
+- **Motivo:** monitorar duplicações, complexidade e más práticas no código.
+- **Afeta/Substitui:** adiciona arquivo `sonar-project.properties`, job `sonarcloud` no CI e badge no `README`.
+- **Justificativa técnica:** integração contínua com análise avançada previne falhas silenciosas e mantém a qualidade do projeto.
+- **Tipo:** melhoria
