@@ -6,6 +6,11 @@ import argparse
 from pathlib import Path
 from typing import List
 
+# When executed directly the repository root may not be on the PYTHONPATH.
+# Append the parent directory of this file to import the bot packages.
+import sys
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+
 from bot_keydrop.system_safety.error_analyzer import analyze_error
 
 DEFAULT_LOG = Path("logs/bot_engine.log")
