@@ -1,3 +1,5 @@
 firebase_credentials.json
 bot_keydrop/backend/learning/learner_state.json
 \nbuild/
+ci/pr_structure_report.md
+ci/regression_intelligence_report.md

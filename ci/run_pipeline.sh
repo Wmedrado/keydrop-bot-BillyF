@@ -12,6 +12,9 @@ pip install pytest pytest-asyncio pytest-mock pytest-cov pytest-html flake8 blac
 # Validate modifications to protected files
 python ci/check_protected_files.py | tee build_results/protected_files.log
 
+# Validate pull request structure
+python ci/check_pr_structure.py | tee build_results/pr_structure.log
+
 # Lint with flake8 and black
 flake8 . > build_results/flake8.log || true
 black --check . > build_results/black.log || true
