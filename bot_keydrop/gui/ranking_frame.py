@@ -2,9 +2,15 @@
 from __future__ import annotations
 
 import logging
-import customtkinter as ctk
+try:
+    import customtkinter as ctk
+except Exception:  # pragma: no cover - optional dependency
+    ctk = None  # type: ignore
 from tkinter import messagebox
-from tkhtmlview import HTMLLabel
+try:
+    from tkhtmlview import HTMLLabel
+except Exception:  # pragma: no cover - optional dependency
+    HTMLLabel = None  # type: ignore
 
 from cloud.firebase_client import initialize_firebase, db
 

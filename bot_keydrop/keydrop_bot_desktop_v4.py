@@ -22,7 +22,10 @@ import traceback
 from datetime import datetime
 from pathlib import Path
 import psutil
-from PIL import Image
+try:
+    from PIL import Image
+except Exception:  # pragma: no cover - optional dependency
+    Image = None  # type: ignore
 
 try:
     import pystray  # type: ignore

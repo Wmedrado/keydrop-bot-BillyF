@@ -54,8 +54,13 @@ def open_log_file() -> None:
 
 
 def show_step(step: int, total: int, message: str) -> None:
-    """Display build progress."""
-    logger.info("[%s/%s] %s", step, total, message)
+    """Display build progress with visual indicators."""
+    percent = int(step / total * 100)
+    icons = ["🧪", "🔨", "📦", "✅"]
+    icon = icons[min(step - 1, len(icons) - 1)]
+    msg = f"{icon} [{step}/{total} {percent}%] {message}"
+    print(msg)
+    logger.info(msg)
 
 
 def acquire_builder_lock() -> "LockFile | None":
@@ -129,6 +134,28 @@ def install_requirements() -> None:
         )
 
 
+def install_test_dependencies() -> None:
+    """Install additional dependencies required for tests."""
+    root_req = BASE_DIR / "requirements.txt"
+    if root_req.exists():
+        subprocess.run([sys.executable, "-m", "pip", "install", "-r", str(root_req)], check=False)
+    backend_req = BASE_DIR / "bot_keydrop" / "backend" / "requirements.txt"
+    subprocess.run([sys.executable, "-m", "pip", "install", "-r", str(backend_req)], check=False)
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "firebase_admin",
+            "discord-webhook",
+            "pytest",
+            "requests",
+        ],
+        check=False,
+    )
+
+
 def check_required_files() -> bool:
     """Ensure main project files exist."""
     logger.info("Verificando arquivos essenciais...")
@@ -192,6 +219,7 @@ def run_tests() -> bool:
     Returns True when tests pass or none are found. Any failure cancels the build.
     """
     logger.info("Executando testes...")
+    install_test_dependencies()
     result = subprocess.run(
         [sys.executable, "-m", "pytest", "-q"], capture_output=True, text=True
     )

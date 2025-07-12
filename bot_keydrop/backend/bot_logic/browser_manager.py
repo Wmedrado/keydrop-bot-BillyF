@@ -97,7 +97,8 @@ class BrowserManager:
             True se iniciou com sucesso
         """
         try:
-            self.headless_mode = headless
+            # Forçar execução visível para simular interação humana
+            self.headless_mode = False
             self.mini_window_mode = mini_window
             self.user_data_dir = user_data_dir
             self.enable_stealth = stealth
@@ -119,7 +120,8 @@ class BrowserManager:
                 '--disable-renderer-backgrounding',
                 '--disable-field-trial-config',
                 '--disable-ipc-flooding-protection',
-                '--disable-default-apps'
+                '--disable-default-apps',
+                '--start-maximized'
             ]
             
             # Adicionar argumentos para economizar recursos
@@ -162,7 +164,7 @@ class BrowserManager:
         Returns:
             Caminho do perfil
         """
-        return self.user_profiles_dir / f"profile_{tab_id}"
+        return self.user_profiles_dir / f"bot_{tab_id}"
     
     def _create_user_profile(self, tab_id: int) -> Path:
         """

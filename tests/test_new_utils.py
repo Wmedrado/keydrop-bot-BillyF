@@ -2,6 +2,7 @@ import asyncio
 import time
 from pathlib import Path
 import logging
+from unittest import mock
 import pytest
 
 from bot_keydrop.utils.async_logger import AsyncRemoteHandler
@@ -105,7 +106,8 @@ def test_rate_limiter():
     assert rl.allow("p")
 
 
-def test_browser_fallback(tmp_path, monkeypatch):
+@mock.patch("shutil.which", return_value=None)
+def test_browser_fallback(mock_which, tmp_path, monkeypatch):
     """Ensure fallback returns ``None`` when no browsers are available."""
     fake = tmp_path / "notfound.exe"
     monkeypatch.setattr(
@@ -113,7 +115,6 @@ def test_browser_fallback(tmp_path, monkeypatch):
         [],
         raising=False,
     )
-    monkeypatch.setattr("shutil.which", lambda *_args, **_kw: None)
     assert launch_browser_with_fallback(str(fake)) is None
 
 

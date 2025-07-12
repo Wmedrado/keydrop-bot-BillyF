@@ -15,14 +15,32 @@ import threading
 from pathlib import Path
 from typing import Dict, Optional, Any
 
-import customtkinter as ctk
+try:
+    import customtkinter as ctk
+except Exception:  # pragma: no cover - optional dependency
+    ctk = None
+
 from tkinter import messagebox, filedialog
 
-# Pillow is required for tkhtmlview but direct imports aren't needed here
-from tkhtmlview import HTMLLabel
-from bot_keydrop.gui.utils import safe_load_image, safe_widget_call
+# Pillow is required for tkhtmlview but may be missing in test environments
+try:
+    from tkhtmlview import HTMLLabel
+except Exception:  # pragma: no cover - optional dependency
+    HTMLLabel = None
+
+try:
+    from bot_keydrop.gui.utils import safe_load_image, safe_widget_call
+except Exception:  # pragma: no cover - optional dependency
+    def safe_load_image(*_a, **_k):
+        return None
+
+    def safe_widget_call(*_a, **_k):
+        return None
 from cloud.firebase_client import registrar_compra
-from password_reset import request_reset, reset_password
+try:
+    from password_reset import request_reset, reset_password
+except Exception:  # pragma: no cover - optional dependency
+    request_reset = reset_password = None
 
 try:
     import pyrebase
