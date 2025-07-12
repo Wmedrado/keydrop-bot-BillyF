@@ -11,7 +11,15 @@
     <link rel="icon" type="image/x-icon" href="public/favicon.ico">
 </head>
 <body>
-    <div class="app-container">
+    <div id="welcomeScreen" class="welcome-screen">
+        <div class="welcome-content">
+            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f916.png" alt="Robô" class="welcome-robot">
+            <h1>Bem-vindo ao Keydrop Bot</h1>
+            <p class="welcome-version">Versão 2.1.0</p>
+            <button id="startBotBtn" class="start-btn">Iniciar</button>
+        </div>
+    </div>
+    <div class="app-container" style="display:none;">
         <!-- Header -->
         <header class="app-header">
             <div class="header-content">

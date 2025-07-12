@@ -357,11 +357,21 @@ window.keydropApp = new KeydropBotApp();
 window.Utils = Utils;
 
 // Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        await window.keydropApp.init();
-    } catch (error) {
-        console.error('Failed to start application:', error);
+document.addEventListener('DOMContentLoaded', () => {
+    const startBtn = document.getElementById('startBotBtn');
+    if (startBtn) {
+        startBtn.addEventListener('click', async () => {
+            const welcome = document.getElementById('welcomeScreen');
+            if (welcome) welcome.remove();
+            document.querySelector('.app-container').style.display = '';
+            try {
+                await window.keydropApp.init();
+            } catch (error) {
+                console.error('Failed to start application:', error);
+            }
+        });
+    } else {
+        window.keydropApp.init().catch(err => console.error('Failed to start application:', err));
     }
 });
 
