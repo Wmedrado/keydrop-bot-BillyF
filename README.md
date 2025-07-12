@@ -104,6 +104,11 @@ MODO_DEBUG=1 python gerador_exe/builder.py
 
 Com `MODO_DEBUG=1` o programa exibe todos os logs, pinta a interface de vermelho e executa uma falha simulada após alguns segundos.
 
+## 📦 Instalador Windows
+Depois de gerar o executável em `dist/KeydropBot_Professional.exe`, use o script
+`installer/KeydropBotInstaller.iss` com o Inno Setup para criar um instalador
+com ícone, atalhos e entrada em *Adicionar/Remover Programas*.
+
 ## 📄 Licença
 Distribuído sob a licença MIT. Consulte os arquivos de documentação das pastas internas para mais detalhes.
 
