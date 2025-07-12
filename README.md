@@ -85,16 +85,14 @@ para garantir que plugins como `pytest-asyncio` e `pytest-mock` estejam
 disponíveis.
 
 ### Executando pre-commit
-Para rodar os testes automatizados e verificações de estilo localmente utilize o
-`pre-commit`:
+O `pre-commit` é utilizado apenas para formatação e lint. Ele não executa os testes.
 
 ```bash
-pip install -r bot_keydrop/requirements.txt -r bot_keydrop/backend/requirements.txt -r requirements-dev.txt
+pip install pre-commit
 pre-commit run --all-files
 ```
 
-Isso garante que todas as dependências estejam presentes antes de executar o
-`pytest` e demais hooks configurados.
+Execute os testes separadamente com `pytest` quando necessário.
 
 ## 🛠 Builds Disponíveis
 Execute `python gerador_exe/builder.py` para gerar os executáveis. O script cria automaticamente dois arquivos em `gerador_exe/binario_final`:
