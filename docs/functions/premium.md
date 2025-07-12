@@ -14,3 +14,10 @@ Utilities for handling premium products and permissions.
 
 - `has_permission(user_id: str, permission: str) -> bool`
   Convenience helper that checks if a user currently has a specific permission.
+
+The following cosmetic items are available for purchase and will be stored in
+`items_owned`:
+
+- `frame_neon` – contorno brilhante em tons neon
+- `frame_diamond` – efeito cintilante semelhante a diamante
+- `frame_gold` – borda dourada clássica

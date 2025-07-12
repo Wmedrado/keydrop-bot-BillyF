@@ -25,6 +25,24 @@ class StoreFrame(ctk.CTkFrame):
             "preco": 9.9,
             "descricao": "Tema visual adicional",
         },
+        {
+            "id": "frame_neon",
+            "nome": "Moldura Neon",
+            "preco": 7.99,
+            "descricao": "Contorno neon animado",
+        },
+        {
+            "id": "frame_diamond",
+            "nome": "Moldura Diamante",
+            "preco": 9.99,
+            "descricao": "Brilho cintilante azulado",
+        },
+        {
+            "id": "frame_gold",
+            "nome": "Moldura Dourada",
+            "preco": 5.99,
+            "descricao": "Borda dourada clássica",
+        },
     ]
 
     def __init__(self, master: ctk.CTk, user_id: str | None = None, **kwargs):
