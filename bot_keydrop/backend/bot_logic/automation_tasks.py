@@ -460,7 +460,11 @@ class KeydropAutomation:
                 element = await page.query_selector(selector)
                 if element and await element.is_visible():
                     return True
-            
+
+            return False
+
+        except Exception as e:
+            logger.debug(f"Erro ao verificar sucesso da participação: {e}")
             return False
 
     async def _attempt_participation_js(self, page, lottery: Dict[str, Any], tab_id: int, attempt_number: int) -> ParticipationAttempt:
