@@ -5,6 +5,10 @@ import customtkinter as ctk
 from tkinter import messagebox
 from tkinter.ttk import Progressbar
 
+from log_utils import setup_logger
+
+logger = setup_logger("login_frame")
+
 from .utils import exibir_erro
 
 
@@ -48,10 +52,13 @@ class LoginFrame(ctk.CTkFrame):
         if not email or not senha:
             exibir_erro("Informe email e senha")
             return
+        logger.info("Tentativa de login para %s", email)
         self.login_button.configure(state="disabled")
         self._simulate_loading()
         self.after(3000, lambda: self.login_button.configure(state="normal"))
         try:
             self.on_login(email, senha)
+            logger.info("Login realizado com sucesso para %s", email)
         except Exception as exc:  # pragma: no cover
+            logger.exception("Erro no login de %s", email)
             messagebox.showerror("Falha no login", str(exc))
