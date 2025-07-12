@@ -61,7 +61,7 @@ def download_file(url: str, destination: Path) -> None:
         raise ValueError("URL de download vazia")
     if destination is None:
         raise ValueError("Caminho de destino n\u00e3o pode ser None")
-    with requests.get(url, stream=True) as r:
+    with requests.get(url, stream=True, timeout=10) as r:
         r.raise_for_status()
         with open(destination, "wb") as f:
             shutil.copyfileobj(r.raw, f)
@@ -75,7 +75,7 @@ def apply_update(package_path: Path) -> None:
         with zipfile.ZipFile(package_path, "r") as zf:
             zf.extractall(package_path.parent)
     elif package_path.suffix == ".exe" and os.name == "nt":
-        subprocess.Popen([str(package_path)], shell=True)
+        subprocess.Popen([str(package_path)])
     else:
         raise RuntimeError("Formato de pacote n\u00e3o suportado")
 

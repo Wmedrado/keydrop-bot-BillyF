@@ -43,7 +43,7 @@ def safe_load_image(
     """Load an image from ``source`` returning a placeholder on failure."""
     img = None
     try:
-        if str(source).startswith("http"):
+        if str(source).startswith(("http://", "https://")):
             from urllib.request import urlopen
 
             with urlopen(source) as resp:
