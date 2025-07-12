@@ -18,6 +18,7 @@ import traceback
 from datetime import datetime
 from pathlib import Path
 import psutil
+from input_utils import safe_int, safe_float, sanitize_str
 
 class KeydropBotGUI:
     def __init__(self):
@@ -679,7 +680,11 @@ class KeydropBotGUI:
 
             self.log_message(f"✅ Chrome encontrado: {edge_path}", "SUCCESS")
             
-            num_tabs = int(self.num_tabs_var.get()) if hasattr(self, 'num_tabs_var') else 3
+            raw_tabs = self.num_tabs_var.get() if hasattr(self, 'num_tabs_var') else "3"
+            num_tabs = safe_int(raw_tabs, 3)
+            if num_tabs is None:
+                messagebox.showerror("Erro", "Número de guias inválido")
+                return
             headless_mode = self.headless_var.get() if hasattr(self, 'headless_var') else False
             mini_mode = self.mini_window_var.get() if hasattr(self, 'mini_window_var') else False
             login_tabs = self.login_tabs_var.get() if hasattr(self, 'login_tabs_var') else False
@@ -791,14 +796,14 @@ class KeydropBotGUI:
         """Salvar configurações"""
         try:
             config = {
-                "num_tabs": int(self.num_tabs_var.get()),
-                "execution_speed": float(self.speed_var.get()),
-                "retry_attempts": int(self.retry_var.get()),
+                "num_tabs": safe_int(self.num_tabs_var.get(), 5),
+                "execution_speed": safe_float(self.speed_var.get(), 8.0),
+                "retry_attempts": safe_int(self.retry_var.get(), 5),
                 "headless_mode": self.headless_var.get(),
                 "mini_window_mode": self.mini_window_var.get(),
                 "enable_login_tabs": self.login_tabs_var.get(),
-                "discord_webhook_url": self.discord_webhook_var.get(),
-                "discord_notifications": self.discord_enabled_var.get()
+                "discord_webhook_url": sanitize_str(self.discord_webhook_var.get()),
+                "discord_notifications": self.discord_enabled_var.get(),
             }
             
             with open("config.json", 'w') as f:
