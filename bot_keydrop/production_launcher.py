@@ -14,6 +14,9 @@ import asyncio
 import httpx
 from pathlib import Path
 import importlib.util
+from log_utils import setup_logger
+
+logger = setup_logger("production_launcher")
 
 from bot_keydrop.system_safety.environment_checker import (
     verificar_conexao_internet,
@@ -156,7 +159,7 @@ class ProductionLauncher:
 
     def start_backend_server(self):
         """Start the backend server"""
-        print("🚀 Iniciando servidor backend...")
+        logger.info("➡️ Iniciando servidor backend...")
         
         try:
             if self.is_executable:
@@ -182,6 +185,7 @@ class ProductionLauncher:
                 
                 server_thread = threading.Thread(target=run_server, daemon=True)
                 server_thread.start()
+                logger.debug("Backend iniciado em thread (modo execut\u00e1vel)")
                 
             else:
                 # In development mode, use subprocess
@@ -197,12 +201,13 @@ class ProductionLauncher:
                 ]
                 
                 subprocess.Popen(cmd)
+                logger.debug("Backend iniciado via subprocess em %s", backend_dir)
             
-            print(f"✅ Servidor backend iniciado na porta {BACKEND_PORT}")
+            logger.info("✅ Servidor backend iniciado na porta %s", BACKEND_PORT)
             return True
             
         except Exception as e:
-            print(f"❌ Erro ao iniciar backend: {e}")
+            logger.exception("Erro ao iniciar backend: %s", e)
             return False
 
     async def wait_for_server(self, max_wait: int = 30) -> bool:
@@ -228,14 +233,14 @@ class ProductionLauncher:
 
     def open_browser(self):
         """Open browser with the application"""
-        print("🌐 Abrindo navegador...")
+        logger.info("➡️ Abrindo navegador na URL %s", FRONTEND_URL)
         
         try:
             webbrowser.open(FRONTEND_URL)
-            print(f"✅ Navegador aberto: {FRONTEND_URL}")
+            logger.info("✅ Navegador aberto: %s", FRONTEND_URL)
         except Exception as e:
-            print(f"❌ Erro ao abrir navegador: {e}")
-            print(f"💡 Abra manualmente: {FRONTEND_URL}")
+            logger.exception("Erro ao abrir navegador: %s", e)
+            logger.info("💡 Abra manualmente: %s", FRONTEND_URL)
 
     def show_instructions(self):
         """Show usage instructions"""

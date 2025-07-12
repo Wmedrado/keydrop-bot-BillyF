@@ -5,6 +5,9 @@ import sys
 import os
 from pathlib import Path
 import atexit
+from log_utils import setup_logger
+
+logger = setup_logger("launcher")
 
 # Early CLI handling for optional watch mode
 if "--watch" in sys.argv:
@@ -38,8 +41,10 @@ if os.getenv("MODO_DEBUG") == "1" or Path(sys.argv[0]).stem.endswith("_DEBUG"):
 
 if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
     BASE_DIR = Path(sys._MEIPASS)
+    logger.debug("Executando em modo congelado; BASE_DIR=%s", BASE_DIR)
 else:
     BASE_DIR = Path(__file__).resolve().parent
+    logger.debug("Executando em modo script; BASE_DIR=%s", BASE_DIR)
 
 BACKEND_DIR = BASE_DIR / "bot_keydrop" / "backend"
 GUI_SCRIPT = BASE_DIR / "bot_keydrop" / "keydrop_bot_desktop.py"
@@ -55,8 +60,9 @@ selected_mode = None
 
 def run_api():
     """Execute only the FastAPI backend."""
+    logger.info("➡️ Chamando inicializa\u00e7\u00e3o da API WebSocket...")
     try:
-        return subprocess.Popen(
+        proc = subprocess.Popen(
             [
                 sys.executable,
                 "-m",
@@ -69,33 +75,45 @@ def run_api():
             ],
             cwd=BACKEND_DIR,
         )
+        logger.info("✅ API WebSocket iniciada (pid=%s)", proc.pid)
+        return proc
     except Exception as exc:
         messagebox.showerror("Erro", f"Falha ao iniciar API:\n{exc}")
+        logger.exception("Erro ao iniciar API")
         return None
 
 
 def run_gui():
     """Execute only the desktop GUI."""
+    logger.info("➡️ Chamando inicializa\u00e7\u00e3o da interface GUI...")
     try:
-        return subprocess.Popen([sys.executable, str(GUI_SCRIPT)])
+        proc = subprocess.Popen([sys.executable, str(GUI_SCRIPT)])
+        logger.info("✅ Interface GUI iniciada (pid=%s)", proc.pid)
+        return proc
     except Exception as exc:
         messagebox.showerror("Erro", f"Falha ao iniciar GUI:\n{exc}")
+        logger.exception("Erro ao iniciar GUI")
         return None
 
 
 def run_both():
     """Run GUI and API concurrently."""
+    logger.info("➡️ Modo selecionado: GUI + API")
     api_proc = run_api()
     if not api_proc:
+        logger.error("API n\u00e3o inicializou; abortando modo GUI+API")
         return
     gui_proc = run_gui()
     if gui_proc:
         try:
+            logger.info("⌛ Aguardando t\u00e9rmino da GUI...")
             gui_proc.wait()
         finally:
+            logger.info("⏹ Encerrando API...")
             api_proc.terminate()
             api_proc.wait()
     else:
+        logger.info("GUI n\u00e3o inicializou; encerrando API")
         api_proc.terminate()
         api_proc.wait()
 
@@ -169,13 +187,16 @@ bind_tip(btn_api, "Inicia apenas a API FastAPI/WebSocket")
 bind_tip(btn_both, "Executa GUI e API em paralelo")
 
 root.mainloop()
+logger.info("Janela de sele\u00e7\u00e3o fechada; modo escolhido=%s", selected_mode)
 
 # Start selected mode
 if selected_mode == "gui":
+    logger.debug("Executando somente GUI")
     proc = run_gui()
     if proc:
         proc.wait()
 elif selected_mode == "api":
+    logger.debug("Executando somente API")
     proc = run_api()
     if proc:
         proc.wait()
