@@ -132,7 +132,7 @@ class KeydropBot:
             'ultima_participacao': None,
             'ultima_atividade': 'Iniciando...'
         }
-        # Rastreamento de mudanças nos sorteios
+        # Rastrear mudanças nos sorteios para evitar refreshs repetidos
         self.last_giveaway_count = -1
         
     def start(self):
@@ -550,7 +550,7 @@ class KeydropBot:
             print(f"[Bot {self.bot_id}] Erro ao fechar popups: {e}")
 
     def page_needs_refresh(self):
-        """Avaliar se a página precisa ser recarregada"""
+        """Avaliar se há mudanças nos sorteios"""
         try:
             if not self.driver or not By:
                 return True

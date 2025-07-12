@@ -57,7 +57,7 @@ class KeydropAutomationBot:
             'last_contender_time': None,
             'start_time': datetime.now()
         }
-        # Monitorar quantidade de sorteios para evitar refresh desnecessário
+        # Monitorar quantidade de sorteios para evitar refresh constante
         self.last_giveaway_count = -1
     
     def log(self, message, level="INFO"):
@@ -187,6 +187,24 @@ class KeydropAutomationBot:
             self.log(f"❌ Erro ao participar de sorteio amateur: {e}", "ERROR")
             self.stats['errors'] += 1
             return False
+
+    def page_needs_refresh(self):
+        """Verificar se há novos sorteios na página"""
+        try:
+            if not self.driver or not By:
+                return True
+
+            elements = self.driver.find_elements(By.CSS_SELECTOR,
+                                                 "[data-testid='div-active-giveaways-list-single-card']")
+            current_count = len(elements)
+
+            if self.last_giveaway_count != current_count:
+                self.last_giveaway_count = current_count
+                return False
+        except Exception:
+            return True
+
+        return True
     
     def participate_contender_giveaway(self):
         """Participar de sorteio contender (1 hora) se habilitado"""
@@ -241,24 +259,6 @@ class KeydropAutomationBot:
             self.log(f"❌ Erro ao participar de sorteio contender: {e}", "ERROR")
             self.stats['errors'] += 1
             return False
-
-    def page_needs_refresh(self):
-        """Verifica se a página possui novos sorteios"""
-        try:
-            if not self.driver or not By:
-                return True
-
-            elements = self.driver.find_elements(By.CSS_SELECTOR,
-                                                 "[data-testid='div-active-giveaways-list-single-card']")
-            current_count = len(elements)
-
-            if self.last_giveaway_count != current_count:
-                self.last_giveaway_count = current_count
-                return False
-        except Exception:
-            return True
-
-        return True
     
     def run_automation_cycle(self, interval_seconds=180):
         """Executar ciclo de automação"""

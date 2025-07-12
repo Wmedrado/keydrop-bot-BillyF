@@ -61,7 +61,7 @@ class KeyDropBot:
             'ganho_periodo': 0.0,
             'total_ganho': 0.0
         }
-        # Contador para detectar mudança nos sorteios e evitar refresh desnecessários
+        # Contador de sorteios para evitar refresh desnecessÃ¡rio
         self.last_giveaway_count = -1
     def checar_alerta_discord(self):
         """Envia alerta para o Discord se ficar 30 minutos sem participar"""
@@ -409,7 +409,7 @@ class KeyDropBot:
             return False
 
     def page_needs_refresh(self):
-        """Verifica se houve mudança na lista de sorteios"""
+        """Verifica se a lista de sorteios mudou"""
         try:
             if not self.driver:
                 return True
