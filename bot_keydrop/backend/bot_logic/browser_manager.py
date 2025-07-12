@@ -75,7 +75,13 @@ class BrowserManager:
         
         logger.info("Browser Manager inicializado com suporte a perfis distintos")
     
-    async def start_browser(self, headless: bool = False, mini_window: bool = False, user_data_dir: Optional[str] = None) -> bool:
+    async def start_browser(
+        self,
+        headless: bool = False,
+        mini_window: bool = False,
+        user_data_dir: Optional[str] = None,
+        stealth: bool = True,
+    ) -> bool:
         """
         Inicia o navegador Chrome
         
@@ -91,6 +97,7 @@ class BrowserManager:
             self.headless_mode = headless
             self.mini_window_mode = mini_window
             self.user_data_dir = user_data_dir
+            self.enable_stealth = stealth
             
             # Inicializar Playwright
             self.playwright = await async_playwright().start()
@@ -704,7 +711,12 @@ class BrowserManager:
 # Instância global do gerenciador de navegador
 browser_manager = BrowserManager()
 
-async def start_browser(headless: bool = False, mini_window: bool = False, user_data_dir: Optional[str] = None) -> bool:
+async def start_browser(
+    headless: bool = False,
+    mini_window: bool = False,
+    user_data_dir: Optional[str] = None,
+    stealth: bool = True,
+) -> bool:
     """
     Função utilitária para iniciar o navegador
     
@@ -716,7 +728,7 @@ async def start_browser(headless: bool = False, mini_window: bool = False, user_
     Returns:
         True se iniciou com sucesso
     """
-    return await browser_manager.start_browser(headless, mini_window, user_data_dir)
+    return await browser_manager.start_browser(headless, mini_window, user_data_dir, stealth)
 
 async def stop_browser() -> bool:
     """

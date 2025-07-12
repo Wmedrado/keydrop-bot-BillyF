@@ -90,6 +90,7 @@ class ConfigUpdateRequest(BaseModel):
     execution_speed: Optional[float] = None
     retry_attempts: Optional[int] = None
     headless_mode: Optional[bool] = None
+    stealth_headless_mode: Optional[bool] = None
     mini_window_mode: Optional[bool] = None
     enable_login_tabs: Optional[bool] = None
     tab_proxies: Optional[Dict[int, str]] = None

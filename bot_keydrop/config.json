@@ -1,5 +1,6 @@
 {
   "headless_mode": false,
+  "stealth_headless_mode": false,
   "mini_window_mode": false,
   "login_tabs_mode": false,
   "contender_mode": false,

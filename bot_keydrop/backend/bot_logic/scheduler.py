@@ -171,8 +171,9 @@ class BotScheduler:
             # Iniciar navegador se não estiver rodando
             if not self.browser_manager.is_running:
                 browser_started = await self.browser_manager.start_browser(
-                    headless=self.config.headless_mode,
-                    mini_window=self.config.mini_window_mode
+                    headless=self.config.headless_mode or self.config.stealth_headless_mode,
+                    mini_window=self.config.mini_window_mode,
+                    stealth=self.config.stealth_headless_mode
                 )
                 if not browser_started:
                     self.status = BotStatus.ERROR

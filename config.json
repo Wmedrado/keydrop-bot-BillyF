@@ -3,6 +3,7 @@
   "execution_speed": 8.0,
   "retry_attempts": 5,
   "headless_mode": false,
+  "stealth_headless_mode": false,
   "mini_window_mode": false,
   "enable_login_tabs": false,
   "contender_mode": true,
