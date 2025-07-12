@@ -60,13 +60,10 @@ class BotStarter:
                 print("✅ Playwright disponível")
 
                 import psutil
-                import fastapi  # noqa: F401
                 print("✅ FastAPI disponível")
                 
-                import playwright  # noqa: F401
                 print("✅ Playwright disponível")
                 
-                import psutil  # noqa: F401
                 print("✅ psutil disponível")
 
             except ImportError as e:
@@ -99,7 +96,7 @@ class BotStarter:
             ]
 
             self.backend_process = subprocess.Popen(
-                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=False
             )
 
             print(f"✅ Backend iniciado na porta {BACKEND_PORT}")
@@ -123,7 +120,7 @@ class BotStarter:
             cmd = [sys.executable, "-m", "http.server", str(FRONTEND_PORT)]
 
             self.frontend_process = subprocess.Popen(
-                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=False
             )
 
             print(f"✅ Frontend iniciado na porta {FRONTEND_PORT}")
@@ -140,16 +137,16 @@ class BotStarter:
         print("⏳ Aguardando backend ficar disponível...")
 
         import urllib.request
-        import urllib.error
+        import requests
 
         for i in range(max_retries):
             try:
-                urllib.request.urlopen(
+                requests.get(
                     f"http://localhost:{BACKEND_PORT}/health", timeout=1
                 )
                 print("✅ Backend está pronto!")
                 return True
-            except (urllib.error.URLError, ConnectionRefusedError):
+            except (requests.RequestException, ConnectionRefusedError):
                 time.sleep(1)
                 if i % 5 == 0:
                     print(f"⏳ Tentativa {i+1}/{max_retries}...")

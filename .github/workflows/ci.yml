@@ -21,6 +21,14 @@ jobs:
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
         run: python ci/validate_pr_description.py
+      - name: Run Ruff (Lint)
+        run: |
+          pip install ruff
+          ruff check .
+      - name: Run Bandit (Security Audit)
+        run: |
+          pip install bandit
+          python scripts/security_scan.py
       - name: Run pipeline
         run: |
           bash ci/run_pipeline.sh

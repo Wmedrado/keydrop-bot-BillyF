@@ -94,6 +94,14 @@ pre-commit run --all-files
 
 Execute os testes separadamente com `pytest` quando necessário.
 
+### Verificações de estilo e segurança
+Execute o Ruff para validar o estilo e o Bandit para auditoria de segurança:
+
+```bash
+python scripts/lint_code.py      # Verificação de estilo
+python scripts/security_scan.py  # Análise de segurança (nível médio)
+```
+
 ## 🛠 Builds Disponíveis
 Execute `python gerador_exe/builder.py` para gerar os executáveis. O script cria automaticamente dois arquivos em `gerador_exe/binario_final`:
 

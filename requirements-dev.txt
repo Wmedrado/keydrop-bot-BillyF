@@ -4,3 +4,9 @@ pytest-mock
 beautifulsoup4
 ruff
 bandit
+requests
+psutil
+Pillow
+tkhtmlview
+cryptography
+python-dotenv
