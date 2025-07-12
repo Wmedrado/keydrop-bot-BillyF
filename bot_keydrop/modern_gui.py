@@ -3,29 +3,39 @@ import time
 import requests
 import dearpygui.dearpygui as dpg
 
+from log_utils import setup_logger
+
+
+logger = setup_logger("modern_gui")
+
 API_URL = "http://localhost:8000"
 
 STATUS_TAG = "status_text"
 CPU_TAG = "cpu_text"
 RAM_TAG = "ram_text"
+API_MSG_TAG = "api_status_text"
 
 
 def send_action(action: str):
     try:
         requests.post(f"{API_URL}/bot/control", json={"action": action}, timeout=2)
     except Exception as e:
-        print(f"Erro ao enviar ação {action}: {e}")
+        logger.error("Erro ao enviar ação %s: %s", action, e)
+        dpg.set_value(API_MSG_TAG, "API indisponível")
 
 
 def update_loop():
     while dpg.is_dearpygui_running():
+        api_ok = True
         try:
             r = requests.get(f"{API_URL}/bot/status", timeout=2)
             if r.ok:
                 status = r.json().get("status", "--")
                 dpg.set_value(STATUS_TAG, f"Status: {status}")
-        except Exception:
+        except Exception as e:
             dpg.set_value(STATUS_TAG, "Status: erro")
+            logger.error("Erro ao obter status do bot: %s", e)
+            api_ok = False
 
         try:
             r = requests.get(f"{API_URL}/stats/system", timeout=2)
@@ -35,8 +45,15 @@ def update_loop():
                 mem = data.get("memory_percent", 0)
                 dpg.set_value(CPU_TAG, f"CPU: {cpu}%")
                 dpg.set_value(RAM_TAG, f"RAM: {mem}%")
-        except Exception:
-            pass
+        except Exception as e:
+            logger.error("Erro ao obter estatísticas do sistema: %s", e)
+            api_ok = False
+
+        if not api_ok:
+            dpg.set_value(API_MSG_TAG, "API indisponível")
+        else:
+            dpg.set_value(API_MSG_TAG, "")
+
         time.sleep(2)
 
 
@@ -79,6 +96,7 @@ def run_modern_gui(api_url: str = API_URL):
         dpg.add_text("Status: --", tag=STATUS_TAG)
         dpg.add_text("CPU: --", tag=CPU_TAG)
         dpg.add_text("RAM: --", tag=RAM_TAG)
+        dpg.add_text("", tag=API_MSG_TAG, color=(255, 0, 0))
         dpg.add_separator()
         dpg.add_button(label="Alternar Tema", callback=toggle_theme)
 
