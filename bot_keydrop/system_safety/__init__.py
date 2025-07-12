@@ -8,6 +8,7 @@ from .environment_checker import (
 from .permissions_validator import validar_permissoes
 from .backups import backup_arquivo, restaurar_arquivo
 from .watchdog import ProcessWatchdog
+from .crash_tracker import start_crash_tracker, log_exception
 from .error_reporter import error_reporter, ErrorReporter
 from .diagnostic import diagnostic
 from .dependency_validator import run_dependency_check, get_available_browser
@@ -33,4 +34,6 @@ __all__ = [
     "enforce_timeout",
     "TimeoutException",
     "run_in_sandbox",
+    "start_crash_tracker",
+    "log_exception",
 ]

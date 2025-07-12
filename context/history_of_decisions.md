@@ -24,3 +24,8 @@ Este arquivo documenta justificativas para alterações em arquivos críticos. S
 - **Afeta/Substitui:** adiciona `ci/run_staging_pipeline.sh` e atualiza `ci.yml` com job de staging.
 - **Justificativa técnica:** roda container isolado por 3 minutos em modo debug e checa logs para falhas críticas.
 - **Tipo:** melhoria
+## Resilience and CI automation enhancements
+- **Motivo:** Garantir qualidade de código e maior resiliência do bot.
+- **Afeta/Substitui:** adiciona utilidades de monitoramento em `bot_keydrop.utils` e novos scripts em `ci/`.
+- **Justificativa técnica:** Implementação de detector de TODOs, enforcer de `__str__`/`__repr__`, circuito de retry, monitor de tempo e rollback automático.
+- **Tipo:** melhoria
