@@ -297,6 +297,13 @@ class KeydropAutomation:
 
     async def _try_participation_methods(self, page, lottery: Dict[str, Any], tab_id: int, attempt_number: int) -> ParticipationAttempt:
         """Try multiple participation strategies and record results."""
+        learned_selector = self.learner.get_selector()
+        if learned_selector:
+            result = await self._attempt_participation(page, lottery, tab_id, attempt_number, learned_selector)
+            self.learner.record_result("learned", result.result == ParticipationResult.SUCCESS)
+            if result.result == ParticipationResult.SUCCESS:
+                return result
+
         methods = ["css", "js", "image"]
         best = self.learner.best_method()
         if best in methods:
@@ -318,7 +325,7 @@ class KeydropAutomation:
 
         return result
     
-    async def _attempt_participation(self, page, lottery: Dict[str, Any], tab_id: int, attempt_number: int) -> ParticipationAttempt:
+    async def _attempt_participation(self, page, lottery: Dict[str, Any], tab_id: int, attempt_number: int, selector: str = None) -> ParticipationAttempt:
         """
         Tenta participar de um sorteio específico
         
@@ -340,7 +347,13 @@ class KeydropAutomation:
             await page.wait_for_load_state('domcontentloaded', timeout=15000)
 
             # Procurar botão final de participação
-            join_button = await page.wait_for_selector(self.SELECTORS['join_button'], timeout=10000)
+            join_selector = selector or self.SELECTORS['join_button']
+            join_button = await page.query_selector(join_selector)
+            if not join_button:
+                try:
+                    join_button = await page.wait_for_selector(join_selector, timeout=10000)
+                except Exception:
+                    join_button = None
 
             if not join_button:
                 await page.go_back()

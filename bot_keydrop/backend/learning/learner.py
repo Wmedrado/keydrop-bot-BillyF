@@ -19,6 +19,7 @@ class ParticipationLearner:
             "js": {"success": 0, "fail": 0},
             "image": {"success": 0, "fail": 0}
         })
+        self.state["method_stats"].setdefault("learned", {"success": 0, "fail": 0})
         self.state.setdefault("learned_selector", None)
 
     def save(self):
@@ -39,5 +40,5 @@ class ParticipationLearner:
         return self.state.get("learned_selector")
 
     def best_method(self) -> str:
-        stats = self.state["method_stats"]
+        stats = {k: v for k, v in self.state["method_stats"].items() if k != "learned"}
         return max(stats.keys(), key=lambda m: stats[m]["success"]) if stats else "css"
