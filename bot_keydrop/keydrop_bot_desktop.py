@@ -15,7 +15,10 @@ from custom_browser import CustomBrowser
 # from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 # import numpy as np
 
+from bot_keydrop.performance_utils import measure_time
+
 class KeydropBotGUI:
+    @measure_time("gui")
     def __init__(self):
         """Inicialização ultra-robusta para executável"""
         # Criar janela principal
