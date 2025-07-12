@@ -20,9 +20,10 @@ from fastapi import (
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 import uvicorn
 import httpx
+import password_reset
 
 # Importar módulos do bot
 from config import ConfigManager, get_config, save_config
@@ -168,6 +169,15 @@ class ProxyTestRequest(BaseModel):
 
 class MacroSaveRequest(BaseModel):
     use_first: bool = False
+
+
+class PasswordResetRequest(BaseModel):
+    email: EmailStr
+
+
+class NewPasswordRequest(BaseModel):
+    token: str
+    password: str
 
 # Inicialização da aplicação
 @app.on_event("startup")
@@ -440,6 +450,31 @@ async def reset_configuration():
     except Exception as e:
         logger.error(f"Erro ao resetar configuração: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# Endpoints de recuperação de senha
+@app.post("/api/password-reset")
+def password_reset_request(request: PasswordResetRequest):
+    try:
+        password_reset.request_reset(request.email)
+        return {"success": True, "message": "Instruções enviadas"}
+    except ValueError:
+        raise HTTPException(status_code=404, detail="E-mail não encontrado")
+    except Exception as e:
+        logger.error(f"Erro ao solicitar reset de senha: {e}")
+        raise HTTPException(status_code=500, detail="Erro interno")
+
+
+@app.post("/api/reset-password")
+def password_reset_apply(request: NewPasswordRequest):
+    try:
+        password_reset.reset_password(request.token, request.password)
+        return {"success": True, "message": "Senha atualizada"}
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as e:
+        logger.error(f"Erro ao redefinir senha: {e}")
+        raise HTTPException(status_code=500, detail="Erro interno")
 
 
 # Endpoints de controle do bot
