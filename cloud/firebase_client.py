@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import sys
+
 import logging
 from pathlib import Path
 from typing import Optional, Any, List, Dict
@@ -9,26 +11,41 @@ from datetime import datetime
 
 try:
     import firebase_admin
-    from firebase_admin import credentials, initialize_app, storage, db
+    from firebase_admin import (
+        credentials,
+        initialize_app,
+        storage as fb_storage,
+        db as fb_db,
+    )
 
-except Exception:  # pragma: no cover - optional dependency
+    storage = fb_storage
+    db = fb_db
+    sys.modules[__name__ + ".storage"] = fb_storage
+    sys.modules[__name__ + ".db"] = fb_db
+
+except Exception:  # pragma: no cover - optional dependency, fallback to stubs
     from types import SimpleNamespace
 
     firebase_admin = None
     credentials = SimpleNamespace(Certificate=lambda *a, **k: None)
-    initialize_app = lambda *a, **k: None
+
+    def initialize_app(*a, **k):
+        return None
+
     storage = SimpleNamespace(bucket=lambda *a, **k: None)
     db = SimpleNamespace(reference=lambda *a, **k: None)
-except ImportError:  # optional dependency
+    sys.modules[__name__ + ".storage"] = storage
+    sys.modules[__name__ + ".db"] = db
+except ImportError:  # optional dependency, fallback to stubs
     firebase_admin = None
     credentials = initialize_app = storage = db = None
+    sys.modules[__name__ + ".storage"] = storage
+    sys.modules[__name__ + ".db"] = db
 
 
 logger = logging.getLogger(__name__)
 
 # Global variable to hold the initialized Firebase app
-from typing import Any
-
 _firebase_app: Optional[Any] = None
 
 # Constants for project configuration
@@ -41,17 +58,20 @@ def initialize_firebase() -> Any:
     global _firebase_app
 
     if firebase_admin is None:
-        raise ImportError("firebase_admin is required for Firebase integration")
+        raise ImportError(
+            "firebase_admin is required for Firebase integration"
+        )  # noqa: E501
 
     if _firebase_app:
         return _firebase_app
 
-
-    cred_path = Path(__file__).resolve().parents[1] / "firebase_credentials.json"
+    cred_path = (
+        Path(__file__).resolve().parents[1] / "firebase_credentials.json"
+    )  # noqa: E501
     if not cred_path.exists():
         raise FileNotFoundError(
             f"Firebase credentials not found at {cred_path}."
-        )
+        )  # noqa: E501
 
     cred = credentials.Certificate(str(cred_path))
     _firebase_app = initialize_app(
@@ -136,7 +156,6 @@ def registrar_compra(user_id: str, itens: List[Dict[str, Any]]) -> None:
     logger.debug("Compra registrada para %s: %s", user_id, dados)
 
 
-
 def salvar_discord_info(user_id: str, info: Dict[str, Any]) -> None:
     """Persist Discord-related information for a user."""
     initialize_firebase()
@@ -144,7 +163,10 @@ def salvar_discord_info(user_id: str, info: Dict[str, Any]) -> None:
     ref.update(info)
     logger.debug("Discord info salvo para %s: %s", user_id, info)
 
-def registrar_log_suspeito(user_id: str, hwid: str, recurso: str, mensagem: str) -> None:
+
+def registrar_log_suspeito(
+    user_id: str, hwid: str, recurso: str, mensagem: str
+) -> None:
     """Save a suspicious activity log entry."""
     initialize_firebase()
     log_ref = db.reference("logs_suspeitos")
@@ -157,4 +179,3 @@ def registrar_log_suspeito(user_id: str, hwid: str, recurso: str, mensagem: str)
     }
     log_ref.push(dados)
     logger.warning("Registro suspeito: %s", dados)
-

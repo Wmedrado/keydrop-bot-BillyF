@@ -1,10 +1,9 @@
+from bot_keydrop.system_safety.error_reporter import ErrorReporter
+from bot_keydrop.system_safety.error_reporter import TEST_ENV_VAR
 
-from bot_keydrop.system_safety.error_reporter import ErrorReporter, TEST_ENV_VAR
+# Updated to trigger auto review tests
 
 import json
-
-from bot_keydrop.system_safety.error_reporter import ErrorReporter
-
 
 
 def test_capture_exception(tmp_path):
@@ -20,11 +19,11 @@ def test_capture_exception(tmp_path):
     assert h in content
 
 
-
 def test_capture_exception_no_send_in_tests(monkeypatch, tmp_path):
     """send_callback should not run when under pytest."""
     log = tmp_path / "err.log"
     called = []
+
     def fake_send(hash_, tb):
         called.append(hash_)
 
@@ -35,6 +34,7 @@ def test_capture_exception_no_send_in_tests(monkeypatch, tmp_path):
     except Exception as exc:
         reporter.capture_exception(exc)
     assert not called
+
 
 def test_pending_file_on_send_fail(tmp_path, monkeypatch):
     log = tmp_path / "err.log"
@@ -51,4 +51,3 @@ def test_pending_file_on_send_fail(tmp_path, monkeypatch):
     assert pend.exists()
     data = json.loads(pend.read_text())
     assert data[0]["message"].endswith("fail")
-
