@@ -9,6 +9,7 @@ import atexit
 # Early CLI handling for optional watch mode
 if "--watch" in sys.argv:
     from bot_keydrop.live_monitor import watch
+
     watch()
     sys.exit(0)
 
@@ -24,9 +25,12 @@ if os.getenv("MODO_DEBUG") == "1" or Path(sys.argv[0]).stem.endswith("_DEBUG"):
     install_crash_debug()
     try:
         if not diagnostic.run_diagnostic():
-            messagebox.showerror("Diagn\u00f3stico", "Falha na verifica\u00e7\u00e3o do sistema")
+            messagebox.showerror(
+                "Diagn\u00f3stico", "Falha na verifica\u00e7\u00e3o do sistema"
+            )
             sys.exit(1)
         import debug_tester
+
         debug_tester.main()
         send_log_to_discord(Path("logs/bot_engine.log"))
     except Exception as exc:
@@ -107,7 +111,9 @@ root = tk.Tk()
 root.title("Keydrop Bot - Selecione o Modo")
 root.geometry("420x250")
 root.resizable(False, False)
-icon_path = Path(__file__).resolve().parent / "bot-icone.ico"
+
+# Use packaged directory when running as executable
+icon_path = BASE_DIR / "bot-icone.ico"
 if icon_path.exists():
     try:
         root.iconbitmap(icon_path)
@@ -133,6 +139,7 @@ for btn in (btn_gui, btn_api, btn_both):
 tt_label = ttk.Label(root, textvariable=tooltip_var, foreground="gray")
 tt_label.pack(pady=10)
 
+
 def open_logs(_event=None) -> None:
     log = Path("logs/bot_engine.log")
     if not log.exists():
@@ -145,6 +152,7 @@ def open_logs(_event=None) -> None:
             subprocess.Popen(["xdg-open", str(log)])
     except Exception as exc:
         messagebox.showerror("Erro", f"Falha ao abrir log: {exc}")
+
 
 if os.getenv("MODO_DEBUG") == "1":
     root.bind("<F12>", open_logs)

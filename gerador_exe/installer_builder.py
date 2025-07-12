@@ -9,15 +9,18 @@ INSTALLER_DIR = BASE_DIR / "installer"
 
 
 NSIS_TEMPLATE = r"""
+!include "MUI2.nsh"
+!define MUI_ICON "bot-icone.ico"
+!define MUI_UNICON "bot-icone.ico"
 OutFile "{outfile}"
 InstallDir "$PROGRAMFILES\\Keydrop Bot"
 RequestExecutionLevel user
-Icon "bot-icone.ico"
 Section "Main"
   SetOutPath "$INSTDIR"
   File "{exe_path}"
   File "config.json"
-  CreateShortCut "$DESKTOP\\Keydrop Bot.lnk" "$INSTDIR\\{exe_name}"
+  File "bot-icone.ico"
+  CreateShortCut "$DESKTOP\\Keydrop Bot.lnk" "$INSTDIR\\{exe_name}" "" "$INSTDIR\\bot-icone.ico"
 SectionEnd
 """
 
@@ -67,7 +70,14 @@ def build_installer(exe: Path, arch: str, version: str):
     )
     wxs_file = INSTALLER_DIR / f"temp_{arch}.wxs"
     wxs_file.write_text(wxs_script, encoding="utf-8")
-    run(["wixl", "-o", str(DIST_DIR / f"KeydropBot_Installer_{arch}.msi"), str(wxs_file)])
+    run(
+        [
+            "wixl",
+            "-o",
+            str(DIST_DIR / f"KeydropBot_Installer_{arch}.msi"),
+            str(wxs_file),
+        ]
+    )
 
 
 def main():

@@ -5,6 +5,7 @@ DefaultDirName={pf}\Keydrop Bot Professional
 DefaultGroupName=Keydrop Bot Professional
 UninstallDisplayIcon={app}\KeydropBot_Professional.exe
 OutputBaseFilename=KeydropBotInstaller
+SetupIconFile=bot-icone.ico
 Compression=lzma
 SolidCompression=yes
 
@@ -14,8 +15,8 @@ Source: "config.json"; DestDir: "{app}"; Flags: ignoreversion
 Source: "bot-icone.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\Keydrop Bot Professional"; Filename: "{app}\KeydropBot_Professional.exe"
-Name: "{commondesktop}\Keydrop Bot Professional"; Filename: "{app}\KeydropBot_Professional.exe"; Tasks: desktopicon
+Name: "{group}\Keydrop Bot Professional"; Filename: "{app}\KeydropBot_Professional.exe"; IconFilename: "{app}\bot-icone.ico"
+Name: "{commondesktop}\Keydrop Bot Professional"; Filename: "{app}\KeydropBot_Professional.exe"; Tasks: desktopicon; IconFilename: "{app}\bot-icone.ico"
 
 [Tasks]
 Name: desktopicon; Description: "Criar \u00edcone na \u00c1rea de Trabalho"; Flags: unchecked
