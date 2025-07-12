@@ -78,7 +78,7 @@ def test_version_comparison():
         ("2.0.5", "2.0.6", False),  # Versão atual é mais nova
         ("2.0.6", "2.0.6", False),  # Versões iguais
         ("2.1.0", "2.0.6", True),   # Versão minor nova
-        ("3.0.0", "2.0.6", True),   # Versão major nova
+        ("4.0.0", "2.0.6", True),   # Versão major nova
     ]
     
     all_passed = True

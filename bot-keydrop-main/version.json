@@ -1,5 +1,5 @@
 {
-    "version": "2.1.0",
+    "version": "4.0.0",
     "build": "20250109-3",
     "name": "KeyDrop Bot Professional Edition",
     "description": "Bot profissional para KeyDrop com sistema de relatórios personalizável, integração Telegram e controle remoto completo",
@@ -34,8 +34,8 @@
         "Inclusão de IP público nos relatórios"
     ],
     "changelog": [
-        "VERSÃO 2.1.0 - RELEASE MAJOR COM INTEGRAÇÃO TELEGRAM E SISTEMAS AVANÇADOS:",
-        "� VERSÃO MAJOR - Incremento significativo de funcionalidades (2.0.x → 2.1.0)",
+        "VERSÃO 4.0.0 - RELEASE MAJOR COM INTEGRAÇÃO TELEGRAM E SISTEMAS AVANÇADOS:",
+        "� VERSÃO MAJOR - Incremento significativo de funcionalidades (3.x → 4.0.0)",
         "🤖 Integração completa com Telegram Bot para controle remoto total",
         "📱 Campo personalizável para intervalo de relatório Discord (1-168 horas)",
         "📊 Sistema de relatórios completamente reformulado com métricas avançadas:",
@@ -78,7 +78,7 @@
         "   - Otimização de estrutura de arquivos",
         "   - Preparação otimizada para distribuição em produção",
         "",
-        "VERSÃO 2.0.9 - TELEGRAM BOT E RELATÓRIOS APRIMORADOS:",
+        "VERSÃO 4.0.0 - TELEGRAM BOT E RELATÓRIOS APRIMORADOS:",
         "🤖 Integração completa com Telegram Bot (token: 7900120898:AAGptz6a39S866Qa42KdcXDRdi9AoXc6_Ps)",
         "📱 Campo personalizável para intervalo de relatório Discord (1-168 horas)",
         "📊 Relatórios aprimorados com métricas completas:",
