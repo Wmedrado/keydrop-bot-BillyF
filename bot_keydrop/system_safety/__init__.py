@@ -10,9 +10,10 @@ from .backups import backup_arquivo, restaurar_arquivo
 from .watchdog import ProcessWatchdog
 from .error_reporter import error_reporter, ErrorReporter
 from .diagnostic import diagnostic
-from .dependency_validator import run_dependency_check
+from .dependency_validator import run_dependency_check, get_available_browser
 from .timeout import enforce_timeout, TimeoutException
 from .sandbox import run_in_sandbox
+
 
 __all__ = [
     "verificar_conexao_internet",
@@ -28,6 +29,7 @@ __all__ = [
     "ErrorReporter",
     "diagnostic",
     "run_dependency_check",
+    "get_available_browser",
     "enforce_timeout",
     "TimeoutException",
     "run_in_sandbox",

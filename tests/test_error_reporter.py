@@ -55,6 +55,7 @@ def test_pending_file_on_send_fail(tmp_path, monkeypatch):
     except Exception as exc:
         reporter.capture_exception(exc)
 
+    assert reporter.counters
     assert pend.exists()
     data = json.loads(pend.read_text())
     assert data[0]["message"].endswith("fail")
