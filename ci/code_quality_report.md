@@ -2,7 +2,7 @@
 
 | Item | Status | Notes |
 | --- | --- | --- |
-| PR template enforcement | Implemented | `.github/workflows/validate_pr.yml` with `ci/pr_structure_validator.py` |
+| PR template enforcement | Optional | `ci/pr_structure_validator.py` available but not required in CI |
 | Tests before merge | Implemented | `ci/run_pipeline.sh` runs pytest |
 | Separate CI pipelines | Implemented | `ci/run_pipeline.sh` and `ci/run_ui_pipeline.sh` |
 | Pre-commit hooks | Implemented | `.pre-commit-config.yaml` includes formatting and linting hooks |
