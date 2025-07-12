@@ -6,3 +6,7 @@ undetected-chromedriver==3.5.5
 PyQt5>=5.15
 pystray>=0.19
 Pillow>=9.0
+
+tkhtmlview>=0.2.0
+pyrebase4>=4.5.0
+

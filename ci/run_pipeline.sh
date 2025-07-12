@@ -4,6 +4,11 @@ mkdir -p build_results tests
 
 # Install python dependencies
 pip install -r bot_keydrop/requirements.txt
+
+pip install -r bot_keydrop/backend/requirements.txt || true
+# Ensure critical backend deps are installed even if optional ones fail
+pip install firebase_admin discord-webhook || true
+pip install pytest pytest-asyncio pytest-mock pytest-cov pytest-html flake8 black
 # Backend requirements contain heavy packages not needed for tests
 # so we avoid installing them to speed up CI
 pip install beautifulsoup4
@@ -12,9 +17,13 @@ pip install pytest pytest-asyncio pytest-mock pytest-cov pytest-html flake8 blac
 # Validate modifications to protected files
 python ci/check_protected_files.py | tee build_results/protected_files.log
 
+
 # Lint with flake8 and black
 flake8 . > build_results/flake8.log || true
 black --check . > build_results/black.log || true
+
+# Validate PR checklist
+python ci/pr_validation.py
 
 # Dependency check
 python - <<'PY'
