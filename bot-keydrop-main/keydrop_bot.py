@@ -41,6 +41,7 @@ class KeyDropBot:
         self.max_tentativas = max_tentativas  # Máximo de tentativas para join
         self.driver = None
         self.running = False
+        self.paused = False  # Controle de pausa
         self.discord_webhook = discord_webhook
         self.status = "🔄 Inicializando..."
         self.fila_execucao = None  # Será configurado pelo BotManager
@@ -782,6 +783,10 @@ class KeyDropBot:
             self.stats['inicio'] = datetime.now()
             
             while self.running:
+                if self.paused:
+                    self.status = "⏸️ Pausado"
+                    time.sleep(1)
+                    continue
                 try:
                     # No modo login, não executa automação
                     if self.login_mode:
@@ -928,6 +933,48 @@ class KeyDropBot:
             self.status = "❌ Erro ao reiniciar driver"
             print(f"[Bot {self.bot_id}] Erro ao reiniciar driver!")
             return False
+
+    def pause(self):
+        """Pausa a execução do bot"""
+        if self.running and not self.paused:
+            self.paused = True
+            self.status = "⏸️ Pausado"
+            print(f"[Bot {self.bot_id}] Pausado")
+
+    def resume(self):
+        """Resume a execução do bot"""
+        if self.running and self.paused:
+            self.paused = False
+            self.status = "▶️ Em execução"
+            print(f"[Bot {self.bot_id}] Resumido")
+
+    def reset_stats(self):
+        """Reseta as estatísticas do bot"""
+        self.stats.update({
+            'participacoes': 0,
+            'participacoes_contender': 0,
+            'erros': 0,
+            'inicio': None,
+            'ultima_participacao': None,
+            'ultima_participacao_contender': None,
+            'ultimo_alerta_discord': None,
+            'ultima_atividade': 'Iniciando...',
+            'saldo_skins': 'R$ 0,00',
+            'saldo_inicial': 0.0,
+            'saldo_atual': 0.0,
+            'ganho_periodo': 0.0,
+            'total_ganho': 0.0
+        })
+
+    def reset(self):
+        """Reseta o bot completamente"""
+        was_running = self.running
+        if self.running:
+            self.parar()
+        self.reset_stats()
+        self.reiniciar_driver()
+        if was_running:
+            self.iniciar()
     
     def obter_stats(self):
         """Retorna estatísticas do bot formatadas para a interface"""
@@ -1615,6 +1662,31 @@ class BotManager:
                 except Exception as e:
                     print(f"❌ Erro ao reiniciar bot {bot_id}: {e}")
                     return False
+        return False
+
+    def pause_bot(self, bot_id):
+        """Pausa um bot específico"""
+        bot = self.get_bot(bot_id)
+        if bot and bot.running and not bot.paused:
+            bot.pause()
+            return True
+        return False
+
+    def resume_bot(self, bot_id):
+        """Resume um bot específico"""
+        bot = self.get_bot(bot_id)
+        if bot and bot.paused:
+            bot.resume()
+            return True
+        return False
+
+    def reset_bot(self, bot_id):
+        """Reseta um bot específico"""
+        bot = self.get_bot(bot_id)
+        if bot:
+            bot.reset()
+            print(f"♻️ Bot {bot_id} resetado")
+            return True
         return False
     
     def reiniciar_todos(self):

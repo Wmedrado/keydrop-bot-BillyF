@@ -582,6 +582,15 @@ class ModernKeyDropInterface:
         )
         bot_toggle_button.pack(side="left", padx=2)
         
+        # Botão Pausar/Continuar bot
+        bot_pause_button = ctk.CTkButton(
+            bot_controls_frame,
+            text="⏸️",
+            width=40,
+            command=lambda: self.pause_resume_bot(bot_id)
+        )
+        bot_pause_button.pack(side="left", padx=2)
+
         # Botão Reiniciar bot
         bot_restart_button = ctk.CTkButton(
             bot_controls_frame,
@@ -590,6 +599,15 @@ class ModernKeyDropInterface:
             command=lambda: self.reiniciar_bot(bot_id)
         )
         bot_restart_button.pack(side="left", padx=2)
+
+        # Botão Reset bot
+        bot_reset_button = ctk.CTkButton(
+            bot_controls_frame,
+            text="♻️",
+            width=40,
+            command=lambda: self.resetar_bot(bot_id)
+        )
+        bot_reset_button.pack(side="left", padx=2)
         
         # Botão Remover bot
         bot_remove_button = ctk.CTkButton(
@@ -633,6 +651,9 @@ class ModernKeyDropInterface:
             'frame': bot_frame,
             'status_label': bot_status_label,
             'toggle_button': bot_toggle_button,
+            'pause_button': bot_pause_button,
+            'restart_button': bot_restart_button,
+            'reset_button': bot_reset_button,
             'amateur_label': amateur_label,
             'contender_label': contender_label,
             'errors_label': errors_label,
@@ -699,6 +720,22 @@ class ModernKeyDropInterface:
         if self.bot_manager.bot_existe(bot_id):
             self.bot_manager.reiniciar_bot(bot_id)
             self.adicionar_log(f"🔄 Bot {bot_id} reiniciado")
+
+    def pause_resume_bot(self, bot_id):
+        """Pausa ou resume um bot"""
+        if self.bot_manager.bot_existe(bot_id):
+            if self.bot_manager.get_bot(bot_id).paused:
+                self.bot_manager.resume_bot(bot_id)
+                self.adicionar_log(f"▶️ Bot {bot_id} resumido")
+            else:
+                self.bot_manager.pause_bot(bot_id)
+                self.adicionar_log(f"⏸️ Bot {bot_id} pausado")
+
+    def resetar_bot(self, bot_id):
+        """Reseta um bot específico"""
+        if self.bot_manager.bot_existe(bot_id):
+            self.bot_manager.reset_bot(bot_id)
+            self.adicionar_log(f"♻️ Bot {bot_id} resetado")
             
     def toggle_bots(self):
         """Alterna estado de todos os bots"""
@@ -970,6 +1007,12 @@ class ModernKeyDropInterface:
                         frame_data['toggle_button'].configure(text="⏹️ Parar")
                     else:
                         frame_data['toggle_button'].configure(text="▶️ Iniciar")
+
+                    # Atualizar botão de pausa
+                    if bot.paused:
+                        frame_data['pause_button'].configure(text="▶️")
+                    else:
+                        frame_data['pause_button'].configure(text="⏸️")
                     
                     # Atualizar estatísticas
                     frame_data['amateur_label'].configure(text=f"🏅 Amateur: {stats.get('amateur', 0)}")
