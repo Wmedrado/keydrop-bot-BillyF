@@ -9,6 +9,9 @@ from .permissions_validator import validar_permissoes
 from .backups import backup_arquivo, restaurar_arquivo
 from .watchdog import ProcessWatchdog
 from .crash_tracker import start_crash_tracker, log_exception
+from .hash_validator import validate_hashes, compute_hash
+from .digital_signature import sign_file, verify_file
+from .vuln_scanner import scan_requirements
 from .error_reporter import error_reporter, ErrorReporter
 from .diagnostic import diagnostic
 from .dependency_validator import run_dependency_check, get_available_browser
@@ -53,4 +56,9 @@ __all__ = [
     "send_log_to_discord",
     "start_crash_tracker",
     "log_exception",
+    "validate_hashes",
+    "compute_hash",
+    "sign_file",
+    "verify_file",
+    "scan_requirements",
 ]

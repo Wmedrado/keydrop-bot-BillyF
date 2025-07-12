@@ -1,7 +1,10 @@
 import argparse
 import subprocess
+import sys
 import uuid
 from pathlib import Path
+
+from bot_keydrop.utils.cli_sanitizer import sanitize_cli_args
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 DIST_DIR = BASE_DIR / "dist"
@@ -67,10 +70,18 @@ def build_installer(exe: Path, arch: str, version: str):
     )
     wxs_file = INSTALLER_DIR / f"temp_{arch}.wxs"
     wxs_file.write_text(wxs_script, encoding="utf-8")
-    run(["wixl", "-o", str(DIST_DIR / f"KeydropBot_Installer_{arch}.msi"), str(wxs_file)])
+    run(
+        [
+            "wixl",
+            "-o",
+            str(DIST_DIR / f"KeydropBot_Installer_{arch}.msi"),
+            str(wxs_file),
+        ]
+    )
 
 
 def main():
+    sanitize_cli_args(sys.argv[1:])
     parser = argparse.ArgumentParser()
     parser.add_argument("--exe", required=True)
     parser.add_argument("--arch", required=True)

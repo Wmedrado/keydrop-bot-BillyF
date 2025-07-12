@@ -4,3 +4,5 @@ pytest-mock
 beautifulsoup4
 ruff
 bandit
+mypy
+pip-audit

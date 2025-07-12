@@ -5,6 +5,8 @@ from .circuit_breaker import CircuitBreaker, CircuitBreakerOpen
 from .loop_detector import LoopDetector, LiveLoopError
 from .time_monitor import monitor_time
 from .retry import retry_with_backoff
+from .rate_limiter import RateLimiter
+from .cli_sanitizer import sanitize_cli_args
 
 __all__ = [
     "AsyncRemoteHandler",
@@ -17,4 +19,6 @@ __all__ = [
     "LiveLoopError",
     "monitor_time",
     "retry_with_backoff",
+    "RateLimiter",
+    "sanitize_cli_args",
 ]

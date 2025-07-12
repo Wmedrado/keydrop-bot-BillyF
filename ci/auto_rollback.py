@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import argparse
+import sys
+from bot_keydrop.utils.cli_sanitizer import sanitize_cli_args
 import json
 import subprocess
 from pathlib import Path
@@ -13,9 +15,7 @@ LAST_SUCCESS = Path(__file__).parent / "last_success_commit.txt"
 
 def record_success() -> None:
     STATE_FILE.write_text(json.dumps({"failures": 0}), encoding="utf-8")
-    commit = (
-        subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
-    )
+    commit = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
     LAST_SUCCESS.write_text(commit, encoding="utf-8")
 
 
@@ -32,6 +32,7 @@ def record_failure() -> None:
 
 
 def main() -> int:
+    sanitize_cli_args(sys.argv[1:])
     parser = argparse.ArgumentParser()
     parser.add_argument("--success", action="store_true")
     parser.add_argument("--failure", action="store_true")
@@ -50,4 +51,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

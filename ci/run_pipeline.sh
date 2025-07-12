@@ -16,10 +16,11 @@ pip install -r bot_keydrop/requirements.txt
 pip install -r bot_keydrop/backend/requirements.txt || true
 # Ensure critical backend deps are installed even if optional ones fail
 pip install firebase_admin discord-webhook || true
-pip install pytest pytest-asyncio pytest-mock pytest-cov pytest-html flake8 black ruff bandit tkhtmlview
+pip install pytest pytest-asyncio pytest-mock pytest-cov pytest-html flake8 black ruff bandit mypy tkhtmlview
 # Backend requirements contain heavy packages not needed for tests
 # so we avoid installing them to speed up CI
 pip install beautifulsoup4
+pip install pip-audit
 
 # Validate modifications to protected files
 python ci/check_protected_files.py | tee build_results/protected_files.log
@@ -43,6 +44,15 @@ black --check . > build_results/black.log || true
 ruff check . > build_results/ruff.log
 bandit -r bot_keydrop -lll -q > build_results/bandit.log
 
+# Enforce type hints using mypy
+mypy bot_keydrop launcher.py tests > build_results/mypy.log || true
+
+# Check nested functions depth
+python ci/check_nested_functions.py | tee build_results/nested_functions.log
+
+# Ensure public functions have docstrings
+python ci/ensure_docstrings.py | tee build_results/docstring.log
+
 
 # Semantic naming validation
 python ci/check_naming_quality.py | tee build_results/naming_quality.log
@@ -56,6 +66,16 @@ python - <<'PY'
 from bot_keydrop.system_safety import run_dependency_check
 if not run_dependency_check():
     print("Dependency check failed, continuing anyway")
+PY
+
+# Scan dependencies for vulnerabilities
+python - <<'PY'
+from pathlib import Path
+from bot_keydrop.system_safety import scan_requirements
+
+vulns = scan_requirements(Path('requirements-dev.txt'))
+if vulns:
+    print('Vulnerable packages: ' + ', '.join(vulns))
 PY
 
 # Run tests with coverage and html report

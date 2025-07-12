@@ -1,18 +1,24 @@
-import tkinter as tk
-from tkinter import ttk, messagebox
+import atexit
+import os
 import subprocess
 import sys
-import os
 from pathlib import Path
-import atexit
+
+import tkinter as tk
+from tkinter import ttk, messagebox
+
+from bot_keydrop.utils import sanitize_cli_args
+from bot_keydrop.system_safety import LockFile
 
 # Early CLI handling for optional watch mode
+sanitize_cli_args(sys.argv[1:])
+
 if "--watch" in sys.argv:
     from bot_keydrop.live_monitor import watch
+
     watch()
     sys.exit(0)
 
-from bot_keydrop.system_safety import LockFile
 
 if os.getenv("MODO_DEBUG") == "1" or Path(sys.argv[0]).stem.endswith("_DEBUG"):
     os.environ["MODO_DEBUG"] = "1"

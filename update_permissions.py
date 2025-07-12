@@ -1,13 +1,18 @@
 """Script para atualizar permissões de usuário no Firebase."""
+
 from __future__ import annotations
 
 import argparse
+import sys
 from typing import Dict
+
+from bot_keydrop.utils.cli_sanitizer import sanitize_cli_args
 
 from cloud.permissions import update_permissions
 
 
 def parse_args() -> argparse.Namespace:
+    sanitize_cli_args(sys.argv[1:])
     parser = argparse.ArgumentParser(description="Atualiza permissoes no Firebase")
     parser.add_argument("user_id", help="ID do usuario")
     parser.add_argument(
