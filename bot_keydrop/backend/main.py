@@ -105,6 +105,10 @@ class TabControlRequest(BaseModel):
 class CacheControlRequest(BaseModel):
     preserve_login: bool = True
 
+class WinningRequest(BaseModel):
+    amount: float
+    lottery_type: str
+
 # Inicialização da aplicação
 @app.on_event("startup")
 async def startup_event():
@@ -408,6 +412,31 @@ async def get_participation_history(limit: Optional[int] = 100):
         return automation_engine.get_participation_history(limit)
     except Exception as e:
         logger.error(f"Erro ao obter histórico de participação: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Endpoints de ganhos
+@app.post("/winnings")
+async def register_winning(request: WinningRequest):
+    """Registra um ganho manualmente"""
+    if not automation_engine:
+        raise HTTPException(status_code=400, detail="Bot não inicializado")
+    try:
+        automation_engine.record_winning(request.amount, request.lottery_type)
+        return {"status": "ok"}
+    except Exception as e:
+        logger.error(f"Erro ao registrar ganho: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/winnings")
+async def get_winnings_history(limit: Optional[int] = 100):
+    """Obtém histórico de ganhos"""
+    if not automation_engine:
+        return []
+    try:
+        return automation_engine.get_winnings_history(limit)
+    except Exception as e:
+        logger.error(f"Erro ao obter histórico de ganhos: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 # Endpoints de relatórios
