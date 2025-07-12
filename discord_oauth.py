@@ -14,6 +14,8 @@ import socketserver
 from urllib.parse import urlencode, urlparse, parse_qs
 from typing import Dict, Optional
 
+from bot_keydrop.system_safety import enforce_timeout
+
 import requests
 
 CLIENT_ID = os.getenv("DISCORD_CLIENT_ID", "")
@@ -51,6 +53,7 @@ def _get_code(auth_url: str) -> str:
         return _CodeHandler.code  # type: ignore
 
 
+@enforce_timeout(30)
 def oauth_login() -> Dict[str, str]:
     """Perform Discord OAuth2 login and return user info and token."""
     if not CLIENT_ID or not CLIENT_SECRET:
@@ -92,6 +95,7 @@ def oauth_login() -> Dict[str, str]:
     }
 
 
+@enforce_timeout(30)
 def add_vip_role(user_id: str, access_token: str) -> None:
     """Add the authenticated user to the guild and assign VIP role."""
     if not all([GUILD_ID, VIP_ROLE_ID, BOT_TOKEN]):
@@ -114,4 +118,3 @@ def add_vip_role(user_id: str, access_token: str) -> None:
     )
     if role_resp.status_code not in (204, 201):  # pragma: no cover - network
         raise RuntimeError(f"Falha ao aplicar cargo: {role_resp.text}")
-
