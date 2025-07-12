@@ -1,8 +1,8 @@
 import zipfile
 import os
 
-# Criar arquivo ZIP da versão 2.1.0
-zip_name = "KeyDrop_Bot_Professional_v2.1.0.zip"
+# Criar arquivo ZIP da versão 4.0.0
+zip_name = "KeyDrop_Bot_Professional_v4.0.0.zip"
 
 print(f"Criando {zip_name}...")
 
@@ -20,7 +20,7 @@ with zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED) as zf:
         'github_token.txt',
         'README.md',
         'TROUBLESHOOTING.md',
-        'RELEASE_NOTES_v2.1.0.md',
+        'RELEASE_NOTES_v4.0.0.md',
         'bot-icone.ico',
         'bot-icone.png',
         'KeyDrop_Bot_Classico.exe',

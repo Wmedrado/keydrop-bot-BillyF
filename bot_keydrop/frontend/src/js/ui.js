@@ -486,7 +486,7 @@ class UIManager {
             // Em uma implementação real, isso verificaria um servidor de atualizações
             await new Promise(resolve => setTimeout(resolve, 2000));
 
-            const currentVersion = 'v2.1.0';
+            const currentVersion = 'v4.0.0';
             const isLatest = true; // Simular que está atualizado
 
             if (isLatest) {

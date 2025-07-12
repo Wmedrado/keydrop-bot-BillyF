@@ -51,7 +51,7 @@ class ModernKeyDropInterface:
         
         # Janela principal
         self.root = ctk.CTk()
-        self.root.title("KeyDrop Bot Professional Edition v2.1.0")
+        self.root.title("KeyDrop Bot Professional Edition v4.0.0")
         self.root.geometry("1400x900")
         self.root.minsize(1200, 700)
         

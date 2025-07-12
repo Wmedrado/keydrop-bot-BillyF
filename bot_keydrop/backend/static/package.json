@@ -1,6 +1,6 @@
 {
   "name": "keydrop-bot-frontend",
-  "version": "2.1.0",
+  "version": "4.0.0",
   "description": "Frontend moderno para o Keydrop Bot Professional",
   "main": "index.html",
   "scripts": {

@@ -25,7 +25,7 @@ class KeydropBotGUI_Teste:
         self.root = tk.Tk()
         print("2. tk.Tk() criado...")
         
-        self.root.title("Keydrop Bot Professional v2.1.0")
+        self.root.title("Keydrop Bot Professional v4.0.0")
         self.root.geometry("900x700")
         self.root.resizable(True, True)
         print("3. Configurações básicas aplicadas...")
@@ -78,7 +78,7 @@ class KeydropBotGUI_Teste:
         
         # Interface simples
         try:
-            label = tk.Label(self.root, text="🎯 Keydrop Bot Professional v2.1.0\n\nSe você está vendo esta tela,\no executável está funcionando!\n\nAgora vou tentar criar a interface completa...", 
+            label = tk.Label(self.root, text="🎯 Keydrop Bot Professional v4.0.0\n\nSe você está vendo esta tela,\no executável está funcionando!\n\nAgora vou tentar criar a interface completa...",
                            font=('Arial', 12), justify=tk.CENTER, pady=20)
             label.pack(expand=True)
             print("9. Interface simples criada...")
@@ -139,7 +139,7 @@ class KeydropBotGUI_Teste:
         header_frame = ttk.Frame(self.root)
         header_frame.pack(fill=tk.X, padx=10, pady=10)
         
-        ttk.Label(header_frame, text="🤖 Keydrop Bot Professional v2.1.0", 
+        ttk.Label(header_frame, text="🤖 Keydrop Bot Professional v4.0.0",
                  style='Title.TLabel').pack()
         ttk.Label(header_frame, text="✅ EXECUTÁVEL FUNCIONANDO CORRETAMENTE!", 
                  foreground='green', font=('Arial', 12, 'bold')).pack()

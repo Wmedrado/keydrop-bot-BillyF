@@ -22,11 +22,11 @@ def test_interface_update_check():
         # Simular o que a interface faz
         from src.improved_update_manager import ImprovedUpdateManager
         
-        # Configurar versão como 2.0.5 para simular necessidade de atualização
+        # Configurar versão como 4.0.0 para simular necessidade de atualização
         update_manager = ImprovedUpdateManager(
             repo_owner="wmedrado",
             repo_name="bot-keydrop",
-            current_version="2.0.5"
+            current_version="4.0.0"
         )
         
         print("🔍 Verificando atualizações via interface...")
@@ -36,7 +36,7 @@ def test_interface_update_check():
         
         if update_info.get('available'):
             print(f"✅ Atualização encontrada!")
-            print(f"   📋 Versão atual: 2.0.5")
+            print(f"   📋 Versão atual: 4.0.0")
             print(f"   📋 Nova versão: {update_info.get('version')}")
             print(f"   📦 Arquivo: {update_info.get('asset_name')}")
             print(f"   📏 Tamanho: {update_info.get('asset_size', 0) / 1024 / 1024:.2f} MB")
@@ -68,11 +68,11 @@ def test_current_version_check():
     try:
         from src.improved_update_manager import ImprovedUpdateManager
         
-        # Configurar versão como 2.0.6 (atual)
+        # Configurar versão como 4.0.0 (atual)
         update_manager = ImprovedUpdateManager(
             repo_owner="wmedrado",
             repo_name="bot-keydrop",
-            current_version="2.0.6"
+            current_version="4.0.0"
         )
         
         print("🔍 Verificando atualizações com versão atual...")
@@ -82,7 +82,7 @@ def test_current_version_check():
         
         if update_info.get('available'):
             print(f"⚠️ Atualização encontrada (não esperado!):")
-            print(f"   📋 Versão atual: 2.0.6")
+            print(f"   📋 Versão atual: 4.0.0")
             print(f"   📋 Nova versão: {update_info.get('version')}")
             return False
         else:
@@ -102,8 +102,8 @@ def main():
     
     # Lista de testes
     tests = [
-        ("Detecção de Atualização (v2.0.5 -> v2.0.6)", test_interface_update_check),
-        ("Verificação com Versão Atual (v2.0.6)", test_current_version_check)
+        ("Detecção de Atualização (v4.0.0)", test_interface_update_check),
+        ("Verificação com Versão Atual (v4.0.0)", test_current_version_check)
     ]
     
     results = []
@@ -140,7 +140,7 @@ def main():
     
     if passed == total:
         print("🎉 INTERFACE DE ATUALIZAÇÃO FUNCIONANDO PERFEITAMENTE!")
-        print("🚀 Usuários com v2.0.5 ou anterior podem atualizar para v2.0.6!")
+        print("🚀 Usuários podem atualizar para v4.0.0!")
         print("✅ Problema de 'NENHUM ARQUIVO DISPONÍVEL' foi RESOLVIDO!")
         return True
     else:

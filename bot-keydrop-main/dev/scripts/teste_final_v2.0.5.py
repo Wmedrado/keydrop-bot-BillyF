@@ -1,5 +1,5 @@
 """
-Teste Final do KeyDrop Bot Professional Edition v2.0.5
+Teste Final do KeyDrop Bot Professional Edition v4.0.0
 ======================================================
 
 Teste completo de todas as funcionalidades implementadas:
@@ -220,9 +220,9 @@ def test_release_files():
     print("\n📦 Testando Arquivos de Release...")
     
     release_files = [
-        "RELEASE_FORM_v2.0.5.md",
+        "RELEASE_FORM_v4.0.0.md",
         "CHANGELOG.md",
-        "KeyDrop_Bot_v2.0.5.zip"
+        "KeyDrop_Bot_v4.0.0.zip"
     ]
     
     found_count = 0
@@ -242,7 +242,7 @@ def test_release_files():
 
 def main():
     """Função principal do teste"""
-    print("🧪 TESTE FINAL - KEYDROP BOT PROFESSIONAL EDITION v2.0.5")
+    print("🧪 TESTE FINAL - KEYDROP BOT PROFESSIONAL EDITION v4.0.0")
     print("=" * 70)
     print(f"📅 Data: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 70)
@@ -292,7 +292,7 @@ def main():
     
     if passed == total:
         print("🎉 TODOS OS TESTES PASSARAM!")
-        print("🚀 KeyDrop Bot Professional Edition v2.0.5 está pronto para produção!")
+        print("🚀 KeyDrop Bot Professional Edition v4.0.0 está pronto para produção!")
         return True
     elif passed >= total * 0.8:  # 80% ou mais
         print("⚠️ MAIORIA DOS TESTES PASSOU")

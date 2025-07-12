@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Keydrop Bot Professional v2.1.0 - Versão Simplificada Funcional
+Keydrop Bot Professional v4.0.0 - Versão Simplificada Funcional
 """
 
 import tkinter as tk
@@ -15,7 +15,7 @@ class KeydropBotSimples:
     def __init__(self):
         # Criar janela principal
         self.root = tk.Tk()
-        self.root.title("Keydrop Bot Professional v2.1.0")
+        self.root.title("Keydrop Bot Professional v4.0.0")
         self.root.geometry("800x600")
         
         # Forçar aparecer
@@ -42,7 +42,7 @@ class KeydropBotSimples:
         self.criar_interface()
         
         # Log inicial
-        self.log("🎉 Keydrop Bot Professional v2.1.0 iniciado!")
+        self.log("🎉 Keydrop Bot Professional v4.0.0 iniciado!")
         self.log("📱 Versão Desktop Simplificada Funcional")
         self.log("👨‍💻 Desenvolvido por: William Medrado")
 
@@ -52,7 +52,7 @@ class KeydropBotSimples:
         header = ttk.Frame(self.root)
         header.pack(fill=tk.X, padx=10, pady=10)
         
-        ttk.Label(header, text="🤖 Keydrop Bot Professional v2.1.0", 
+        ttk.Label(header, text="🤖 Keydrop Bot Professional v4.0.0",
                  font=('Arial', 16, 'bold')).pack()
         ttk.Label(header, text="Desenvolvido por: William Medrado (wmedrado)").pack()
         ttk.Label(header, text="📱 Aplicação Desktop Funcional", 
