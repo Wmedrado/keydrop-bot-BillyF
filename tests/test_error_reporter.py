@@ -1,13 +1,14 @@
-from bot_keydrop.system_safety.error_reporter import ErrorReporter
-from bot_keydrop.system_safety.error_reporter import TEST_ENV_VAR
+from bot_keydrop.system_safety.error_reporter import (
+    ErrorReporter,
+    TEST_ENV_VAR,
+    IS_TEST_ENV_VAR,
+)
 
 from pathlib import Path
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-
-from bot_keydrop.system_safety.error_reporter import ErrorReporter, TEST_ENV_VAR
 
 import json
 
@@ -42,12 +43,33 @@ def test_capture_exception_no_send_in_tests(monkeypatch, tmp_path):
     assert not called
 
 
+def test_capture_exception_respects_is_test_env(monkeypatch, tmp_path):
+    """Errors should not be sent when IS_TEST_ENV is true."""
+    log = tmp_path / "err.log"
+    reporter = ErrorReporter(log_file=log)
+    called = []
+
+    def fake_send(_info):
+        called.append(True)
+        return True
+
+    monkeypatch.setenv(IS_TEST_ENV_VAR, "true")
+    monkeypatch.setattr(reporter, "_send_discord", fake_send)
+    try:
+        raise ValueError("boom")
+    except Exception as exc:
+        reporter.capture_exception(exc)
+    assert not called
+    monkeypatch.delenv(IS_TEST_ENV_VAR, raising=False)
+
+
 def test_pending_file_on_send_fail(tmp_path, monkeypatch):
     log = tmp_path / "err.log"
     pend = tmp_path / "pend.json"
     reporter = ErrorReporter(log_file=log, pending_file=pend)
 
     monkeypatch.delenv(TEST_ENV_VAR, raising=False)
+    monkeypatch.setenv(IS_TEST_ENV_VAR, "false")
     monkeypatch.setattr(reporter, "_send_discord", lambda info: False)
     monkeypatch.delenv(TEST_ENV_VAR, raising=False)
 
@@ -60,3 +82,4 @@ def test_pending_file_on_send_fail(tmp_path, monkeypatch):
     assert pend.exists()
     data = json.loads(pend.read_text())
     assert data[0]["message"].endswith("fail")
+    monkeypatch.delenv(IS_TEST_ENV_VAR, raising=False)

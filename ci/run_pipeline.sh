@@ -53,6 +53,7 @@ if not run_dependency_check():
 PY
 
 # Run tests with coverage and html report
+export IS_TEST_ENV="true"
 pytest --html=tests/test_report.html --self-contained-html --cov=bot_keydrop --cov-report=term --cov-report=html:tests/htmlcov | tee tests/coverage.txt
 
 # Regression intelligence validation
