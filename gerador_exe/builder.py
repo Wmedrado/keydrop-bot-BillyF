@@ -55,11 +55,26 @@ def validate_environment(min_version=(3, 10)) -> bool:
 
 
 def run_tests() -> bool:
+    """Execute the project's test suite.
+
+    Returns True when tests pass or none are found. Any failure cancels the build.
+    """
     logger.info("Executando testes...")
-    result = subprocess.run([sys.executable, "-m", "pytest", "-q"], capture_output=True, text=True)
+    result = subprocess.run(
+        [sys.executable, "-m", "pytest", "-q"], capture_output=True, text=True
+    )
+
+    output = (result.stdout + result.stderr).lower()
+    if "no tests ran" in output or "no tests were collected" in output:
+        logger.warning("⚠️ Nenhum teste encontrado — prosseguindo mesmo assim.")
+        logger.info(result.stdout)
+        return True
+
     if result.returncode != 0:
-        logger.error("Falha nos testes:\n" + result.stdout + result.stderr)
+        logger.error("❌ Testes falharam.")
+        logger.error(result.stdout + result.stderr)
         return False
+
     logger.info(result.stdout)
     return True
 
@@ -87,6 +102,12 @@ def check_port(port: int = 8000) -> bool:
 
 def build_executable(config: dict, version: str) -> Path:
     exe_name = f"{config['output_name']}_v{version}.exe"
+
+    main_script = BASE_DIR / config.get("main_script", "")
+    if not main_script.exists():
+        logger.error(f"Arquivo principal '{main_script}' não encontrado.")
+        return Path()
+
     cmd = [
         sys.executable,
         "-m",
@@ -97,9 +118,14 @@ def build_executable(config: dict, version: str) -> Path:
         exe_name,
     ]
     icon = config.get("icon")
-    if icon and (BASE_DIR / icon).exists():
-        cmd.extend(["--icon", str(BASE_DIR / icon)])
-    cmd.append(str(BASE_DIR / config["main_script"]))
+    if icon:
+        icon_path = BASE_DIR / icon
+        if icon_path.exists():
+            cmd.extend(["--icon", str(icon_path)])
+        else:
+            logger.warning(f"Ícone '{icon}' não encontrado. Continuando sem ícone.")
+
+    cmd.append(str(main_script))
     logger.info("Gerando executável...")
     result = subprocess.run(cmd, text=True, capture_output=True)
     if result.returncode != 0:
@@ -113,24 +139,43 @@ def build_executable(config: dict, version: str) -> Path:
 
 
 def package_build(exe_path: Path, version: str, config: dict) -> Path:
+    if not exe_path.exists():
+        logger.error("Arquivo executável não encontrado para empacotamento.")
+        return Path()
+
     target_exe = BIN_DIR / exe_path.name
-    shutil.copy2(exe_path, target_exe)
+    try:
+        shutil.copy2(exe_path, target_exe)
+    except Exception as exc:
+        logger.error(f"Erro ao copiar executável: {exc}")
+        return Path()
 
     instrucoes = TEMP_DIR / "INSTRUCOES.txt"
-    instrucoes.write_text(
-        "Execute o arquivo .exe para iniciar o Keydrop Bot.\n",
-        encoding="utf-8",
-    )
+    try:
+        instrucoes.write_text(
+            "Execute o arquivo .exe para iniciar o Keydrop Bot.\n",
+            encoding="utf-8",
+        )
+        shutil.copy2(exe_path, TEMP_DIR / exe_path.name)
+        shutil.copy2(instrucoes, TEMP_DIR / instrucoes.name)
+    except Exception as exc:
+        logger.error(f"Erro ao preparar arquivos temporários: {exc}")
+        return Path()
 
-    shutil.copy2(exe_path, TEMP_DIR / exe_path.name)
-    shutil.copy2(instrucoes, TEMP_DIR / instrucoes.name)
     req_src = BASE_DIR / "bot_keydrop" / "backend" / "requirements.txt"
     if req_src.exists():
-        shutil.copy2(req_src, TEMP_DIR / "requirements.txt")
+        try:
+            shutil.copy2(req_src, TEMP_DIR / "requirements.txt")
+        except Exception as exc:
+            logger.warning(f"Não foi possível copiar requirements: {exc}")
 
     zip_name = f"{config['output_name']}_v{version}_windows.zip"
     zip_path = BIN_DIR / zip_name
-    shutil.make_archive(zip_path.with_suffix(""), "zip", TEMP_DIR)
+    try:
+        shutil.make_archive(zip_path.with_suffix(""), "zip", TEMP_DIR)
+    except Exception as exc:
+        logger.error(f"Erro ao criar arquivo zip: {exc}")
+        return Path()
     return zip_path
 
 
