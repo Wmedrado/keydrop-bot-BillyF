@@ -24,6 +24,16 @@ from datetime import datetime, timedelta
 from pathlib import Path
 import psutil
 
+from bot_keydrop.system_safety import (
+    verificar_conexao_internet,
+    check_permissions,
+    validate_environment,
+    ProcessWatchdog,
+    check_single_instance,
+    release_lock,
+    safe_save_json,
+)
+
 # Configuração de logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -1136,7 +1146,12 @@ class KeydropBotGUI:
             if not SELENIUM_AVAILABLE:
                 messagebox.showerror("Erro", "Selenium não está disponível!\nInstale as dependências: pip install selenium webdriver-manager")
                 return
-            
+
+            if not verificar_conexao_internet():
+                self.log_message("Sem conexão com a internet", "ERROR")
+                messagebox.showerror("Erro", "Sem conexão com a internet. Tente novamente.")
+                return
+
             # Salvar configurações antes de iniciar
             self.save_config()
             
@@ -1202,9 +1217,8 @@ class KeydropBotGUI:
                 "twitter_bearer_token": self.twitter_token_var.get()
             })
             
-            # Salvar em arquivo
-            with open("config.json", 'w') as f:
-                json.dump(self.config, f, indent=2)
+            # Salvar em arquivo com backup
+            safe_save_json("config.json", self.config)
             
             self.log_message("✅ Configurações salvas!", "SUCCESS")
             
@@ -1251,7 +1265,20 @@ class KeydropBotGUI:
                 self.log_message("ℹ️ Usando configurações padrão", "INFO")
                 
         except json.JSONDecodeError:
-            self.log_message("⚠️ config.json corrompido. Usando padrão", "WARNING")
+            self.log_message("⚠️ config.json corrompido. Tentando restaurar backup", "WARNING")
+            backups_dir = Path("backups")
+            if backups_dir.exists():
+                backups = sorted(backups_dir.glob("config_*.json"))
+                if backups:
+                    try:
+                        with open(backups[-1], "r") as f:
+                            self.config.update(json.load(f))
+                        self.log_message("🔄 Backup restaurado", "INFO")
+                        self.save_config()
+                        return
+                    except Exception:
+                        pass
+            self.log_message("Usando configurações padrão", "WARNING")
         except Exception as e:
             self.log_message(f"❌ Erro ao carregar configurações: {e}", "ERROR")
     
@@ -1305,6 +1332,7 @@ class KeydropBotGUI:
     def on_close(self):
         """Exportar logs e fechar a aplicação"""
         self.salvar_logs_em_arquivo()
+        release_lock()
         self.root.destroy()
     
     def append_log(self, text, level="INFO"):
@@ -1425,6 +1453,16 @@ def main():
     """Função principal"""
     try:
         check_initial_resources()
+        validate_environment()
+        issues = check_permissions()
+        if issues:
+            messagebox.showerror(
+                "Permissões", "Problemas ao acessar pastas:\n" + "\n".join(issues)
+            )
+            return
+        check_single_instance()
+        watchdog = ProcessWatchdog()
+        watchdog.start()
         # Configurar DPI para Windows
         if os.name == 'nt':
             try:
@@ -1436,6 +1474,8 @@ def main():
         # Criar e executar aplicação
         app = KeydropBotGUI()
         app.run()
+        watchdog.stop()
+        release_lock()
         
     except Exception as e:
         print(f"❌ Erro crítico: {e}")
@@ -1466,6 +1506,8 @@ def main():
             
         except Exception:
             input("Pressione Enter para sair...")
+    finally:
+        release_lock()
 
 if __name__ == "__main__":
     main()
