@@ -54,3 +54,16 @@ Cada nova funcionalidade ou ajuste relevante deve adicionar um bloco seguindo o 
 - **Afeta/Substitui:** adiciona `smart_cache`, `history_recorder`, `rate_limiter`, `browser_fallback` e verificação de variáveis sensíveis no CI.
 - **Justificativa técnica:** reduz custo computacional, registra histórico individual e previne vazamento de credenciais.
 - **Tipo:** melhoria
+
+## Ajuste de integracao SonarCloud
+- **Motivo:** Corrigir configuracoes invalidas do workflow e do projeto.
+- **Afeta/Substitui:** `sonar-project.properties` e `.github/workflows/ci.yml`.
+- **Justificativa tecnica:** Garante integracao correta com o SonarCloud conforme documentacao.
+- **Tipo:** melhoria
+
+
+## Dependencias de testes
+- **Motivo:** Garantir que todos os testes executem corretamente.
+- **Afeta/Substitui:** instala dependencias ausentes como beautifulsoup4.
+- **Justificativa tecnica:** Prevencao de falhas de importacao e cobertura completa no CI.
+- **Tipo:** manutencao
