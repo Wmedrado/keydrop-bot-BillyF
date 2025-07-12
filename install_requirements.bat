@@ -12,6 +12,8 @@ python -m pip install --upgrade pip
 
 REM Install libraries required by the backend (FastAPI + Playwright)
 python -m pip install -r bot_keydrop\backend\requirements.txt
+REM Install additional libraries for the desktop interface
+python -m pip install -r bot_keydrop\requirements.txt
 
 REM Install Playwright browsers
 python -m playwright install
