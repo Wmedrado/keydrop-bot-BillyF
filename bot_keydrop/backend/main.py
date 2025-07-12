@@ -46,6 +46,8 @@ from cloud.permissions import (
     has_telegram_access,
     subscription_active,
 )
+from cloud.hwid import validate_user_hwid, generate_hwid
+from cloud.firebase_client import registrar_log_suspeito
 from tools.proxy_manager import ProxyManager
 from . import premium
 
@@ -188,6 +190,9 @@ async def startup_event():
             uid = json.loads(session_file.read_text()).get("localId")
             if uid:
                 permissions_data.update(fetch_permissions(uid))
+                if not validate_user_hwid(uid):
+                    registrar_log_suspeito(uid, generate_hwid(), "startup", "HWID divergente")
+                    raise RuntimeError("Essa conta está vinculada a outro dispositivo. Acesso bloqueado.")
                 if not subscription_active(permissions_data):
                     permissions_data["premium_access"] = False
                     permissions_data["telegram_access"] = False

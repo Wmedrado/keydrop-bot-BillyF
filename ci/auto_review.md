@@ -1,1 +1,2 @@
-Nada a declarar.
+- Nomes de variáveis suspeitos encontrados.
+- Função adicionada muito longa.
