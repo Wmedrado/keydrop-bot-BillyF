@@ -459,7 +459,11 @@ class KeydropAutomation:
                 element = await page.query_selector(selector)
                 if element and await element.is_visible():
                     return True
-            
+
+            return False
+
+        except Exception as e:
+            logger.debug(f"Erro ao verificar sucesso da participação: {e}")
             return False
         except Exception as e:
             logger.debug(f"Erro ao verificar sucesso da participação: {e}")
