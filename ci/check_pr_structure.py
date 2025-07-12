@@ -6,12 +6,12 @@ from typing import Dict, List
 import time
 
 REQUIRED_HEADINGS = {
-    "objective": "### 🌐 Objetivo da alteração",
-    "files": "### 📂 Arquivos principais alterados",
-    "impact": "### 🔍 Impacto em outros módulos",
+    "objective": "### 🧠 Objetivo da alteração",
+    "files": "### 📍 Arquivos principais alterados",
+    "impact": "### 🔁 Impacto em outros módulos",
     "tests": "### 🧪 Testes existentes cobrem essa lógica?",
-    "security": "### 🔒 Algum risco de segurança?",
-    "history": "### ✅ Justificativa no history_of_decisions.md",
+    "security": "### 🔐 Algum risco de segurança?",
+    "history": "### ✅ Justificativa no history_of_decisions.md?",
 }
 
 
