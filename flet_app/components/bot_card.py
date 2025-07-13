@@ -29,16 +29,18 @@ def BotCard(
     if participando_amateur:
         icones_competicoes.append(
             ft.Container(
-                content=ft.Image(src=path_amateur, width=64, height=64, fit=ft.ImageFit.CONTAIN),
+                content=ft.Image(src=path_amateur, width=64, height=64, fit=ft.ImageFit.CONTAIN, tooltip="Participando de sorteios de 3 minutos - AMATEUR"),
                 padding=ft.padding.only(bottom=12),
+                tooltip="Participando de sorteios de 3 minutos - AMATEUR"
             )
         )
 
     if participando_contender:
         icones_competicoes.append(
             ft.Container(
-                content=ft.Image(src=path_contender, width=int(64*1.1), height=int(64*1.1), fit=ft.ImageFit.CONTAIN),
+                content=ft.Image(src=path_contender, width=int(64*1.1), height=int(64*1.1), fit=ft.ImageFit.CONTAIN, tooltip="Participando de sorteios de 1 hora - CONTENDER"),
                 padding=ft.padding.only(bottom=8, top=0, left=-10, right=0),
+                tooltip="Participando de sorteios de 1 hora - CONTENDER"
             )
         )
 
